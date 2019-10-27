@@ -1,0 +1,6 @@
+*.pdb
+*.idb
+*.dblite
+*.obj
+*.import
+.vs/*
