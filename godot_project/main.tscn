@@ -1,11 +1,18 @@
-[gd_scene load_steps=5 format=2]
+[gd_scene load_steps=7 format=2]
 
 [ext_resource path="res://bin/detour_navigation.gdns" type="Script" id=2]
 [ext_resource path="res://Spatial.gd" type="Script" id=3]
 [ext_resource path="res://MeshInstance.gd" type="Script" id=4]
 
 [sub_resource type="QuadMesh" id=1]
-size = Vector2( 16, 16 )
+size = Vector2( 32, 32 )
+
+[sub_resource type="CubeMesh" id=2]
+size = Vector3( 2, 8.68, 2 )
+
+[sub_resource type="CapsuleMesh" id=3]
+radius = 0.2
+mid_height = 5.167
 
 [node name="Main" type="Node"]
 
@@ -22,10 +29,21 @@ material/0 = null
 script = ExtResource( 4 )
 
 [node name="MeshInstance2" type="MeshInstance" parent="DetourNavigationMeshInstance"]
-transform = Transform( 1, 0, 0, 0, 0.0770669, 0.997026, 0, -0.997026, 0.0770669, -7.22106, 0.623128, -15.846 )
-mesh = SubResource( 1 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 7.56701, 0, 8.55017 )
+mesh = SubResource( 2 )
 material/0 = null
 script = ExtResource( 4 )
 
+[node name="MeshInstance3" type="MeshInstance" parent="DetourNavigationMeshInstance"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 5.97, 0, 4.59667 )
+mesh = SubResource( 2 )
+material/0 = null
+script = ExtResource( 4 )
+
+[node name="MeshInstance4" type="MeshInstance" parent="DetourNavigationMeshInstance"]
+transform = Transform( 1, 0, 0, 0, -1.62921e-007, 1, 0, -1, -1.62921e-007, 6.2, 0, 10.4 )
+mesh = SubResource( 3 )
+material/0 = null
+
 [node name="Camera" type="Camera" parent="."]
-transform = Transform( 1, 0, 0, 0, 0.898886, 0.438183, 0, -0.438183, 0.898886, -2.368, 5.192, 10.827 )
+transform = Transform( 0.644924, -0.590982, 0.484575, 0, 0.634056, 0.773287, -0.764247, -0.498712, 0.408918, 17.472, 14.522, 11.197 )

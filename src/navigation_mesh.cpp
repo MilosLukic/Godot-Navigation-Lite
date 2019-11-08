@@ -73,8 +73,9 @@ unsigned int DetourNavigationMesh::build_tiles(
 	unsigned ret = 0;
 	for (int z = z1; z <= z2; z++) {
 		for (int x = x1; x <= x2; x++) {
-			if (build_tile(xform, mesh_instances, x, z))
+			if (build_tile(xform, mesh_instances, x, z)) {
 				ret++;
+			}
 		}
 	}
 
@@ -96,13 +97,13 @@ bool DetourNavigationMesh::build_tile(
 	config.cs = cell_size;
 	config.ch = cell_height;
 	config.walkableSlopeAngle = agent_max_slope;
-	config.walkableHeight = (int)ceil(agent_height / config.ch);
-	config.walkableClimb = (int)floor(agent_max_climb / config.ch);
-	config.walkableRadius = (int)ceil(agent_radius / config.cs);
-	config.maxEdgeLen = (int)(edge_max_length / config.cs);
+	config.walkableHeight = (int) ceil(agent_height / config.ch);
+	config.walkableClimb = (int) floor(agent_max_climb / config.ch);
+	config.walkableRadius = (int) ceil(agent_radius / config.cs);
+	config.maxEdgeLen = (int) (edge_max_length / config.cs);
 	config.maxSimplificationError = edge_max_error;
-	config.minRegionArea = (int)sqrtf(region_min_size);
-	config.mergeRegionArea = (int)sqrtf(region_merge_size);
+	config.minRegionArea = (int) sqrtf(region_min_size);
+	config.mergeRegionArea = (int) sqrtf(region_merge_size);
 	config.maxVertsPerPoly = 6;
 	config.tileSize = tile_size;
 	config.borderSize = config.walkableRadius + 3;
@@ -113,6 +114,11 @@ bool DetourNavigationMesh::build_tile(
 	config.detailSampleMaxError = cell_height * detail_sample_max_error;
 	rcVcopy(config.bmin, &bmin.coord[0]);
 	rcVcopy(config.bmax, &bmax.coord[0]);
+
+	config.bmin[0] -= config.borderSize * config.cs;
+	config.bmin[2] -= config.borderSize * config.cs;
+	config.bmax[0] += config.borderSize * config.cs;
+	config.bmax[2] += config.borderSize * config.cs;
 
 	/* Set the tile AABB */
 	AABB expbox(bmin, bmax - bmin);
@@ -125,6 +131,7 @@ bool DetourNavigationMesh::build_tile(
 	std::vector<int> indices;
 
 	Transform base = xform.inverse();
+
 	for (auto const& mesh_instance : mesh_instances) {
 		if (!mesh_instance->get_mesh().is_valid())
 			continue;
@@ -135,9 +142,6 @@ bool DetourNavigationMesh::build_tile(
 			!expbox.encloses(mesh_aabb)) {
 			continue;
 		}
-		// Add offmesh
-		// Add NavArea
-		// Add PhysicsBodies?
 		add_meshdata(mesh_instance, points, indices);
 	}
 
@@ -321,16 +325,10 @@ void DetourNavigationMesh::add_meshdata(
 	MeshInstance *mesh_instance, std::vector<float>& p_verticies, std::vector<int>& p_indices
 ) {
 	Transform* p_xform = &(mesh_instance->get_global_transform());
-
-	//Godot::print(std::to_string(*(&mesh_instance->get_mesh()->get_surface_count()));
-	//Ref<ArrayMesh> p_mesh = Object::cast_to<ArrayMesh>((mesh_instance->get_mesh()));
 	Ref<ArrayMesh> p_mesh = (ArrayMesh*) *(mesh_instance->get_mesh());
 	int current_vertex_count = 0;
 
-	Godot::print("Starting something");
 	for (int i = 0; i < p_mesh->get_surface_count(); i++) {
-
-		Godot::print("Middle something");
 		current_vertex_count = p_verticies.size() / 3;
 
 		if (p_mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES)
@@ -358,38 +356,38 @@ void DetourNavigationMesh::add_meshdata(
 			PoolIntArray mesh_indices = a[Mesh::ARRAY_INDEX];
 			PoolIntArray::Read ir = mesh_indices.read();
 
-			for (int i = 0; i < mesh_vertices.size(); i++) {
-				Vector3 p_vec3 = p_xform->xform(vr[i]);
+			for (int j = 0; j < mesh_vertices.size(); j++) {
+				Vector3 p_vec3 = p_xform->xform(vr[j]);
 				p_verticies.push_back(p_vec3.x);
 				p_verticies.push_back(p_vec3.y);
 				p_verticies.push_back(p_vec3.z);
 			}
 
-			for (int i = 0; i < face_count; i++) {
-				p_indices.push_back(current_vertex_count + (ir[i * 3 + 0]));
-				p_indices.push_back(current_vertex_count + (ir[i * 3 + 2]));
-				p_indices.push_back(current_vertex_count + (ir[i * 3 + 1]));
+			for (int j = 0; j < face_count; j++) {
+				p_indices.push_back(current_vertex_count + (ir[j * 3 + 0]));
+				p_indices.push_back(current_vertex_count + (ir[j * 3 + 2]));
+				p_indices.push_back(current_vertex_count + (ir[j * 3 + 1]));
 			}
 		}
 		else {
 			face_count = mesh_vertices.size() / 3;
-			for (int i = 0; i < face_count; i++) {
-				Vector3 p_vec3 = p_xform->xform(vr[i * 3 + 0]);
+			for (int j = 0; j < face_count; j++) {
+				Vector3 p_vec3 = p_xform->xform(vr[j * 3 + 0]);
 				p_verticies.push_back(p_vec3.x);
 				p_verticies.push_back(p_vec3.y);
 				p_verticies.push_back(p_vec3.z);
-				p_vec3 = p_xform->xform(vr[i * 3 + 2]);
+				p_vec3 = p_xform->xform(vr[j * 3 + 2]);
 				p_verticies.push_back(p_vec3.x);
 				p_verticies.push_back(p_vec3.y);
 				p_verticies.push_back(p_vec3.z);
-				p_vec3 = p_xform->xform(vr[i * 3 + 1]);
+				p_vec3 = p_xform->xform(vr[j * 3 + 1]);
 				p_verticies.push_back(p_vec3.x);
 				p_verticies.push_back(p_vec3.y);
 				p_verticies.push_back(p_vec3.z);
 
-				p_indices.push_back(current_vertex_count + (i * 3 + 0));
-				p_indices.push_back(current_vertex_count + (i * 3 + 1));
-				p_indices.push_back(current_vertex_count + (i * 3 + 2));
+				p_indices.push_back(current_vertex_count + (j * 3 + 0));
+				p_indices.push_back(current_vertex_count + (j * 3 + 1));
+				p_indices.push_back(current_vertex_count + (j * 3 + 2));
 			}
 		}
 	}
@@ -404,16 +402,23 @@ Ref<ArrayMesh> DetourNavigationMesh::get_debug_mesh() {
 	const dtNavMesh* navm = detour_navmesh;
 	for (int i = 0; i < navm->getMaxTiles(); i++) {
 		const dtMeshTile* tile = navm->getTile(i);
-		if (!tile || !tile->header)
+		if (!tile || !tile->header) {
 			continue;
+		}
 		for (int j = 0; j < tile->header->polyCount; j++) {
 			dtPoly* poly = tile->polys + j;
 			if (poly->getType() != DT_POLYTYPE_OFFMESH_CONNECTION) {
 				for (int k = 0; k < poly->vertCount; k++) {
-					lines.push_back(*reinterpret_cast<const Vector3*>(
-						&tile->verts[poly->verts[k] * 3]));
-					lines.push_back(*reinterpret_cast<const Vector3*>(
-						&tile->verts[poly->verts[(k + 1) % poly->vertCount] * 3]));
+					lines.push_back(
+						*reinterpret_cast<const Vector3*>(
+							&tile->verts[poly->verts[k] * 3]
+						)
+					);
+					lines.push_back(
+						*reinterpret_cast<const Vector3*>(
+							&tile->verts[poly->verts[(k + 1) % poly->vertCount] * 3]
+						)
+					);
 				}
 			}
 			else if (poly->getType() == DT_POLYTYPE_OFFMESH_CONNECTION) {

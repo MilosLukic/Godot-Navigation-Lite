@@ -12,7 +12,9 @@ DetourNavigationMeshInstance::DetourNavigationMeshInstance(){
 }
 
 DetourNavigationMeshInstance::~DetourNavigationMeshInstance(){
-	// add your cleanup here
+	if (navmesh) {
+		navmesh->clear_debug_mesh();
+	}
 }
 
 void DetourNavigationMeshInstance::_init() {
@@ -22,7 +24,14 @@ void DetourNavigationMeshInstance::_init() {
 
 void DetourNavigationMeshInstance::_ready() {
 	DetourNavigationMeshInstance::build_mesh();
+	DetourNavigationMeshInstance::find_path();
+}
 
+void DetourNavigationMeshInstance::find_path() {
+	DetourNavigationQuery *nav_query = new DetourNavigationQuery();
+	nav_query->init(navmesh, get_global_transform());
+	Dictionary result = nav_query->find_path(Vector3(0.f, 0.f, 0.f), Vector3(11.f, 0.3f, 11.f), Vector3(50.0f, 3.f, 50.f), new DetourNavigationQueryFilter());
+	Godot::print(result["points"]);
 }
 
 void DetourNavigationMeshInstance::build_mesh() {
@@ -75,6 +84,8 @@ void DetourNavigationMeshInstance::build_mesh() {
 	params.tileHeight = tile_edge_length;
 	params.maxTiles = max_tiles;
 	params.maxPolys = max_polys;
+	params.orig[0] = params.orig[1] = params.orig[2] = 0.f;
+
 	
 	/* Initialize and allocate place for detour navmesh instance */
 	if (!navmesh->alloc()) {
@@ -91,18 +102,16 @@ void DetourNavigationMeshInstance::build_mesh() {
 	unsigned int result = navmesh->build_tiles(
 		xform, mesh_instances, 0, 0, navmesh->get_num_tiles_x() - 1, navmesh->get_num_tiles_z() - 1
 	);
-
+	//Godot::print(std::to_string(result).c_str()); 
+	/* TODO: Remove this mesh instance on deinit */
 	if (navmesh) {
 		navmesh->clear_debug_mesh();
 		MeshInstance *dm = MeshInstance::_new();
-		if (navmesh)
+		if (navmesh) {
 			dm->set_mesh(navmesh->get_debug_mesh());
+		}
 		dm->set_material_override(get_debug_navigation_material());
 		add_child(dm);
-
-		Godot::print("Rebuilding debug navmesh");
-		//
-		//Object::cast_to<MeshInstance>(debug_view)->set_mesh(mesh->get_debug_mesh());
 	}
 
 	Godot::print("Successfully inited navmesh");
@@ -116,7 +125,7 @@ Ref<Material> DetourNavigationMeshInstance::get_debug_navigation_material() {
 	line_material->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
 	line_material->set_flag(SpatialMaterial::FLAG_SRGB_VERTEX_COLOR, true);
 	line_material->set_flag(SpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-	line_material->set_albedo(Color(0.1, 1.0, 0.7, 0.4));
+	line_material->set_albedo(Color(0.1f, 1.0f, 0.7f, 0.4f));
 
 	return line_material;
 }

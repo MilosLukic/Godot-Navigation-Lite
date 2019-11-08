@@ -11,6 +11,7 @@
 #include <SceneTree.hpp>
 #include <MeshInstance.hpp>
 #include <SpatialMaterial.hpp>
+#include "navigation_query.h"
 #include "navigation_mesh.h"
 #include "Recast.h"
 #include "DetourNavMesh.h"
@@ -38,6 +39,8 @@ namespace godot {
 
 		void _ready();
 		void build_mesh();
+		void find_path();
+
 		Ref<Material> get_debug_navigation_material();
 
 		enum partition_t {
