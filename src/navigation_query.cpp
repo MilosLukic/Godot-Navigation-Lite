@@ -45,13 +45,12 @@ Dictionary DetourNavigationQuery::find_path(
 	Vector3 local_end = inverse.xform(end);
 	Dictionary result = _find_path(local_start, local_end, extents, filter);
 	
-	PoolVector3Array points = result["points"];
-	PoolVector3Array::Write w = points.write();
+	PoolVector3Array *points =  &((PoolVector3Array) result["points"]);
+	PoolVector3Array::Write w = points->write();
 
-	for (int i = 0; i < points.size(); i++) {
-		w[i] = transform.xform(points[i]);
+	for (int i = 0; i < points->size(); i++) {
+		w[i] = transform.xform((*points)[i]);
 	}
-	result["points"] = points;
 	return result;
 }
 

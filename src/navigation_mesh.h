@@ -18,7 +18,10 @@
 namespace godot {
 
 	class DetourNavigationMesh{
-
+	private:
+		std::vector<Ref<Mesh>> input_meshes;
+		std::vector<Transform> input_transforms;
+		std::vector<AABB> input_aabbs;
 	public:
 		DetourNavigationMesh();
 		~DetourNavigationMesh();
@@ -51,13 +54,28 @@ namespace godot {
 		AABB bounding_box;
 		dtNavMesh* detour_navmesh;
 		Ref<ArrayMesh> debug_mesh;
+		Transform global_transform;
+
+		void init_mesh_data(
+			std::vector<Ref<Mesh>>& meshes, std::vector<Transform>& transforms,
+			std::vector<AABB>& aabbs, Transform& g_transform
+		) {
+			input_meshes = meshes;
+			input_transforms = transforms;
+			input_aabbs = aabbs;
+			global_transform = g_transform;
+		}
 
 		dtNavMesh* get_detour_navmesh() {
 			return detour_navmesh;
 		}
 
 		void clear_debug_mesh() {
-			debug_mesh.unref();
+			if (debug_mesh.is_valid()) {
+				debug_mesh.unref();
+
+				Godot::print("Cleared debug mesh");
+			}
 		}
 
 		inline real_t get_tile_edge_length() const {
@@ -69,24 +87,16 @@ namespace godot {
 			num_tiles_z = (zSize + tile_size - 1) / tile_size;
 		};
 
-		unsigned int build_tiles(
-			const Transform& xform, 
-			const std::list<MeshInstance*>& mesh_instances,
-			int x1, int y1, int x2, int y2
-		);
+		unsigned int build_tiles(int x1, int y1, int x2, int y2);
 
-		bool build_tile(
-			const Transform& xform,
-			const std::list<MeshInstance*>& mesh_instances,
-			int x, int z
-		);
+		bool build_tile(int x, int z);
 
 		void DetourNavigationMesh::get_tile_bounding_box(
 			int x, int z, Vector3& bmin, Vector3& bmax
 		);
 
 		void add_meshdata(
-			MeshInstance* mesh_instance, std::vector<float>& p_verticies, std::vector<int>& p_indices
+			int mesh_index, std::vector<float>& p_verticies, std::vector<int>& p_indices
 		);
 
 		Ref<ArrayMesh> get_debug_mesh();

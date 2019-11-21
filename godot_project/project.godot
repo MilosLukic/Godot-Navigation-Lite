@@ -23,6 +23,11 @@ config/icon="res://icon.png"
 
 enabled=PoolStringArray( "DetourNavigation" )
 
+[layer_names]
+
+3d_render/layer_1="navigation_group"
+3d_physics/layer_1="navigation_group"
+
 [rendering]
 
 environment/default_environment="res://default_env.tres"

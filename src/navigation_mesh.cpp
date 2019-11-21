@@ -38,8 +38,12 @@ DetourNavigationMesh::DetourNavigationMesh(){
 }
 
 DetourNavigationMesh::~DetourNavigationMesh() {
-	Godot::print("Detour navigation mesh deleted.");
-	dtFreeNavMesh((dtNavMesh*) detour_navmesh);
+	for (Ref<ArrayMesh> m : input_meshes) {
+		m.unref();
+	}
+	
+	clear_debug_mesh();
+	release_navmesh();
 }
 
 bool DetourNavigationMesh::alloc() {
@@ -63,17 +67,16 @@ void DetourNavigationMesh::release_navmesh() {
 	num_tiles_x = 0;
 	num_tiles_z = 0;
 	bounding_box = AABB();
+	Godot::print("Released navmesh");
 }
 
 unsigned int DetourNavigationMesh::build_tiles(
-	const Transform& xform,
-	const std::list<MeshInstance*>& mesh_instances,
 	int x1, int z1, int x2, int z2
 ) {
 	unsigned ret = 0;
 	for (int z = z1; z <= z2; z++) {
 		for (int x = x1; x <= x2; x++) {
-			if (build_tile(xform, mesh_instances, x, z)) {
+			if (build_tile(x, z)) {
 				ret++;
 			}
 		}
@@ -82,18 +85,13 @@ unsigned int DetourNavigationMesh::build_tiles(
 	return ret;
 }
 
-bool DetourNavigationMesh::build_tile(
-	const Transform& xform,
-	const std::list<MeshInstance*>& mesh_instances,
-	int x, int z
-) {
+bool DetourNavigationMesh::build_tile(int x, int z) {
 	Vector3 bmin, bmax;
 	get_tile_bounding_box(x, z, bmin, bmax);
 	dtNavMesh* nav = get_detour_navmesh();
 
 	nav->removeTile(nav->getTileRefAt(x, z, 0), NULL, NULL);
 	rcConfig config;
-
 	config.cs = cell_size;
 	config.ch = cell_height;
 	config.walkableSlopeAngle = agent_max_slope;
@@ -130,19 +128,20 @@ bool DetourNavigationMesh::build_tile(
 	std::vector<float> points;
 	std::vector<int> indices;
 
-	Transform base = xform.inverse();
+	Transform base = global_transform.inverse();
 
-	for (auto const& mesh_instance : mesh_instances) {
-		if (!mesh_instance->get_mesh().is_valid())
+
+	for (int i = 0; i < input_meshes.size(); i++) {
+		if (!input_meshes[i].is_valid()) {
 			continue;
-		AABB mesh_aabb = mesh_instance->get_aabb();
-		Transform mxform = base * mesh_instance->get_global_transform();
-		mesh_aabb = mxform.xform(mesh_aabb);
+		}
+		Transform mxform = base * input_transforms[i];
+		AABB mesh_aabb = mxform.xform(input_aabbs[i]);
 		if (!mesh_aabb.intersects_inclusive(expbox) &&
 			!expbox.encloses(mesh_aabb)) {
 			continue;
 		}
-		add_meshdata(mesh_instance, points, indices);
+		add_meshdata(i, points, indices);
 	}
 
 	if (points.size() == 0 || indices.size() == 0) {
@@ -322,14 +321,15 @@ void DetourNavigationMesh::get_tile_bounding_box(
 }
 
 void DetourNavigationMesh::add_meshdata(
-	MeshInstance *mesh_instance, std::vector<float>& p_verticies, std::vector<int>& p_indices
+	int mesh_index, std::vector<float>& p_verticies, std::vector<int>& p_indices
 ) {
-	Transform* p_xform = &(mesh_instance->get_global_transform());
-	Ref<ArrayMesh> p_mesh = (ArrayMesh*) *(mesh_instance->get_mesh());
+	Transform* p_xform = &(input_transforms[mesh_index]);
+	Ref<ArrayMesh> p_mesh = input_meshes[mesh_index];
 	int current_vertex_count = 0;
 
 	for (int i = 0; i < p_mesh->get_surface_count(); i++) {
 		current_vertex_count = p_verticies.size() / 3;
+
 
 		if (p_mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES)
 			continue;
@@ -347,9 +347,7 @@ void DetourNavigationMesh::add_meshdata(
 		int face_count = index_count / 3;
 
 		Array a = p_mesh->surface_get_arrays(i);
-
-		PoolVector3Array mesh_vertices = a[Mesh::ARRAY_VERTEX];
-		PoolVector3Array::Read vr = mesh_vertices.read();
+		PoolVector3Array mesh_vertices(a[Mesh::ARRAY_VERTEX]);
 
 		if (p_mesh->surface_get_format(i) & Mesh::ARRAY_FORMAT_INDEX) {
 
@@ -357,7 +355,7 @@ void DetourNavigationMesh::add_meshdata(
 			PoolIntArray::Read ir = mesh_indices.read();
 
 			for (int j = 0; j < mesh_vertices.size(); j++) {
-				Vector3 p_vec3 = p_xform->xform(vr[j]);
+				Vector3 p_vec3 = p_xform->xform(mesh_vertices[j]);
 				p_verticies.push_back(p_vec3.x);
 				p_verticies.push_back(p_vec3.y);
 				p_verticies.push_back(p_vec3.z);
@@ -368,19 +366,18 @@ void DetourNavigationMesh::add_meshdata(
 				p_indices.push_back(current_vertex_count + (ir[j * 3 + 2]));
 				p_indices.push_back(current_vertex_count + (ir[j * 3 + 1]));
 			}
-		}
-		else {
+		} else {
 			face_count = mesh_vertices.size() / 3;
 			for (int j = 0; j < face_count; j++) {
-				Vector3 p_vec3 = p_xform->xform(vr[j * 3 + 0]);
+				Vector3 p_vec3 = p_xform->xform(mesh_vertices[j * 3 + 0]);
 				p_verticies.push_back(p_vec3.x);
 				p_verticies.push_back(p_vec3.y);
 				p_verticies.push_back(p_vec3.z);
-				p_vec3 = p_xform->xform(vr[j * 3 + 2]);
+				p_vec3 = p_xform->xform(mesh_vertices[j * 3 + 2]);
 				p_verticies.push_back(p_vec3.x);
 				p_verticies.push_back(p_vec3.y);
 				p_verticies.push_back(p_vec3.z);
-				p_vec3 = p_xform->xform(vr[j * 3 + 1]);
+				p_vec3 = p_xform->xform(mesh_vertices[j * 3 + 1]);
 				p_verticies.push_back(p_vec3.x);
 				p_verticies.push_back(p_vec3.y);
 				p_verticies.push_back(p_vec3.z);
@@ -394,10 +391,10 @@ void DetourNavigationMesh::add_meshdata(
 }
 
 Ref<ArrayMesh> DetourNavigationMesh::get_debug_mesh() {
-	if (debug_mesh.is_valid())
+	if (debug_mesh.is_valid()) {
 		return debug_mesh;
-
-	Godot::print("Building debug navmesh");
+	}
+	
 	std::list<Vector3> lines;
 	const dtNavMesh* navm = detour_navmesh;
 	for (int i = 0; i < navm->getMaxTiles(); i++) {
@@ -456,6 +453,5 @@ Ref<ArrayMesh> DetourNavigationMesh::get_debug_mesh() {
 	arr[Mesh::ARRAY_VERTEX] = varr;
 
 	debug_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_LINES, arr);
-
 	return debug_mesh;
 }
