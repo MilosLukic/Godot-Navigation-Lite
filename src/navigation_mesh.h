@@ -19,13 +19,7 @@
 namespace godot {
 	struct NavMeshProcess;
 	class DetourNavigationMesh{
-		/* TILE CACHE */
-		dtTileCache* tile_cache;
-		dtTileCacheAlloc* tile_cache_alloc;
-		dtTileCacheCompressor* tile_cache_compressor;
-		dtTileCacheMeshProcess* mesh_process;
-		friend struct NavMeshProcess;
-	private:
+	protected:
 		std::vector<Ref<Mesh>> input_meshes;
 		std::vector<Transform> input_transforms;
 		std::vector<AABB> input_aabbs;
@@ -57,17 +51,6 @@ namespace godot {
 		SETGET(detail_sample_distance, real_t);
 		SETGET(detail_sample_max_error, real_t);
 
-		/* TILE CACHE */
-		int max_obstacles;
-		int max_layers;
-
-		std::vector<int> tile_queue;
-		std::vector<Vector3> offmesh_vertices;
-		std::vector<float> offmesh_radii;
-		std::vector<unsigned short> offmesh_flags;
-		std::vector<unsigned char> offmesh_areas;
-		std::vector<unsigned char> offmesh_dir;
-
 		SETGET(padding, Vector3)
 		AABB bounding_box;
 
@@ -92,8 +75,8 @@ namespace godot {
 
 		void clear_debug_mesh() {
 			if (debug_mesh.is_valid()) {
+				// debug_mesh->free();
 				debug_mesh.unref();
-
 				Godot::print("Cleared debug mesh");
 			}
 		}
@@ -120,21 +103,6 @@ namespace godot {
 		);
 
 		Ref<ArrayMesh> get_debug_mesh();
-
-		/* Tile cache */
-		bool alloc_tile_cache();
-		bool init_tile_cache(dtTileCacheParams* param);
-
-		dtTileCache* get_tile_cache() {
-			return tile_cache;
-		}
-		dtTileCacheCompressor* get_tile_cache_compressor() {
-			return tile_cache_compressor;
-		}
-
-		unsigned int add_obstacle(const Vector3& pos, real_t radius, real_t height);
-		void remove_obstacle(unsigned int id);
-
 	};
 
 }

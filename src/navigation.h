@@ -26,6 +26,7 @@
 #include <CollisionShape.hpp>
 #include "navigation_query.h"
 #include "navigation_mesh.h"
+#include "tilecache_navmesh.h"
 #include "Recast.h"
 #include "DetourNavMesh.h"
 #include "RecastAlloc.h"
@@ -62,7 +63,7 @@ namespace godot {
 		);
 		
 	public:
-		DetourNavigationMesh *navmesh = nullptr;
+		DetourNavigationMeshCached *navmesh = nullptr;
 		MeshInstance* debug_mesh_instance = nullptr;
 		static void _register_methods();
 

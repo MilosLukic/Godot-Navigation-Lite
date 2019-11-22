@@ -43,12 +43,12 @@ void DetourNavigationMeshInstance::_ready() {
 		DetourNavigationMeshInstance::build_debug_mesh();
 	}
 
-
-
 	Godot::print("Adding obstacle");
-	unsigned int id = navmesh->add_obstacle(Vector3(-5.f, 0.f, -5.f), 4.f, 3.f);
-	dtTileCache* tile_cache = navmesh->get_tile_cache();
-	tile_cache->update(0.1f, navmesh->get_detour_navmesh());
+
+	DetourNavigationMeshCached* cached_navm = (DetourNavigationMeshCached *)navmesh;
+	unsigned int id = cached_navm->add_obstacle(Vector3(-5.f, 0.f, -5.f), 4.f, 3.f);
+	dtTileCache* tile_cache = cached_navm->get_tile_cache();
+	tile_cache->update(0.1f, cached_navm->get_detour_navmesh());
 	build_debug_mesh();
 	DetourNavigationMeshInstance::find_path();
 }
@@ -212,7 +212,7 @@ dtNavMesh* DetourNavigationMeshInstance::load_mesh() {
 		return 0;
 	}
 	else {
-		navmesh = new DetourNavigationMesh();
+		navmesh = new DetourNavigationMeshCached();
 		navmesh->detour_navmesh = dt_navmesh;
 		return dt_navmesh;
 	}
@@ -232,7 +232,8 @@ void DetourNavigationMeshInstance::build_mesh() {
 	DetourNavigationMeshInstance::collect_mesh_instances(get_children(), meshes, transforms, aabbs);
 	Godot::print("Building navmesh...");
 
-	navmesh = new DetourNavigationMesh();
+	DetourNavigationMeshCached* cached_navm = new DetourNavigationMeshCached();
+	navmesh = cached_navm;
 	for (int i = 0; i < meshes.size(); i++){
 		navmesh->bounding_box.merge_with(
 			transforms[i].xform(aabbs[i])
@@ -291,24 +292,24 @@ void DetourNavigationMeshInstance::build_mesh() {
 	dtTileCacheParams tile_cache_params;
 	memset(&tile_cache_params, 0, sizeof(tile_cache_params));
 	rcVcopy(tile_cache_params.orig, &bmin.coord[0]);
-	tile_cache_params.ch = navmesh->cell_height;
-	tile_cache_params.cs = navmesh->cell_size;
-	tile_cache_params.width = navmesh->tile_size;
-	tile_cache_params.height = navmesh->tile_size;
-	tile_cache_params.maxSimplificationError = navmesh->edge_max_error;
+	tile_cache_params.ch = cached_navm->cell_height;
+	tile_cache_params.cs = cached_navm->cell_size;
+	tile_cache_params.width = cached_navm->tile_size;
+	tile_cache_params.height = cached_navm->tile_size;
+	tile_cache_params.maxSimplificationError = cached_navm->edge_max_error;
 	tile_cache_params.maxTiles =
-		navmesh->get_num_tiles_x() * navmesh->get_num_tiles_z() * navmesh->max_layers;
-	tile_cache_params.maxObstacles = navmesh->max_obstacles;
-	tile_cache_params.walkableClimb = navmesh->agent_max_climb;
-	tile_cache_params.walkableHeight = navmesh->agent_height;
-	tile_cache_params.walkableRadius = navmesh->agent_radius;
-	if (!navmesh->alloc_tile_cache())
+		cached_navm->get_num_tiles_x() * cached_navm->get_num_tiles_z() * cached_navm->max_layers;
+	tile_cache_params.maxObstacles = cached_navm->max_obstacles;
+	tile_cache_params.walkableClimb = cached_navm->agent_max_climb;
+	tile_cache_params.walkableHeight = cached_navm->agent_height;
+	tile_cache_params.walkableRadius = cached_navm->agent_radius;
+	if (!cached_navm->alloc_tile_cache())
 		return;
-	if (!navmesh->init_tile_cache(&tile_cache_params))
+	if (!cached_navm->init_tile_cache(&tile_cache_params))
 		return;
 
 	/* We start building tiles */
-	unsigned int result = navmesh->build_tiles(
+	unsigned int result = cached_navm->build_tiles(
 		0, 0, navmesh->get_num_tiles_x() - 1, navmesh->get_num_tiles_z() - 1
 	);
 	//Godot::print(std::to_string(result).c_str()); 
@@ -344,13 +345,14 @@ void DetourNavigationMeshInstance::_notification(int p_what) {
 		/* Tile Cache*/
 		case NOTIFICATION_PROCESS: {
 			float delta = get_process_delta_time();
-			if (navmesh != nullptr) {
-				dtTileCache* tile_cache = navmesh->get_tile_cache();
+			DetourNavigationMeshCached* cached_navm = navmesh;
+			if (cached_navm != nullptr) {
+				dtTileCache* tile_cache = cached_navm->get_tile_cache();
 				if (tile_cache) {
-					tile_cache->update(delta, navmesh->get_detour_navmesh());
+					tile_cache->update(delta, cached_navm->get_detour_navmesh());
 					if (true) { // If debug
 						Object::cast_to<MeshInstance>(debug_mesh_instance)
-							->set_mesh(navmesh->get_debug_mesh());
+							->set_mesh(cached_navm->get_debug_mesh());
 					}
 						
 				}
