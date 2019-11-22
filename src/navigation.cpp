@@ -32,9 +32,8 @@ void DetourNavigationMeshInstance::_init() {
 void DetourNavigationMeshInstance::_ready() {
 	parsed_geometry_type = PARSED_GEOMETRY_MESH_INSTANCES;
 	collision_mask |= 1;
-
-	DetourNavigationMeshInstance::load_mesh();
-	if (navmesh == nullptr) {
+	//DetourNavigationMeshInstance::load_mesh();
+	if (true || navmesh == nullptr) {
 		Godot::print("Failed loading navmesh. Starting building it from scratch...");
 		DetourNavigationMeshInstance::build_mesh();
 		DetourNavigationMeshInstance::save_mesh();
@@ -44,13 +43,21 @@ void DetourNavigationMeshInstance::_ready() {
 		DetourNavigationMeshInstance::build_debug_mesh();
 	}
 
-	//DetourNavigationMeshInstance::find_path();
+
+
+	Godot::print("Adding obstacle");
+	unsigned int id = navmesh->add_obstacle(Vector3(-5.f, 0.f, -5.f), 4.f, 3.f);
+	dtTileCache* tile_cache = navmesh->get_tile_cache();
+	tile_cache->update(0.1f, navmesh->get_detour_navmesh());
+	build_debug_mesh();
+	DetourNavigationMeshInstance::find_path();
 }
 
 void DetourNavigationMeshInstance::find_path() {
 	DetourNavigationQuery *nav_query = new DetourNavigationQuery();
 	nav_query->init(navmesh, get_global_transform());
-	Dictionary result = nav_query->find_path(Vector3(0.f, 0.f, 0.f), Vector3(11.f, 0.3f, 11.f), Vector3(50.0f, 3.f, 50.f), new DetourNavigationQueryFilter());
+	//Dictionary result = nav_query->find_path(Vector3(0.f, 0.f, 0.f), Vector3(11.f, 0.3f, 11.f), Vector3(50.0f, 3.f, 50.f), new DetourNavigationQueryFilter());
+	Dictionary result = nav_query->find_path(Vector3(3.f, 0.f, -15.f), Vector3(-5.6f, 0.3f, 2.8f), Vector3(50.0f, 3.f, 50.f), new DetourNavigationQueryFilter());
 	Godot::print(result["points"]);
 	result.clear();
 }
@@ -215,6 +222,7 @@ void DetourNavigationMeshInstance::save_mesh() {
 	Godot::print("Saving navmesh...");
 	FileManager::saveAll("abc.bin", navmesh->detour_navmesh);
 	Godot::print("Navmesh successfully saved.");
+
 }
 
 void DetourNavigationMeshInstance::build_mesh() {
@@ -278,6 +286,27 @@ void DetourNavigationMeshInstance::build_mesh() {
 		Godot::print("Failed to initialize detour navmesh.");
 		return;
 	}
+
+	/* Tile Cache*/
+	dtTileCacheParams tile_cache_params;
+	memset(&tile_cache_params, 0, sizeof(tile_cache_params));
+	rcVcopy(tile_cache_params.orig, &bmin.coord[0]);
+	tile_cache_params.ch = navmesh->cell_height;
+	tile_cache_params.cs = navmesh->cell_size;
+	tile_cache_params.width = navmesh->tile_size;
+	tile_cache_params.height = navmesh->tile_size;
+	tile_cache_params.maxSimplificationError = navmesh->edge_max_error;
+	tile_cache_params.maxTiles =
+		navmesh->get_num_tiles_x() * navmesh->get_num_tiles_z() * navmesh->max_layers;
+	tile_cache_params.maxObstacles = navmesh->max_obstacles;
+	tile_cache_params.walkableClimb = navmesh->agent_max_climb;
+	tile_cache_params.walkableHeight = navmesh->agent_height;
+	tile_cache_params.walkableRadius = navmesh->agent_radius;
+	if (!navmesh->alloc_tile_cache())
+		return;
+	if (!navmesh->init_tile_cache(&tile_cache_params))
+		return;
+
 	/* We start building tiles */
 	unsigned int result = navmesh->build_tiles(
 		0, 0, navmesh->get_num_tiles_x() - 1, navmesh->get_num_tiles_z() - 1
@@ -287,6 +316,47 @@ void DetourNavigationMeshInstance::build_mesh() {
 	Godot::print("Successfully initialized navmesh.");
 	DetourNavigationMeshInstance::build_debug_mesh();
 	
+}
+
+void DetourNavigationMeshInstance::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			if (get_tree()->is_debugging_navigation_hint()) {
+				MeshInstance* dm = MeshInstance::_new();
+				if (navmesh != nullptr) {
+					dm->set_mesh(navmesh->get_debug_mesh());
+				}					
+				dm->set_material_override(get_debug_navigation_material());
+				add_child(dm);
+				debug_mesh_instance = dm;
+			}
+			set_process(true);
+		} break;
+		case NOTIFICATION_EXIT_TREE: {
+			if (debug_mesh_instance) {
+				debug_mesh_instance->free();
+				debug_mesh_instance->queue_free();
+				debug_mesh_instance = NULL;
+			}
+			/* Tile Cache*/
+			set_process(false);
+		} break;
+		/* Tile Cache*/
+		case NOTIFICATION_PROCESS: {
+			float delta = get_process_delta_time();
+			if (navmesh != nullptr) {
+				dtTileCache* tile_cache = navmesh->get_tile_cache();
+				if (tile_cache) {
+					tile_cache->update(delta, navmesh->get_detour_navmesh());
+					if (true) { // If debug
+						Object::cast_to<MeshInstance>(debug_mesh_instance)
+							->set_mesh(navmesh->get_debug_mesh());
+					}
+						
+				}
+			}
+		} break;
+	}
 }
 
 void DetourNavigationMeshInstance::build_debug_mesh() {

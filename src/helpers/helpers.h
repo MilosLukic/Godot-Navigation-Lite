@@ -7,6 +7,10 @@
 	void set_##x(t v) { x = v; } \
 	t get_##x() { return x; }
 
+#ifndef MAX
+#define MAX(m_a, m_b) (((m_a) > (m_b)) ? (m_a) : (m_b))
+#endif
+
 inline unsigned int ilog2(unsigned int v) {
 	unsigned int r;
 	unsigned int shift;

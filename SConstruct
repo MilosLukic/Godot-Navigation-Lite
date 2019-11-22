@@ -103,7 +103,7 @@ env.Append(CPPPATH=[
 	'src/helpers/',
 	'src/',
 	])
-sources =  Glob('src/*.cpp') + Glob('src/detour_lib/src/*.cpp') + Glob('src/recast_lib/src/*.cpp') +  Glob('src/helpers/*.cpp')
+sources =  Glob('src/*.cpp') + Glob('src/detour_lib/src/*.cpp') + Glob('src/recast_lib/src/*.cpp') +  Glob('src/helpers/*.cpp')  +  Glob('src/detour_lib/src/*.c')
 
 library = env.SharedLibrary(target=env['target_path'] + env['target_name'] , source=sources)
 

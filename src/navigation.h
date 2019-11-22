@@ -76,6 +76,7 @@ namespace godot {
 		void find_path();
 		void save_mesh();
 		void build_debug_mesh();
+		void _notification(int p_what);
 		dtNavMesh *load_mesh();
 		
 		Ref<Material> get_debug_navigation_material();
