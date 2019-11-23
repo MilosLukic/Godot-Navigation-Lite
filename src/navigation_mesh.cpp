@@ -39,9 +39,8 @@ DetourNavigationMesh::DetourNavigationMesh(){
 
 DetourNavigationMesh::~DetourNavigationMesh() {
 	for (Ref<ArrayMesh> m : input_meshes) {
-		m.unref();
+			m.unref();
 	}
-	
 	clear_debug_mesh();
 	release_navmesh();
 }
@@ -84,24 +83,17 @@ unsigned int DetourNavigationMesh::build_tiles(
 	return ret;
 }
 
-bool DetourNavigationMesh::build_tile(int x, int z) {
-	Vector3 bmin, bmax;
-	get_tile_bounding_box(x, z, bmin, bmax);
-	dtNavMesh* nav = get_detour_navmesh();
-
-	nav->removeTile(nav->getTileRefAt(x, z, 0), NULL, NULL);
-
-	rcConfig config;
+void DetourNavigationMesh::init_rc_config(rcConfig& config, Vector3& bmin, Vector3& bmax) {
 	config.cs = cell_size;
 	config.ch = cell_height;
 	config.walkableSlopeAngle = agent_max_slope;
-	config.walkableHeight = (int) ceil(agent_height / config.ch);
-	config.walkableClimb = (int) floor(agent_max_climb / config.ch);
-	config.walkableRadius = (int) ceil(agent_radius / config.cs);
-	config.maxEdgeLen = (int) (edge_max_length / config.cs);
+	config.walkableHeight = (int)ceil(agent_height / config.ch);
+	config.walkableClimb = (int)floor(agent_max_climb / config.ch);
+	config.walkableRadius = (int)ceil(agent_radius / config.cs);
+	config.maxEdgeLen = (int)(edge_max_length / config.cs);
 	config.maxSimplificationError = edge_max_error;
-	config.minRegionArea = (int) sqrtf(region_min_size);
-	config.mergeRegionArea = (int) sqrtf(region_merge_size);
+	config.minRegionArea = (int)sqrtf(region_min_size);
+	config.mergeRegionArea = (int)sqrtf(region_merge_size);
 	config.maxVertsPerPoly = 6;
 	config.tileSize = tile_size;
 	config.borderSize = config.walkableRadius + 3;
@@ -110,14 +102,19 @@ bool DetourNavigationMesh::build_tile(int x, int z) {
 	config.detailSampleDist =
 		detail_sample_distance < 0.9f ? 0.0f : cell_size * detail_sample_distance;
 	config.detailSampleMaxError = cell_height * detail_sample_max_error;
+
 	rcVcopy(config.bmin, &bmin.coord[0]);
 	rcVcopy(config.bmax, &bmax.coord[0]);
-
 	config.bmin[0] -= config.borderSize * config.cs;
 	config.bmin[2] -= config.borderSize * config.cs;
 	config.bmax[0] += config.borderSize * config.cs;
 	config.bmax[2] += config.borderSize * config.cs;
+}
 
+bool DetourNavigationMesh::init_tile_data(
+	rcConfig &config, Vector3 &bmin, Vector3 &bmax, std::vector<float> &points,
+	std::vector<int> &indices
+) {
 	/* Set the tile AABB */
 	AABB expbox(bmin, bmax - bmin);
 	expbox.position.x -= config.borderSize * config.cs;
@@ -125,11 +122,10 @@ bool DetourNavigationMesh::build_tile(int x, int z) {
 	expbox.size.x += 2.0 * config.borderSize * config.cs;
 	expbox.size.z += 2.0 * config.borderSize * config.cs;
 
-	std::vector<float> points;
-	std::vector<int> indices;
 
 	Transform base = global_transform.inverse();
 
+	Godot::print("starting meshdata addin");
 	for (int i = 0; i < input_meshes.size(); i++) {
 		if (!input_meshes[i].is_valid()) {
 			continue;
@@ -140,6 +136,7 @@ bool DetourNavigationMesh::build_tile(int x, int z) {
 			!expbox.encloses(mesh_aabb)) {
 			continue;
 		}
+		Godot::print("adding meshdata!!!!!!!!!");
 		add_meshdata(i, points, indices);
 	}
 
@@ -147,14 +144,21 @@ bool DetourNavigationMesh::build_tile(int x, int z) {
 		Godot::print("No mesh points and indices found...");
 		return true;
 	}
+	return false;
+}
 
-	// Create heightfield
+bool DetourNavigationMesh::init_heightfield_context(
+	rcConfig& config,  rcCompactHeightfield* compact_heightfield, 
+	rcContext* ctx, std::vector<float>& points, std::vector<int>& indices
+) {
+	// returns success value
+
 	rcHeightfield* heightfield = rcAllocHeightfield();
+
 	if (!heightfield) {
 		ERR_PRINT("Failed to allocate height field");
 		return false;
 	}
-	rcContext* ctx = new rcContext(true);
 	if (!rcCreateHeightfield(
 		ctx, *heightfield,
 		config.width, config.height, config.bmin,
@@ -189,7 +193,6 @@ bool DetourNavigationMesh::build_tile(int x, int z) {
 		ctx, config.walkableHeight, *heightfield
 	);
 
-	rcCompactHeightfield* compact_heightfield = rcAllocCompactHeightfield();
 	if (!compact_heightfield) {
 		ERR_PRINT("Failed to allocate compact height field.");
 		return false;
@@ -219,7 +222,32 @@ bool DetourNavigationMesh::build_tile(int x, int z) {
 		) {
 		return false;
 	}
-	
+	return true;
+}
+
+bool DetourNavigationMesh::build_tile(int x, int z) {
+	Vector3 bmin, bmax;
+	get_tile_bounding_box(x, z, bmin, bmax);
+	dtNavMesh* nav = get_detour_navmesh();
+
+	nav->removeTile(nav->getTileRefAt(x, z, 0), NULL, NULL);
+
+	rcConfig config;
+	init_rc_config(config, bmin, bmax);
+
+	std::vector<float> points;
+	std::vector<int> indices;
+	if (init_tile_data(config, bmin, bmax, points, indices)) {
+		return true;
+	}
+
+	rcCompactHeightfield* compact_heightfield = rcAllocCompactHeightfield();
+	rcContext* ctx = new rcContext(true);
+
+	if (!init_heightfield_context(config, compact_heightfield, ctx, points, indices)) {
+		return false;
+	}
+
 	// Create ContourSet 
 	rcContourSet* contour_set = rcAllocContourSet();
 	if (!contour_set) {
@@ -344,7 +372,6 @@ void DetourNavigationMesh::add_meshdata(
 		ERR_CONTINUE((index_count == 0 || (index_count % 3) != 0));
 
 		int face_count = index_count / 3;
-
 		Array a = p_mesh->surface_get_arrays(i);
 		PoolVector3Array mesh_vertices(a[Mesh::ARRAY_VERTEX]);
 
@@ -438,6 +465,7 @@ Ref<ArrayMesh> DetourNavigationMesh::get_debug_mesh() {
 		}
 	}
 
+	debug_mesh = Ref<ArrayMesh>(ArrayMesh::_new());
 	PoolVector3Array varr;
 	varr.resize(lines.size());
 	PoolVector3Array::Write w = varr.write();
@@ -446,7 +474,6 @@ Ref<ArrayMesh> DetourNavigationMesh::get_debug_mesh() {
 		w[idx++] = vec;
 	}
 
-	debug_mesh = Ref<ArrayMesh>(ArrayMesh::_new());
 
 	Array arr;
 	arr.resize(Mesh::ARRAY_MAX);

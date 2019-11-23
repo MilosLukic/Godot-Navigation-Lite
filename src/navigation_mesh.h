@@ -75,9 +75,8 @@ namespace godot {
 
 		void clear_debug_mesh() {
 			if (debug_mesh.is_valid()) {
-				// debug_mesh->free();
 				debug_mesh.unref();
-				Godot::print("Cleared debug mesh");
+				Godot::print("Cleared debug mesh.");
 			}
 		}
 
@@ -92,9 +91,21 @@ namespace godot {
 
 		unsigned int build_tiles(int x1, int y1, int x2, int y2);
 
+		void init_rc_config(rcConfig& config, Vector3& bmin, Vector3& bmax);
+
 		bool build_tile(int x, int z);
 
-		void DetourNavigationMesh::get_tile_bounding_box(
+		bool init_heightfield_context(
+			rcConfig& config, rcCompactHeightfield* compact_heightfield,
+			rcContext* ctx, std::vector<float>& points, std::vector<int>& indices
+		);
+
+		bool init_tile_data(
+			rcConfig& config, Vector3& bmin, Vector3& bmax, std::vector<float>& points,
+			std::vector<int>& indices
+		);
+
+		void get_tile_bounding_box(
 			int x, int z, Vector3& bmin, Vector3& bmax
 		);
 

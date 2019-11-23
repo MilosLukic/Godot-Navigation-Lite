@@ -48,9 +48,9 @@ void DetourNavigationMeshInstance::_ready() {
 	DetourNavigationMeshCached* cached_navm = (DetourNavigationMeshCached *)navmesh;
 	unsigned int id = cached_navm->add_obstacle(Vector3(-5.f, 0.f, -5.f), 4.f, 3.f);
 	dtTileCache* tile_cache = cached_navm->get_tile_cache();
-	tile_cache->update(0.1f, cached_navm->get_detour_navmesh());
-	build_debug_mesh();
-	DetourNavigationMeshInstance::find_path();
+	//tile_cache->update(0.1f, cached_navm->get_detour_navmesh());
+	//build_debug_mesh();
+	//DetourNavigationMeshInstance::find_path();
 }
 
 void DetourNavigationMeshInstance::find_path() {
