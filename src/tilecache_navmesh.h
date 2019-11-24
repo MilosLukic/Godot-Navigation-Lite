@@ -1,25 +1,13 @@
 #ifndef TILECACHE_NAVMESH_H
 #define TILECACHE_NAVMESH_H
 
-#include <list>
-#include <vector>
-#include <string>
-#include <iostream>
-#include <Godot.hpp>
-#include <MeshInstance.hpp>
-#include <Mesh.hpp>
-#include <ArrayMesh.hpp>
 #include "navigation_mesh.h"
-#include "helpers.h"
-#include "tilecache_helpers.h"
-#include "DetourNavMesh.h"
-#include "DetourNavMeshBuilder.h"
-#include "Recast.h"
 
 
 namespace godot {
 	struct NavMeshProcess;
 	class DetourNavigationMeshCached: public DetourNavigationMesh {
+		GODOT_CLASS(DetourNavigationMeshCached, Spatial);
 		/* TILE CACHE */
 		dtTileCache* tile_cache;
 		dtTileCacheAlloc* tile_cache_alloc;

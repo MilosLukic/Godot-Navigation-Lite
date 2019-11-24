@@ -6,19 +6,29 @@
 #include <string>
 #include <iostream>
 #include <Godot.hpp>
+#include <Spatial.hpp>
+#include <Geometry.hpp>
+#include <Node.hpp>
+#include <Ref.hpp>
+#include <SpatialMaterial.hpp>
+#include <SceneTree.hpp>
 #include <MeshInstance.hpp>
 #include <Mesh.hpp>
 #include <ArrayMesh.hpp>
+
 #include "helpers.h"
 #include "tilecache_helpers.h"
 #include "DetourNavMesh.h"
 #include "DetourNavMeshBuilder.h"
+#include "DetourTileCache.h"
 #include "Recast.h"
+#include "filemanager.h"
 
 
 namespace godot {
 	struct NavMeshProcess;
-	class DetourNavigationMesh{
+	class DetourNavigationMesh : public Spatial {
+		GODOT_CLASS(DetourNavigationMesh, Spatial);
 	protected:
 		std::vector<Ref<Mesh>> input_meshes;
 		std::vector<Transform> input_transforms;
@@ -27,10 +37,24 @@ namespace godot {
 		DetourNavigationMesh();
 		~DetourNavigationMesh();
 
+		void _init();
+		void _ready();
+		void build_navmesh();
+		static void _register_methods();
+
 		bool alloc();
 		bool init(dtNavMeshParams* params);
 		void release_navmesh();
 		bool unsigned_int();
+
+		dtNavMesh* load_mesh();
+		void save_mesh();
+
+		void build_debug_mesh();
+		void find_path();
+		Ref<Material> get_debug_navigation_material();
+		virtual dtTileCache* get_tile_cache() { return nullptr; }
+		MeshInstance* debug_mesh_instance = nullptr;
 
 		SETGET(initialized, bool)
 		SETGET(num_tiles_x, int)
@@ -50,10 +74,14 @@ namespace godot {
 		SETGET(edge_max_error, real_t);
 		SETGET(detail_sample_distance, real_t);
 		SETGET(detail_sample_max_error, real_t);
-
 		SETGET(padding, Vector3)
-		AABB bounding_box;
 
+		enum partition_t {
+			PARTITION_WATERSHED,
+			PARTITION_MONOTONE,
+		};
+
+		AABB bounding_box;
 		dtNavMesh* detour_navmesh;
 		Ref<ArrayMesh> debug_mesh;
 		Transform global_transform;

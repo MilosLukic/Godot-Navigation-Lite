@@ -1,4 +1,6 @@
 #include "navigation_mesh.h"
+#include "navigation_query.h"
+#include "navigation.h"
 
 static const int DEFAULT_TILE_SIZE = 64;
 static const float DEFAULT_CELL_SIZE = 0.3f;
@@ -15,6 +17,26 @@ static const float DEFAULT_DETAIL_SAMPLE_DISTANCE = 6.0f;
 static const float DEFAULT_DETAIL_SAMPLE_MAX_ERROR = 1.0f;
 
 using namespace godot;
+
+void DetourNavigationMesh::_register_methods() {
+	register_method("_ready", &DetourNavigationMesh::_ready);
+}
+void DetourNavigationMesh::_init() {
+	// initialize any variables here
+}
+
+void DetourNavigationMesh::_ready() {
+
+	//build_navmesh();
+	/*
+	Godot::print("Adding obstacle");
+	DetourNavigationMeshCached* cached_navm = (DetourNavigationMeshCached *)navmesh;
+	unsigned int id = cached_navm->add_obstacle(Vector3(-5.f, 0.f, -5.f), 4.f, 3.f);
+	dtTileCache* tile_cache = cached_navm->get_tile_cache();
+	tile_cache->update(0.1f, cached_navm->get_detour_navmesh());
+
+	build_debug_mesh();*/
+}
 
 DetourNavigationMesh::DetourNavigationMesh(){
 	bounding_box = godot::AABB();
@@ -67,6 +89,16 @@ void DetourNavigationMesh::release_navmesh() {
 	num_tiles_z = 0;
 	bounding_box = AABB();
 	Godot::print("Released navmesh");
+}
+
+void DetourNavigationMesh::build_navmesh() {
+	/*
+	DetourNavigationMeshInstance* dtmi = Object::cast_to<DetourNavigationMeshInstance>(get_parent());
+	if (dtmi == NULL) {
+		return;
+	}
+	dtmi->build_navmesh(this);
+	*/
 }
 
 unsigned int DetourNavigationMesh::build_tiles(
@@ -125,7 +157,6 @@ bool DetourNavigationMesh::init_tile_data(
 
 	Transform base = global_transform.inverse();
 
-	Godot::print("starting meshdata addin");
 	for (int i = 0; i < input_meshes.size(); i++) {
 		if (!input_meshes[i].is_valid()) {
 			continue;
@@ -136,7 +167,6 @@ bool DetourNavigationMesh::init_tile_data(
 			!expbox.encloses(mesh_aabb)) {
 			continue;
 		}
-		Godot::print("adding meshdata!!!!!!!!!");
 		add_meshdata(i, points, indices);
 	}
 
@@ -481,4 +511,56 @@ Ref<ArrayMesh> DetourNavigationMesh::get_debug_mesh() {
 
 	debug_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_LINES, arr);
 	return debug_mesh;
+}
+
+
+dtNavMesh* DetourNavigationMesh::load_mesh() {
+	dtNavMesh* dt_navmesh = FileManager::loadAll("abc.bin");
+	if (dt_navmesh == 0) {
+		return 0;
+	}
+	else {
+		detour_navmesh = dt_navmesh;
+		return dt_navmesh;
+	}
+}
+
+void DetourNavigationMesh::save_mesh() {
+	Godot::print("Saving navmesh...");
+	FileManager::saveAll("abc.bin", detour_navmesh);
+	Godot::print("Navmesh successfully saved.");
+
+}
+
+
+void DetourNavigationMesh::build_debug_mesh() {
+	clear_debug_mesh();
+	debug_mesh_instance = MeshInstance::_new();
+	debug_mesh_instance->set_mesh(get_debug_mesh());
+	debug_mesh_instance->set_material_override(get_debug_navigation_material());
+	add_child(debug_mesh_instance);
+}
+
+
+Ref<Material> DetourNavigationMesh::get_debug_navigation_material() {
+	/*	Create a navigation mesh material -
+		it is not exposed in godot, so we have to create it here again
+	*/
+	Ref<SpatialMaterial> line_material = Ref<SpatialMaterial>(SpatialMaterial::_new());
+	line_material->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
+	line_material->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
+	line_material->set_flag(SpatialMaterial::FLAG_SRGB_VERTEX_COLOR, true);
+	line_material->set_flag(SpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+	line_material->set_albedo(Color(0.1f, 1.0f, 0.7f, 0.4f));
+
+	return line_material;
+}
+
+void DetourNavigationMesh::find_path() {
+	DetourNavigationQuery* nav_query = new DetourNavigationQuery();
+	nav_query->init(this, get_global_transform());
+	//Dictionary result = nav_query->find_path(Vector3(0.f, 0.f, 0.f), Vector3(11.f, 0.3f, 11.f), Vector3(50.0f, 3.f, 50.f), new DetourNavigationQueryFilter());
+	Dictionary result = nav_query->find_path(Vector3(3.f, 0.f, -15.f), Vector3(-5.6f, 0.3f, 2.8f), Vector3(50.0f, 3.f, 50.f), new DetourNavigationQueryFilter());
+	Godot::print(result["points"]);
+	result.clear();
 }

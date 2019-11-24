@@ -11,7 +11,6 @@
 #include <Node.hpp>
 #include <SceneTree.hpp>
 #include <MeshInstance.hpp>
-#include <SpatialMaterial.hpp>
 #include <BoxShape.hpp>
 #include <CapsuleShape.hpp>
 #include <CylinderShape.hpp>
@@ -24,7 +23,7 @@
 #include <SphereMesh.hpp>
 #include <StaticBody.hpp>
 #include <CollisionShape.hpp>
-#include "navigation_query.h"
+
 #include "navigation_mesh.h"
 #include "tilecache_navmesh.h"
 #include "Recast.h"
@@ -32,7 +31,6 @@
 #include "RecastAlloc.h"
 #include "RecastAssert.h"
 #include "helpers.h"
-#include "filemanager.h"
 
 
 namespace godot {
@@ -63,29 +61,19 @@ namespace godot {
 		);
 		
 	public:
-		DetourNavigationMeshCached *navmesh = nullptr;
-		MeshInstance* debug_mesh_instance = nullptr;
 		static void _register_methods();
 
 		DetourNavigationMeshInstance();
 		~DetourNavigationMeshInstance();
 
-		void _init(); // our initializer called by Godot
-
+		void _init();
 		void _ready();
-		void build_mesh();
-		void find_path();
-		void save_mesh();
-		void build_debug_mesh();
-		void _notification(int p_what);
-		dtNavMesh *load_mesh();
-		
-		Ref<Material> get_debug_navigation_material();
 
-		enum partition_t {
-			PARTITION_WATERSHED,
-			PARTITION_MONOTONE,
-		};
+		void create_navmesh();
+		void create_cached_navmesh();
+		void build_navmesh(DetourNavigationMesh *navigation);
+		void _notification(int p_what);
+
 	};
 
 }

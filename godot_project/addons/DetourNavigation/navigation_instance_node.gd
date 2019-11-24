@@ -4,6 +4,7 @@ extends EditorPlugin
 var _menu_button = null
 var _nodes_to_free_on_exit = []
 const BAKE = 0
+const CREATE_NAVMESH = 1
 var currently_selected = null
 onready var new_scr = preload("res://bin/detour_navigation.gdns")
 
@@ -17,13 +18,14 @@ func _enter_tree():
 	_menu_button = MenuButton.new()
 	_menu_button.text = "Navigation Mesh"
 	_menu_button.get_popup().add_item("Bake", BAKE)
+	_menu_button.get_popup().add_item("Create Navmesh", CREATE_NAVMESH)
 	_menu_button.get_popup().connect("id_pressed", self, "_on_menu_id_pressed")
 	add_control_to_container(CONTAINER_SPATIAL_EDITOR_MENU, _menu_button)
 	_menu_button.hide()
 	_nodes_to_free_on_exit.append(_menu_button)
 
 func handles(object):
-	if object.has_method("build_mesh"):
+	if object.has_method("create_navmesh"):
 		object.set_script(new_scr)
 		_menu_button.show()
 		currently_selected = object
@@ -43,4 +45,13 @@ func _exit_tree():
 
 func _on_menu_id_pressed(id):
 	if id == BAKE:
-		currently_selected.call("build_mesh")
+		print("Creating navmesh...")
+		currently_selected.create_navmesh()
+		print("What is happening...")
+	elif id == CREATE_NAVMESH:
+		print("Creating navmesh...")
+		var cached_navmesh = preload("res://bin/detour_navigation_mesh_cached.gdns")
+		var instanced_navmesh = cached_navmesh.new()
+		currently_selected.add_child(instanced_navmesh)
+		instanced_navmesh.set_owner(get_editor_interface().get_edited_scene_root())
+		print("What is happening...")
