@@ -48,16 +48,16 @@ namespace godot {
 
 		void collect_mesh_instances(
 			Array& geometries,
-			std::vector<Ref<Mesh>>& meshes, 
-			std::vector<Transform>& transforms, 
-			std::vector<AABB>& aabbs
+			std::vector<Ref<Mesh>> *meshes, 
+			std::vector<Transform> *transforms, 
+			std::vector<AABB> *aabbs
 		);
 
 		void convert_static_bodies(
 			StaticBody* static_body, 
-			std::vector<Ref<Mesh>>& meshes, 
-			std::vector<Transform>& transforms, 
-			std::vector<AABB>& aabbs
+			std::vector<Ref<Mesh>>* meshes, 
+			std::vector<Transform>* transforms, 
+			std::vector<AABB>* aabbs
 		);
 		
 	public:

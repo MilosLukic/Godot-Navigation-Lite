@@ -35,6 +35,7 @@ namespace godot {
 		bool DetourNavigationMeshCached::build_tile(int x, int z);
 
 		/* Tile cache */
+		void init_values();
 		bool alloc_tile_cache();
 		bool init_tile_cache(dtTileCacheParams* param);
 		unsigned int add_obstacle(const Vector3& pos, real_t radius, real_t height);

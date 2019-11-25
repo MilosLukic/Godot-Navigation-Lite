@@ -30,9 +30,9 @@ namespace godot {
 	class DetourNavigationMesh : public Spatial {
 		GODOT_CLASS(DetourNavigationMesh, Spatial);
 	protected:
-		std::vector<Ref<Mesh>> input_meshes;
-		std::vector<Transform> input_transforms;
-		std::vector<AABB> input_aabbs;
+		std::vector<Ref<Mesh>> *input_meshes;
+		std::vector<Transform> *input_transforms;
+		std::vector<AABB> *input_aabbs;
 	public:
 		DetourNavigationMesh();
 		~DetourNavigationMesh();
@@ -88,18 +88,20 @@ namespace godot {
 
 
 		void init_mesh_data(
-			std::vector<Ref<Mesh>>& meshes, std::vector<Transform>& transforms,
-			std::vector<AABB>& aabbs, Transform& g_transform
+			std::vector<Ref<Mesh>> *meshes, std::vector<Transform> *transforms,
+			std::vector<AABB> *aabbs, Transform g_transform
 		) {
-			input_meshes = meshes;
-			input_transforms = transforms;
-			input_aabbs = aabbs;
 			global_transform = g_transform;
+			input_aabbs = aabbs;
+			input_transforms = transforms;
+			input_meshes = meshes;
 		}
 
 		dtNavMesh* get_detour_navmesh() {
 			return detour_navmesh;
 		}
+
+		void init_values();
 
 		void clear_debug_mesh() {
 			if (debug_mesh.is_valid()) {
@@ -113,6 +115,7 @@ namespace godot {
 		};
 
 		void set_tile_number(int xSize, int zSize) {
+
 			num_tiles_x = (xSize + tile_size - 1) / tile_size;
 			num_tiles_z = (zSize + tile_size - 1) / tile_size;
 		};

@@ -39,6 +39,10 @@ void DetourNavigationMesh::_ready() {
 }
 
 DetourNavigationMesh::DetourNavigationMesh(){
+	init_values();
+}
+
+void DetourNavigationMesh::init_values() {
 	bounding_box = godot::AABB();
 	tile_size = DEFAULT_TILE_SIZE;
 	cell_size = DEFAULT_CELL_SIZE;
@@ -56,12 +60,11 @@ DetourNavigationMesh::DetourNavigationMesh(){
 	detail_sample_distance = DEFAULT_DETAIL_SAMPLE_DISTANCE;
 	detail_sample_max_error = DEFAULT_DETAIL_SAMPLE_MAX_ERROR;
 	padding = Vector3(1.f, 1.f, 1.f);
-
 }
 
 DetourNavigationMesh::~DetourNavigationMesh() {
-	for (Ref<ArrayMesh> m : input_meshes) {
-			m.unref();
+	for (Ref<ArrayMesh> m : *input_meshes) {
+		m.unref();
 	}
 	clear_debug_mesh();
 	release_navmesh();
@@ -157,12 +160,12 @@ bool DetourNavigationMesh::init_tile_data(
 
 	Transform base = global_transform.inverse();
 
-	for (int i = 0; i < input_meshes.size(); i++) {
-		if (!input_meshes[i].is_valid()) {
+	for (int i = 0; i < input_meshes->size(); i++) {
+		if (!input_meshes->at(i).is_valid()) {
 			continue;
 		}
-		Transform mxform = base * input_transforms[i];
-		AABB mesh_aabb = mxform.xform(input_aabbs[i]);
+		Transform mxform = base * input_transforms->at(i);
+		AABB mesh_aabb = mxform.xform(input_aabbs->at(i));
 		if (!mesh_aabb.intersects_inclusive(expbox) &&
 			!expbox.encloses(mesh_aabb)) {
 			continue;
@@ -380,8 +383,8 @@ void DetourNavigationMesh::get_tile_bounding_box(
 void DetourNavigationMesh::add_meshdata(
 	int mesh_index, std::vector<float>& p_verticies, std::vector<int>& p_indices
 ) {
-	Transform* p_xform = &(input_transforms[mesh_index]);
-	Ref<ArrayMesh> p_mesh = input_meshes[mesh_index];
+	Transform* p_xform = &(input_transforms->at(mesh_index));
+	Ref<ArrayMesh> p_mesh = input_meshes->at(mesh_index);
 	int current_vertex_count = 0;
 
 	for (int i = 0; i < p_mesh->get_surface_count(); i++) {

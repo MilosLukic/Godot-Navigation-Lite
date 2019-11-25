@@ -52,6 +52,10 @@ struct godot::NavMeshProcess : public dtTileCacheMeshProcess {
 using namespace godot;
 
 DetourNavigationMeshCached::DetourNavigationMeshCached() {
+	init_values();
+}
+
+void DetourNavigationMeshCached::init_values() {
 	bounding_box = godot::AABB();
 	tile_size = DEFAULT_TILE_SIZE;
 	cell_size = DEFAULT_CELL_SIZE;

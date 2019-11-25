@@ -45,7 +45,7 @@ void DetourNavigationMeshInstance::_ready() {
 }
 
 void DetourNavigationMeshInstance::convert_static_bodies(
-	StaticBody *static_body, std::vector<Ref<Mesh>>& meshes, std::vector<Transform>& transforms, std::vector<AABB>& aabbs
+	StaticBody *static_body, std::vector<Ref<Mesh>>* meshes, std::vector<Transform>* transforms, std::vector<AABB>* aabbs
 ) {
 	for (int i = 0; i < static_body->get_child_count(); ++i) {
 		CollisionShape* collision_shape = Object::cast_to<CollisionShape>(static_body->get_child(i));
@@ -149,9 +149,9 @@ void DetourNavigationMeshInstance::convert_static_bodies(
 		if (mesh.is_valid()) {
 			MeshInstance* mi = MeshInstance::_new();
 			mi->set_mesh(mesh);
-			aabbs.push_back(mi->get_aabb());
-			meshes.push_back(mesh);
-			transforms.push_back(transform);
+			aabbs->push_back(mi->get_aabb());
+			meshes->push_back(mesh);
+			transforms->push_back(transform);
 			mi->set_mesh(NULL);
 			mi->queue_free();
 			mi->free();
@@ -160,7 +160,7 @@ void DetourNavigationMeshInstance::convert_static_bodies(
 	}
 }
 
-void DetourNavigationMeshInstance::collect_mesh_instances(Array& geometries, std::vector<Ref<Mesh>>& meshes, std::vector<Transform>& transforms, std::vector<AABB>& aabbs) {
+void DetourNavigationMeshInstance::collect_mesh_instances(Array& geometries, std::vector<Ref<Mesh>>* meshes, std::vector<Transform>* transforms, std::vector<AABB>* aabbs) {
 	/* If geometry source is MeshInstances, just collect them */
 	int geom_size = geometries.size();
 	for (int i = 0; i < geom_size; i++) {
@@ -168,9 +168,9 @@ void DetourNavigationMeshInstance::collect_mesh_instances(Array& geometries, std
 			MeshInstance* mesh_instance = Object::cast_to<MeshInstance>(geometries[i]);
 			if (mesh_instance) {
 				Godot::print("Found mesh instance");
-				meshes.push_back(mesh_instance->get_mesh());
-				transforms.push_back(mesh_instance->get_global_transform());
-				aabbs.push_back(mesh_instance->get_aabb());
+				meshes->push_back(mesh_instance->get_mesh());
+				transforms->push_back(mesh_instance->get_global_transform());
+				aabbs->push_back(mesh_instance->get_aabb());
 			}
 		}
 		else {
@@ -191,6 +191,7 @@ void DetourNavigationMeshInstance::collect_mesh_instances(Array& geometries, std
 void DetourNavigationMeshInstance::create_cached_navmesh() {
 	DetourNavigationMeshCached *cached_navmesh = DetourNavigationMeshCached::_new();
 	add_child(cached_navmesh);
+	cached_navmesh->set_owner(get_tree()->get_edited_scene_root());
 }
 
 void DetourNavigationMeshInstance::create_navmesh() {
@@ -200,27 +201,32 @@ void DetourNavigationMeshInstance::create_navmesh() {
 }
 
 void DetourNavigationMeshInstance::build_navmesh(DetourNavigationMesh* navmesh) {
-	std::vector<Ref<Mesh>> meshes; 
-	std::vector<Transform> transforms; 
-	std::vector<AABB> aabbs;
+	((DetourNavigationMeshCached *)navmesh)->init_values();
+	std::vector<Ref<Mesh>> *meshes = new std::vector<Ref<Mesh>>();
+	std::vector<Transform> *transforms = new std::vector<Transform>();
+	std::vector<AABB> *aabbs = new std::vector<AABB>();
 	DetourNavigationMeshInstance::collect_mesh_instances(get_children(), meshes, transforms, aabbs);
 	Godot::print("Building navmesh...");
 
 
-	for (int i = 0; i < meshes.size(); i++){
+	for (int i = 0; i < meshes->size(); i++){
 		navmesh->bounding_box.merge_with(
-			transforms[i].xform(aabbs[i])
+			transforms->at(i).xform(aabbs->at(i))
 		);
 	}
-
+	Godot::print(navmesh->bounding_box);
 	navmesh->init_mesh_data(meshes, transforms, aabbs, get_global_transform());
 
 	float tile_edge_length = navmesh->get_tile_edge_length();
 	Vector3 bmin = navmesh->bounding_box.position;
+	Godot::print(navmesh->bounding_box.size);
 	Vector3 bmax = navmesh->bounding_box.position + navmesh->bounding_box.size;
 
 	/* We define width and height of the grid */
 	int gridH = 0, gridW = 0;
+	Godot::print(std::to_string(bmin.coord[0]).c_str());
+	Godot::print(std::to_string(bmax.coord[0]).c_str());
+	Godot::print(std::to_string(navmesh->cell_size).c_str());
 	rcCalcGridSize(
 		&bmin.coord[0],
 		&bmax.coord[0],
@@ -228,12 +234,15 @@ void DetourNavigationMeshInstance::build_navmesh(DetourNavigationMesh* navmesh) 
 		&gridW,
 		&gridH
 	);
-	navmesh->set_tile_number(gridW, gridH);
+
+	Godot::print(std::to_string(gridW).c_str());
+	Godot::print(std::to_string(gridH).c_str());
+	navmesh->set_tile_number(gridW, gridH); 
+
 	std::string tile_message = "Tile number set to x:" + std::to_string(navmesh->get_num_tiles_x());
 	tile_message += ", z:" + std::to_string(navmesh->get_num_tiles_z());
 	Godot::print(tile_message.c_str());
 
-	Godot::print("Alles goot 3");
 	/* Calculate how many bits are required to uniquely identify all tiles */
 	unsigned int tile_bits = (unsigned int)ilog2(nextPow2(navmesh->get_num_tiles_x() * navmesh->get_num_tiles_z()));
 	tile_bits = std::min((int) tile_bits, 14);
@@ -260,6 +269,8 @@ void DetourNavigationMeshInstance::build_navmesh(DetourNavigationMesh* navmesh) 
 		Godot::print("Failed to initialize detour navmesh.");
 		return;
 	}
+	Godot::print(std::to_string(navmesh->agent_height).c_str());
+	DetourNavigationMeshCached* ccd = dynamic_cast<DetourNavigationMeshCached*>(navmesh);
 
 	if (DetourNavigationMeshCached* cached_navm = dynamic_cast<DetourNavigationMeshCached*>(navmesh))
 	{
@@ -282,7 +293,6 @@ void DetourNavigationMeshInstance::build_navmesh(DetourNavigationMesh* navmesh) 
 		if (!cached_navm->init_tile_cache(&tile_cache_params))
 			return;
 
-		Godot::print("Alles goot 4");
 		/* We start building tiles */
 		unsigned int result = cached_navm->build_tiles(
 			0, 0, navmesh->get_num_tiles_x() - 1, navmesh->get_num_tiles_z() - 1
