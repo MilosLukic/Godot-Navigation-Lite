@@ -18,7 +18,6 @@ namespace godot {
 		DetourNavigationMeshCached();
 		~DetourNavigationMeshCached();
 
-		/* TILE CACHE */
 		int max_obstacles;
 		int max_layers;
 
@@ -29,24 +28,9 @@ namespace godot {
 		std::vector<unsigned char> offmesh_areas;
 		std::vector<unsigned char> offmesh_dir;
 
-		unsigned int DetourNavigationMeshCached::build_tiles(
-			int x1, int z1, int x2, int z2
-		);
-		bool DetourNavigationMeshCached::build_tile(int x, int z);
-
-		/* Tile cache */
-		void init_values();
-		bool alloc_tile_cache();
-		bool init_tile_cache(dtTileCacheParams* param);
 		unsigned int add_obstacle(const Vector3& pos, real_t radius, real_t height);
 		void remove_obstacle(unsigned int id);
 
-		dtTileCache* get_tile_cache() {
-			return tile_cache;
-		}
-		dtTileCacheCompressor* get_tile_cache_compressor() {
-			return tile_cache_compressor;
-		}
 
 
 	};

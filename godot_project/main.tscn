@@ -100,6 +100,7 @@ shape = SubResource( 7 )
 
 [node name="Spatial2" type="Spatial" parent="DetourNavigationMeshInstance"]
 script = SubResource( 8 )
+wadafak = 5
 
 [node name="Camera" type="Camera" parent="."]
 transform = Transform( 0.644924, -0.590982, 0.484575, 0, 0.634056, 0.773287, -0.764247, -0.498712, 0.408918, 17.472, 14.522, 11.197 )

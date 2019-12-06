@@ -17,6 +17,7 @@
 #include <ArrayMesh.hpp>
 
 #include "helpers.h"
+#include "navmesh_parameters.h"
 #include "tilecache_helpers.h"
 #include "DetourNavMesh.h"
 #include "DetourNavMeshBuilder.h"
@@ -43,7 +44,6 @@ namespace godot {
 		static void _register_methods();
 
 		bool alloc();
-		bool init(dtNavMeshParams* params);
 		void release_navmesh();
 		bool unsigned_int();
 
@@ -53,39 +53,15 @@ namespace godot {
 		void build_debug_mesh();
 		void find_path();
 		Ref<Material> get_debug_navigation_material();
-		virtual dtTileCache* get_tile_cache() { return nullptr; }
+		virtual dtTileCache* get_tile_cache() { return nullptr; };
 		MeshInstance* debug_mesh_instance = nullptr;
-
-		SETGET(initialized, bool)
-		SETGET(num_tiles_x, int)
-		SETGET(num_tiles_z, int)
-		SETGET(tile_size, int);
-		SETGET(cell_size, real_t);
-		SETGET(cell_height, real_t);
-
-		SETGET(partition_type, int);
-		SETGET(agent_height, real_t);
-		SETGET(agent_radius, real_t);
-		SETGET(agent_max_climb, real_t);
-		SETGET(agent_max_slope, real_t);
-		SETGET(region_min_size, real_t);
-		SETGET(region_merge_size, real_t);
-		SETGET(edge_max_length, real_t);
-		SETGET(edge_max_error, real_t);
-		SETGET(detail_sample_distance, real_t);
-		SETGET(detail_sample_max_error, real_t);
-		SETGET(padding, Vector3)
-
-		enum partition_t {
-			PARTITION_WATERSHED,
-			PARTITION_MONOTONE,
-		};
 
 		AABB bounding_box;
 		dtNavMesh* detour_navmesh;
 		Ref<ArrayMesh> debug_mesh;
 		Transform global_transform;
-
+		NavmeshParameters navmesh_pars;
+		NavmeshParameters* navmesh_parameters = new NavmeshParameters();
 
 		void init_mesh_data(
 			std::vector<Ref<Mesh>> *meshes, std::vector<Transform> *transforms,
@@ -101,7 +77,7 @@ namespace godot {
 			return detour_navmesh;
 		}
 
-		void init_values();
+		void init_navigation_mesh_values();
 
 		void clear_debug_mesh() {
 			if (debug_mesh.is_valid()) {
@@ -109,40 +85,6 @@ namespace godot {
 				Godot::print("Cleared debug mesh.");
 			}
 		}
-
-		inline real_t get_tile_edge_length() const {
-			return ((real_t)tile_size * cell_size);
-		};
-
-		void set_tile_number(int xSize, int zSize) {
-
-			num_tiles_x = (xSize + tile_size - 1) / tile_size;
-			num_tiles_z = (zSize + tile_size - 1) / tile_size;
-		};
-
-		unsigned int build_tiles(int x1, int y1, int x2, int y2);
-
-		void init_rc_config(rcConfig& config, Vector3& bmin, Vector3& bmax);
-
-		bool build_tile(int x, int z);
-
-		bool init_heightfield_context(
-			rcConfig& config, rcCompactHeightfield* compact_heightfield,
-			rcContext* ctx, std::vector<float>& points, std::vector<int>& indices
-		);
-
-		bool init_tile_data(
-			rcConfig& config, Vector3& bmin, Vector3& bmax, std::vector<float>& points,
-			std::vector<int>& indices
-		);
-
-		void get_tile_bounding_box(
-			int x, int z, Vector3& bmin, Vector3& bmax
-		);
-
-		void add_meshdata(
-			int mesh_index, std::vector<float>& p_verticies, std::vector<int>& p_indices
-		);
 
 		Ref<ArrayMesh> get_debug_mesh();
 	};

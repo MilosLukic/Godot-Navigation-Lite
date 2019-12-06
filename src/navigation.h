@@ -31,6 +31,7 @@
 #include "RecastAlloc.h"
 #include "RecastAssert.h"
 #include "helpers.h"
+#include "navmesh_generator.h"
 
 
 namespace godot {
