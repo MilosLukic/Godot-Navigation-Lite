@@ -57,11 +57,10 @@ namespace godot {
 		MeshInstance* debug_mesh_instance = nullptr;
 
 		AABB bounding_box;
-		dtNavMesh* detour_navmesh;
+		dtNavMesh* detour_navmesh = nullptr;
 		Ref<ArrayMesh> debug_mesh;
 		Transform global_transform;
-		NavmeshParameters navmesh_pars;
-		NavmeshParameters* navmesh_parameters = new NavmeshParameters();
+		Ref<NavmeshParameters> navmesh_parameters;
 
 		void init_mesh_data(
 			std::vector<Ref<Mesh>> *meshes, std::vector<Transform> *transforms,

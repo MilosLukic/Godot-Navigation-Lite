@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <iostream>
 #include <Godot.hpp>
+#include <Engine.hpp>
 #include <Geometry.hpp>
 #include <Spatial.hpp>
 #include <Node.hpp>
@@ -70,7 +71,7 @@ namespace godot {
 		void _init();
 		void _ready();
 
-		void create_navmesh();
+		DetourNavigationMesh *create_navmesh(Ref<NavmeshParameters> np);
 		void create_cached_navmesh();
 		void build_navmesh(DetourNavigationMesh *navigation);
 		void _notification(int p_what);

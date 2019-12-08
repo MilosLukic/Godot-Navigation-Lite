@@ -6,11 +6,15 @@
 #include "helpers.h"
 
 namespace godot {
-	class NavmeshParameters{
+	class NavmeshParameters : public Resource {
+		GODOT_CLASS(NavmeshParameters, Resource);
 	public:
 		NavmeshParameters();
 		~NavmeshParameters();
 
+		void _init();
+		void _ready();
+		static void _register_methods();
 
 		SETGET(tile_size, int);
 		SETGET(cell_size, float);

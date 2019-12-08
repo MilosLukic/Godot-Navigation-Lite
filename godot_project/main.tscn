@@ -1,7 +1,9 @@
-[gd_scene load_steps=12 format=2]
+[gd_scene load_steps=15 format=2]
 
-[ext_resource path="res://bin/detour_navigation.gdnlib" type="GDNativeLibrary" id=1]
+[ext_resource path="res://bin/navmesh_parameters.gdns" type="Script" id=1]
 [ext_resource path="res://bin/detour_navigation.gdns" type="Script" id=2]
+[ext_resource path="res://main.gd" type="Script" id=3]
+[ext_resource path="res://bin/detour_navigation.gdnlib" type="GDNativeLibrary" id=4]
 [ext_resource path="res://addons/DetourNavigation/navigation_mesh_instance.gd" type="Script" id=5]
 
 [sub_resource type="QuadMesh" id=1]
@@ -28,18 +30,22 @@ data = PoolVector3Array( 0, 0, 2.7835, 0, 0, 2.7835, 0, -0.0347, 2.7805, 0, 0, 2
 
 [sub_resource type="NativeScript" id=8]
 class_name = "DetourNavigationMesh"
-library = ExtResource( 1 )
+library = ExtResource( 4 )
+
+[sub_resource type="Resource" id=9]
+script = ExtResource( 1 )
+cell_size = 0.3
+padding = Vector3( 1, 1, 1 )
 
 [node name="Main" type="Node"]
+script = ExtResource( 3 )
 
 [node name="DetourNavigationMeshInstance" type="Spatial" parent="."]
 script = ExtResource( 2 )
 parsed_geometry_type = 0
 
-[node name="Spatial" type="Spatial" parent="DetourNavigationMeshInstance"]
-
 [node name="MeshInstance" type="MeshInstance" parent="DetourNavigationMeshInstance"]
-transform = Transform( 1, 0, 0, 0, -1.62921e-007, 1, 0, -1, -1.62921e-007, 0, 0, 0 )
+transform = Transform( 1, 0, 0, 0, -1.62921e-07, 1, 0, -1, -1.62921e-07, -0.0739317, -0.0555038, 0.00174999 )
 mesh = SubResource( 1 )
 material/0 = null
 
@@ -89,7 +95,7 @@ material/0 = null
 shape = SubResource( 5 )
 
 [node name="MeshInstance4" type="MeshInstance" parent="DetourNavigationMeshInstance"]
-transform = Transform( 1, 0, 0, 0, -1.62921e-007, 1, 0, -1, -1.62921e-007, 6.52072, 0, -3.79273 )
+transform = Transform( 1, 0, 0, 0, -1.62921e-07, 1, 0, -1, -1.62921e-07, 6.52072, 0, -3.79273 )
 mesh = SubResource( 6 )
 material/0 = null
 
@@ -98,9 +104,9 @@ material/0 = null
 [node name="CollisionShape" type="CollisionShape" parent="DetourNavigationMeshInstance/MeshInstance4/StaticBody"]
 shape = SubResource( 7 )
 
-[node name="Spatial2" type="Spatial" parent="DetourNavigationMeshInstance"]
+[node name="Spatial" type="Spatial" parent="DetourNavigationMeshInstance"]
 script = SubResource( 8 )
-wadafak = 5
+parameters = SubResource( 9 )
 
 [node name="Camera" type="Camera" parent="."]
 transform = Transform( 0.644924, -0.590982, 0.484575, 0, 0.634056, 0.773287, -0.764247, -0.498712, 0.408918, 17.472, 14.522, 11.197 )

@@ -16,7 +16,21 @@ static const float DEFAULT_DETAIL_SAMPLE_MAX_ERROR = 1.0f;
 
 using namespace godot;
 
+
+void NavmeshParameters::_register_methods() {
+	register_property<NavmeshParameters, real_t>("cell_size", &(NavmeshParameters::set_cell_size), &(NavmeshParameters::get_cell_size), 32.0);
+	register_property<NavmeshParameters, Vector3>("padding", &(NavmeshParameters::set_padding), &(NavmeshParameters::get_padding), Vector3(1.0f, 1.0f, 1.0f));
+}
+void NavmeshParameters::_init() {
+	Godot::print("navmehs parameters inited");
+}
+
+void NavmeshParameters::_ready() {
+	Godot::print("navmehs parameters ready");
+}
+
 NavmeshParameters::NavmeshParameters() {
+	Godot::print("navmehs parameters constructor called");
 	tile_size = DEFAULT_TILE_SIZE;
 	cell_size = DEFAULT_CELL_SIZE;
 	cell_height = DEFAULT_CELL_HEIGHT;
@@ -36,5 +50,6 @@ NavmeshParameters::NavmeshParameters() {
 }
 
 NavmeshParameters::~NavmeshParameters() {
+	Godot::print("deconstruct navmesh parameters");
 
 }

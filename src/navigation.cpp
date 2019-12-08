@@ -16,19 +16,23 @@ void DetourNavigationMeshInstance::_register_methods() {
 }
 
 DetourNavigationMeshInstance::DetourNavigationMeshInstance(){
+	Godot::print("Navigation constructor called");
+	set_parsed_geometry_type(PARSED_GEOMETRY_STATIC_COLLIDERS);
 }
 
 DetourNavigationMeshInstance::~DetourNavigationMeshInstance(){
+	Godot::print("deconstruct navigation");
 }
 
 void DetourNavigationMeshInstance::_init() {
-	// initialize any variables here
-	set_parsed_geometry_type(PARSED_GEOMETRY_STATIC_COLLIDERS);
+	Godot::print("Navigation inited");
 }
 
 void DetourNavigationMeshInstance::_ready() {
 	parsed_geometry_type = PARSED_GEOMETRY_MESH_INSTANCES;
 	collision_mask |= 1;
+	Godot::print("Navigation ready called.");
+
 
 	for (int i = 0; i < get_child_count(); ++i) {
 		DetourNavigationMeshCached* navmesh_pc = Object::cast_to<DetourNavigationMeshCached>(get_child(i));
@@ -197,14 +201,15 @@ void DetourNavigationMeshInstance::create_cached_navmesh() {
 	cached_navmesh->set_owner(get_tree()->get_edited_scene_root());*/
 }
 
-void DetourNavigationMeshInstance::create_navmesh() {
+DetourNavigationMesh *DetourNavigationMeshInstance::create_navmesh(Ref<NavmeshParameters> np) {
 	DetourNavigationMesh *navmesh = DetourNavigationMesh::_new();
+	navmesh->navmesh_parameters = np;
 	add_child(navmesh);
 	navmesh->set_owner(get_tree()->get_edited_scene_root());
+	return navmesh;
 }
 
 void DetourNavigationMeshInstance::build_navmesh(DetourNavigationMesh* navmesh) {
-
 	std::vector<Ref<Mesh>>* meshes = new std::vector<Ref<Mesh>>();
 	std::vector<Transform>* transforms = new std::vector<Transform>();
 	std::vector<AABB>* aabbs = new std::vector<AABB>();
@@ -212,14 +217,10 @@ void DetourNavigationMeshInstance::build_navmesh(DetourNavigationMesh* navmesh) 
 
 	DetourNavigationMeshGenerator* dtnavmesh_gen = new DetourNavigationMeshGenerator();
 	dtnavmesh_gen->init_mesh_data(meshes, transforms, aabbs, get_global_transform());
-	dtnavmesh_gen->navmesh_parameters = new NavmeshParameters();
+	dtnavmesh_gen->navmesh_parameters = navmesh->navmesh_parameters;
 	dtnavmesh_gen->build();
-	navmesh = DetourNavigationMesh::_new();
-
 	navmesh->detour_navmesh = dtnavmesh_gen->detour_navmesh;
-	Godot::print("heejoo");
 	navmesh->build_debug_mesh();
-	Godot::print("heejooa");
 
 	delete dtnavmesh_gen;
 	for (Ref<ArrayMesh> m : *meshes) {
@@ -230,8 +231,6 @@ void DetourNavigationMeshInstance::build_navmesh(DetourNavigationMesh* navmesh) 
 	delete meshes;
 	delete transforms;
 	delete aabbs;
-	add_child(navmesh);
-	
 }
 
 void DetourNavigationMeshInstance::_notification(int p_what) {

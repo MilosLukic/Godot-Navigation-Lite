@@ -8,15 +8,23 @@ using namespace godot;
 
 void DetourNavigationMesh::_register_methods() {
 	register_method("_ready", &DetourNavigationMesh::_ready);
-
+	//register_property<DetourNavigationMesh, Variant::OBJECT>("navmesh parameters", &DetourNavigationMesh::navmesh_parameters, NULL);
+	register_property<DetourNavigationMesh, Ref<NavmeshParameters>>("parameters", &DetourNavigationMesh::navmesh_parameters, Ref<NavmeshParameters>(), GODOT_METHOD_RPC_MODE_DISABLED, GODOT_PROPERTY_USAGE_DEFAULT,
+		GODOT_PROPERTY_HINT_RESOURCE_TYPE,
+		"Resource");
 	//register_property<DetourNavigationMesh, real_t>("cell_size", DetourNavigationMesh::navmesh_parameters->set_cell_size(), DetourNavigationMesh::navmesh_parameters->get_cell_size(), 32.0);
 }
 void DetourNavigationMesh::_init() {
+	Godot::print("Navmehs inited");
+	Godot::print(navmesh_parameters.is_valid());
+	Godot::print("Navmehs inited ended");
 	// initialize any variables here
 }
 
 void DetourNavigationMesh::_ready() {
 
+	Godot::print("Navmehs ready");
+	Godot::print(std::to_string(get_instance_id()).c_str());
 	//build_navmesh();
 	/*
 	Godot::print("Adding obstacle");
@@ -29,51 +37,33 @@ void DetourNavigationMesh::_ready() {
 }
 
 DetourNavigationMesh::DetourNavigationMesh(){
-	//init_navigation_mesh_values();
-	Godot::print("heee jaaa");
+	Godot::print("Navmehs constructor called");
 }
-/*
-void DetourNavigationMesh::init_navigation_mesh_values() {
-	bounding_box = godot::AABB();
-	tile_size = DEFAULT_TILE_SIZE;
-	cell_size = DEFAULT_CELL_SIZE;
-	cell_height = DEFAULT_CELL_HEIGHT;
-
-	agent_height = DEFAULT_AGENT_HEIGHT;
-	agent_radius = DEFAULT_AGENT_RADIUS;
-	agent_max_climb = DEFAULT_AGENT_MAX_CLIMB;
-	agent_max_slope = DEFAULT_AGENT_MAX_SLOPE;
-
-	region_min_size = DEFAULT_REGION_MIN_SIZE;
-	region_merge_size = DEFAULT_REGION_MERGE_SIZE;
-	edge_max_length = DEFAULT_EDGE_MAX_LENGTH;
-	edge_max_error = DEFAULT_EDGE_MAX_ERROR;
-	detail_sample_distance = DEFAULT_DETAIL_SAMPLE_DISTANCE;
-	detail_sample_max_error = DEFAULT_DETAIL_SAMPLE_MAX_ERROR;
-	padding = Vector3(1.f, 1.f, 1.f);
-}*/
 
 DetourNavigationMesh::~DetourNavigationMesh() {
+	Godot::print("Navigation mesh destructor called.");
+	Godot::print(std::to_string(get_instance_id()).c_str());
 	clear_debug_mesh();
 	release_navmesh();
-	delete navmesh_parameters;
+	if (navmesh_parameters.is_valid()) {
+		navmesh_parameters.unref();
+	}
 }
 
 
 void DetourNavigationMesh::release_navmesh() {
-	dtFreeNavMesh((dtNavMesh*) detour_navmesh);
+	if (detour_navmesh != nullptr) {
+		dtFreeNavMesh(detour_navmesh);
+	}
 	detour_navmesh = NULL;
-	Godot::print("Released navmesh");
 }
 
 void DetourNavigationMesh::build_navmesh() {
-	/*
 	DetourNavigationMeshInstance* dtmi = Object::cast_to<DetourNavigationMeshInstance>(get_parent());
 	if (dtmi == NULL) {
 		return;
 	}
 	dtmi->build_navmesh(this);
-	*/
 }
 
 
@@ -81,7 +71,6 @@ Ref<ArrayMesh> DetourNavigationMesh::get_debug_mesh() {
 	if (debug_mesh.is_valid()) {
 		return debug_mesh;
 	}
-	Godot::print("bwawa");
 	std::list<Vector3> lines;
 	const dtNavMesh* navm = detour_navmesh;
 	for (int i = 0; i < navm->getMaxTiles(); i++) {
@@ -166,9 +155,7 @@ void DetourNavigationMesh::save_mesh() {
 void DetourNavigationMesh::build_debug_mesh() {
 	clear_debug_mesh();
 	debug_mesh_instance = MeshInstance::_new();
-	Godot::print("added");
 	debug_mesh_instance->set_mesh(get_debug_mesh());
-	Godot::print("set");
 	debug_mesh_instance->set_material_override(get_debug_navigation_material());
 	add_child(debug_mesh_instance);
 }

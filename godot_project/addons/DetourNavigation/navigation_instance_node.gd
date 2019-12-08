@@ -6,7 +6,8 @@ var _nodes_to_free_on_exit = []
 const CREATE_CACHED_NAVMESH = 0
 const CREATE_NAVMESH = 1
 var currently_selected = null
-onready var new_scr = preload("res://bin/detour_navigation.gdns")
+onready var navigation_script = preload("res://bin/detour_navigation.gdns")
+onready var navmesh_parameters = preload("res://bin/navmesh_parameters.gdns")
 
 func _enter_tree():
 	# When this plugin node enters tree, add the custom type
@@ -26,7 +27,7 @@ func _enter_tree():
 
 func handles(object):
 	if object.has_method("create_navmesh"):
-		object.set_script(new_scr)
+		object.set_script(navigation_script)
 		_menu_button.show()
 		currently_selected = object
 	elif _menu_button:
@@ -46,11 +47,13 @@ func _exit_tree():
 func _on_menu_id_pressed(id):
 	if id == CREATE_CACHED_NAVMESH:
 		print("Creatingcached  navmesh...")
-		currently_selected.create_cached_navmesh()
+		var navmesh_parameters_instance = navmesh_parameters.new()
+		currently_selected.parameters = navmesh_parameters_instance
+		var navmesh = currently_selected.create_cached_navmesh()
 		print("What is happening...")
 	elif id == CREATE_NAVMESH:
 		print("Creating navmesh...")
-		currently_selected.create_navmesh()
+		currently_selected.create_navmesh(navmesh_parameters.new())
 		#var cached_navmesh = preload("res://bin/detour_navigation_mesh_cached.gdns")
 		#var instanced_navmesh = cached_navmesh.new()
 		#currently_selected.add_child(instanced_navmesh)

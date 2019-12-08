@@ -36,7 +36,7 @@ namespace godot {
 		DetourNavigationMeshGenerator();
 		~DetourNavigationMeshGenerator();
 
-		NavmeshParameters *navmesh_parameters;
+		Ref<NavmeshParameters> navmesh_parameters;
 		Transform global_transform;
 		dtNavMesh* detour_navmesh;
 
@@ -66,8 +66,8 @@ namespace godot {
 			return detour_navmesh;
 		}
 
-		inline real_t get_tile_edge_length() const {
-			return ((real_t)navmesh_parameters->get_tile_size() * navmesh_parameters->get_cell_size());
+		inline real_t get_tile_edge_length() {
+			return (real_t)( navmesh_parameters->get_tile_size() * navmesh_parameters->get_cell_size());
 		};
 
 		void set_tile_number(int xSize, int zSize) {
