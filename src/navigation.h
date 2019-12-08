@@ -37,8 +37,8 @@
 
 namespace godot {
 
-	class DetourNavigationMeshInstance : public Spatial {
-		GODOT_CLASS(DetourNavigationMeshInstance, Spatial)
+	class DetourNavigation : public Spatial {
+		GODOT_CLASS(DetourNavigation, Spatial)
 		enum ParsedGeometryType {
 			PARSED_GEOMETRY_MESH_INSTANCES = 0,
 			PARSED_GEOMETRY_STATIC_COLLIDERS
@@ -65,8 +65,8 @@ namespace godot {
 	public:
 		static void _register_methods();
 
-		DetourNavigationMeshInstance();
-		~DetourNavigationMeshInstance();
+		DetourNavigation();
+		~DetourNavigation();
 
 		void _init();
 		void _ready();

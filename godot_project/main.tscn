@@ -40,76 +40,76 @@ padding = Vector3( 1, 1, 1 )
 [node name="Main" type="Node"]
 script = ExtResource( 3 )
 
-[node name="DetourNavigationMeshInstance" type="Spatial" parent="."]
+[node name="DetourNavigation" type="Spatial" parent="."]
 script = ExtResource( 2 )
 parsed_geometry_type = 0
 
-[node name="MeshInstance" type="MeshInstance" parent="DetourNavigationMeshInstance"]
+[node name="MeshInstance" type="MeshInstance" parent="DetourNavigation"]
 transform = Transform( 1, 0, 0, 0, -1.62921e-07, 1, 0, -1, -1.62921e-07, -0.0739317, -0.0555038, 0.00174999 )
 mesh = SubResource( 1 )
 material/0 = null
 
-[node name="StaticBody" type="StaticBody" parent="DetourNavigationMeshInstance/MeshInstance"]
+[node name="StaticBody" type="StaticBody" parent="DetourNavigation/MeshInstance"]
 
-[node name="CollisionShape" type="CollisionShape" parent="DetourNavigationMeshInstance/MeshInstance/StaticBody"]
+[node name="CollisionShape" type="CollisionShape" parent="DetourNavigation/MeshInstance/StaticBody"]
 shape = SubResource( 2 )
 
-[node name="MeshInstance2" type="MeshInstance" parent="DetourNavigationMeshInstance"]
+[node name="MeshInstance2" type="MeshInstance" parent="DetourNavigation"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 7.56701, 0, 8.55017 )
 mesh = SubResource( 3 )
 material/0 = null
 
-[node name="StaticBody" type="StaticBody" parent="DetourNavigationMeshInstance/MeshInstance2"]
+[node name="StaticBody" type="StaticBody" parent="DetourNavigation/MeshInstance2"]
 
-[node name="CollisionShape" type="CollisionShape" parent="DetourNavigationMeshInstance/MeshInstance2/StaticBody"]
+[node name="CollisionShape" type="CollisionShape" parent="DetourNavigation/MeshInstance2/StaticBody"]
 shape = SubResource( 4 )
 
-[node name="MeshInstance3" type="MeshInstance" parent="DetourNavigationMeshInstance"]
+[node name="MeshInstance3" type="MeshInstance" parent="DetourNavigation"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 5.97, 0, 4.59667 )
 mesh = SubResource( 3 )
 material/0 = null
 
-[node name="StaticBody" type="StaticBody" parent="DetourNavigationMeshInstance/MeshInstance3"]
+[node name="StaticBody" type="StaticBody" parent="DetourNavigation/MeshInstance3"]
 
-[node name="CollisionShape" type="CollisionShape" parent="DetourNavigationMeshInstance/MeshInstance3/StaticBody"]
+[node name="CollisionShape" type="CollisionShape" parent="DetourNavigation/MeshInstance3/StaticBody"]
 shape = SubResource( 5 )
 
-[node name="MeshInstance5" type="MeshInstance" parent="DetourNavigationMeshInstance"]
+[node name="MeshInstance5" type="MeshInstance" parent="DetourNavigation"]
 transform = Transform( 0.793831, 0.199666, 0.574426, 0, 0.944566, -0.328323, -0.608138, 0.260633, 0.749826, -4.55754, 0, -7.94257 )
 mesh = SubResource( 3 )
 material/0 = null
 
-[node name="StaticBody" type="StaticBody" parent="DetourNavigationMeshInstance/MeshInstance5"]
+[node name="StaticBody" type="StaticBody" parent="DetourNavigation/MeshInstance5"]
 
-[node name="CollisionShape" type="CollisionShape" parent="DetourNavigationMeshInstance/MeshInstance5/StaticBody"]
+[node name="CollisionShape" type="CollisionShape" parent="DetourNavigation/MeshInstance5/StaticBody"]
 shape = SubResource( 5 )
 
-[node name="MeshInstance6" type="MeshInstance" parent="DetourNavigationMeshInstance"]
+[node name="MeshInstance6" type="MeshInstance" parent="DetourNavigation"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -4.07762, 0, 4.59667 )
 mesh = SubResource( 3 )
 material/0 = null
 
-[node name="StaticBody" type="StaticBody" parent="DetourNavigationMeshInstance/MeshInstance6"]
+[node name="StaticBody" type="StaticBody" parent="DetourNavigation/MeshInstance6"]
 
-[node name="CollisionShape" type="CollisionShape" parent="DetourNavigationMeshInstance/MeshInstance6/StaticBody"]
+[node name="CollisionShape" type="CollisionShape" parent="DetourNavigation/MeshInstance6/StaticBody"]
 shape = SubResource( 5 )
 
-[node name="MeshInstance4" type="MeshInstance" parent="DetourNavigationMeshInstance"]
+[node name="MeshInstance4" type="MeshInstance" parent="DetourNavigation"]
 transform = Transform( 1, 0, 0, 0, -1.62921e-07, 1, 0, -1, -1.62921e-07, 6.52072, 0, -3.79273 )
 mesh = SubResource( 6 )
 material/0 = null
 
-[node name="StaticBody" type="StaticBody" parent="DetourNavigationMeshInstance/MeshInstance4"]
+[node name="StaticBody" type="StaticBody" parent="DetourNavigation/MeshInstance4"]
 
-[node name="CollisionShape" type="CollisionShape" parent="DetourNavigationMeshInstance/MeshInstance4/StaticBody"]
+[node name="CollisionShape" type="CollisionShape" parent="DetourNavigation/MeshInstance4/StaticBody"]
 shape = SubResource( 7 )
 
-[node name="Spatial" type="Spatial" parent="DetourNavigationMeshInstance"]
+[node name="Spatial" type="Spatial" parent="DetourNavigation"]
 script = SubResource( 8 )
 parameters = SubResource( 9 )
 
 [node name="Camera" type="Camera" parent="."]
 transform = Transform( 0.644924, -0.590982, 0.484575, 0, 0.634056, 0.773287, -0.764247, -0.498712, 0.408918, 17.472, 14.522, 11.197 )
 
-[node name="DetourNavigationMeshInstance2" type="Spatial" parent="."]
+[node name="DetourNavigation2" type="Spatial" parent="."]
 script = ExtResource( 5 )

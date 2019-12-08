@@ -4,54 +4,51 @@
 
 using namespace godot;
 
-void DetourNavigationMeshInstance::_register_methods() {
-	register_method("_ready", &DetourNavigationMeshInstance::_ready);
-	register_method("create_cached_navmesh", &DetourNavigationMeshInstance::create_cached_navmesh);
-	register_method("create_navmesh", &DetourNavigationMeshInstance::create_navmesh);
+void DetourNavigation::_register_methods() {
+	register_method("_ready", &DetourNavigation::_ready);
+	register_method("create_cached_navmesh", &DetourNavigation::create_cached_navmesh);
+	register_method("create_navmesh", &DetourNavigation::create_navmesh);
 
-	register_property<DetourNavigationMeshInstance, int>(
-		"parsed_geometry_type", &DetourNavigationMeshInstance::set_parsed_geometry_type, &DetourNavigationMeshInstance::get_parsed_geometry_type, (int) PARSED_GEOMETRY_STATIC_COLLIDERS,
+	register_property<DetourNavigation, int>(
+		"parsed_geometry_type", &DetourNavigation::set_parsed_geometry_type, &DetourNavigation::get_parsed_geometry_type, (int) PARSED_GEOMETRY_STATIC_COLLIDERS,
 		GODOT_METHOD_RPC_MODE_DISABLED, GODOT_PROPERTY_USAGE_DEFAULT, GODOT_PROPERTY_HINT_ENUM, "Mesh instances,Static bodies"
 	);
 }
 
-DetourNavigationMeshInstance::DetourNavigationMeshInstance(){
-	Godot::print("Navigation constructor called");
+DetourNavigation::DetourNavigation(){
 	set_parsed_geometry_type(PARSED_GEOMETRY_STATIC_COLLIDERS);
 }
 
-DetourNavigationMeshInstance::~DetourNavigationMeshInstance(){
-	Godot::print("deconstruct navigation");
+DetourNavigation::~DetourNavigation(){
 }
 
-void DetourNavigationMeshInstance::_init() {
-	Godot::print("Navigation inited");
+void DetourNavigation::_init() {
 }
 
-void DetourNavigationMeshInstance::_ready() {
+void DetourNavigation::_ready() {
 	parsed_geometry_type = PARSED_GEOMETRY_MESH_INSTANCES;
 	collision_mask |= 1;
-	Godot::print("Navigation ready called.");
-
 
 	for (int i = 0; i < get_child_count(); ++i) {
 		DetourNavigationMeshCached* navmesh_pc = Object::cast_to<DetourNavigationMeshCached>(get_child(i));
 		if (navmesh_pc != nullptr) {
 			Godot::print("building cached");
-			build_navmesh(navmesh_pc);
+			navmesh_pc->load_mesh();
+			// build_navmesh(navmesh_pc);
 			return;
 		}
 
 		DetourNavigationMesh* navmesh_p = Object::cast_to<DetourNavigationMesh>(get_child(i));
 		if (navmesh_p != nullptr) {
 			Godot::print("building regular");
-			build_navmesh(navmesh_p);
+			//build_navmesh(navmesh_p);
+			navmesh_p->load_mesh();
 			return;
 		}
 	}
 }
 
-void DetourNavigationMeshInstance::convert_static_bodies(
+void DetourNavigation::convert_static_bodies(
 	StaticBody *static_body, std::vector<Ref<Mesh>>* meshes, std::vector<Transform>* transforms, std::vector<AABB>* aabbs
 ) {
 	for (int i = 0; i < static_body->get_child_count(); ++i) {
@@ -167,14 +164,13 @@ void DetourNavigationMeshInstance::convert_static_bodies(
 	}
 }
 
-void DetourNavigationMeshInstance::collect_mesh_instances(Array& geometries, std::vector<Ref<Mesh>>* meshes, std::vector<Transform>* transforms, std::vector<AABB>* aabbs) {
+void DetourNavigation::collect_mesh_instances(Array& geometries, std::vector<Ref<Mesh>>* meshes, std::vector<Transform>* transforms, std::vector<AABB>* aabbs) {
 	// If geometry source is MeshInstances, just collect them 
 	int geom_size = geometries.size();
 	for (int i = 0; i < geom_size; i++) {
 		if (parsed_geometry_type == PARSED_GEOMETRY_MESH_INSTANCES) {
 			MeshInstance* mesh_instance = Object::cast_to<MeshInstance>(geometries[i]);
 			if (mesh_instance) {
-				Godot::print("Found mesh instance");
 				meshes->push_back(mesh_instance->get_mesh());
 				transforms->push_back(mesh_instance->get_global_transform());
 				aabbs->push_back(mesh_instance->get_aabb());
@@ -184,7 +180,6 @@ void DetourNavigationMeshInstance::collect_mesh_instances(Array& geometries, std
 			StaticBody* static_body = Object::cast_to<StaticBody>(geometries[i]);
 
 			if (static_body && !(static_body->get_collision_layer() & collision_mask)) {
-				Godot::print("Found static body");
 				convert_static_bodies(static_body, meshes, transforms, aabbs);
 			}
 		}
@@ -195,13 +190,13 @@ void DetourNavigationMeshInstance::collect_mesh_instances(Array& geometries, std
 	}
 }
 
-void DetourNavigationMeshInstance::create_cached_navmesh() {
+void DetourNavigation::create_cached_navmesh() {
 	/*DetourNavigationMeshCached *cached_navmesh = DetourNavigationMeshCached::_new();
 	add_child(cached_navmesh);
 	cached_navmesh->set_owner(get_tree()->get_edited_scene_root());*/
 }
 
-DetourNavigationMesh *DetourNavigationMeshInstance::create_navmesh(Ref<NavmeshParameters> np) {
+DetourNavigationMesh *DetourNavigation::create_navmesh(Ref<NavmeshParameters> np) {
 	DetourNavigationMesh *navmesh = DetourNavigationMesh::_new();
 	navmesh->navmesh_parameters = np;
 	add_child(navmesh);
@@ -209,11 +204,11 @@ DetourNavigationMesh *DetourNavigationMeshInstance::create_navmesh(Ref<NavmeshPa
 	return navmesh;
 }
 
-void DetourNavigationMeshInstance::build_navmesh(DetourNavigationMesh* navmesh) {
+void DetourNavigation::build_navmesh(DetourNavigationMesh* navmesh) {
 	std::vector<Ref<Mesh>>* meshes = new std::vector<Ref<Mesh>>();
 	std::vector<Transform>* transforms = new std::vector<Transform>();
 	std::vector<AABB>* aabbs = new std::vector<AABB>();
-	DetourNavigationMeshInstance::collect_mesh_instances(get_children(), meshes, transforms, aabbs);
+	DetourNavigation::collect_mesh_instances(get_children(), meshes, transforms, aabbs);
 
 	DetourNavigationMeshGenerator* dtnavmesh_gen = new DetourNavigationMeshGenerator();
 	dtnavmesh_gen->init_mesh_data(meshes, transforms, aabbs, get_global_transform());
@@ -233,7 +228,7 @@ void DetourNavigationMeshInstance::build_navmesh(DetourNavigationMesh* navmesh) 
 	delete aabbs;
 }
 
-void DetourNavigationMeshInstance::_notification(int p_what) {
+void DetourNavigation::_notification(int p_what) {
 	/*
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {

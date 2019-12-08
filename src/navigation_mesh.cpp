@@ -8,40 +8,28 @@ using namespace godot;
 
 void DetourNavigationMesh::_register_methods() {
 	register_method("_ready", &DetourNavigationMesh::_ready);
-	//register_property<DetourNavigationMesh, Variant::OBJECT>("navmesh parameters", &DetourNavigationMesh::navmesh_parameters, NULL);
-	register_property<DetourNavigationMesh, Ref<NavmeshParameters>>("parameters", &DetourNavigationMesh::navmesh_parameters, Ref<NavmeshParameters>(), GODOT_METHOD_RPC_MODE_DISABLED, GODOT_PROPERTY_USAGE_DEFAULT,
-		GODOT_PROPERTY_HINT_RESOURCE_TYPE,
-		"Resource");
-	//register_property<DetourNavigationMesh, real_t>("cell_size", DetourNavigationMesh::navmesh_parameters->set_cell_size(), DetourNavigationMesh::navmesh_parameters->get_cell_size(), 32.0);
+	register_method("bake_navmesh", &DetourNavigationMesh::build_navmesh);
+	register_property<DetourNavigationMesh, Ref<NavmeshParameters>>("parameters", &DetourNavigationMesh::navmesh_parameters, Ref<NavmeshParameters>(), 
+		GODOT_METHOD_RPC_MODE_DISABLED, GODOT_PROPERTY_USAGE_DEFAULT, GODOT_PROPERTY_HINT_RESOURCE_TYPE, "Resource");
 }
 void DetourNavigationMesh::_init() {
-	Godot::print("Navmehs inited");
-	Godot::print(navmesh_parameters.is_valid());
-	Godot::print("Navmehs inited ended");
 	// initialize any variables here
 }
 
 void DetourNavigationMesh::_ready() {
-
-	Godot::print("Navmehs ready");
-	Godot::print(std::to_string(get_instance_id()).c_str());
-	//build_navmesh();
 	/*
 	Godot::print("Adding obstacle");
 	DetourNavigationMeshCached* cached_navm = (DetourNavigationMeshCached *)navmesh;
 	unsigned int id = cached_navm->add_obstacle(Vector3(-5.f, 0.f, -5.f), 4.f, 3.f);
 	dtTileCache* tile_cache = cached_navm->get_tile_cache();
 	tile_cache->update(0.1f, cached_navm->get_detour_navmesh());
-
-	build_debug_mesh();*/
+	*/
 }
 
 DetourNavigationMesh::DetourNavigationMesh(){
-	Godot::print("Navmehs constructor called");
 }
 
 DetourNavigationMesh::~DetourNavigationMesh() {
-	Godot::print("Navigation mesh destructor called.");
 	Godot::print(std::to_string(get_instance_id()).c_str());
 	clear_debug_mesh();
 	release_navmesh();
@@ -59,11 +47,12 @@ void DetourNavigationMesh::release_navmesh() {
 }
 
 void DetourNavigationMesh::build_navmesh() {
-	DetourNavigationMeshInstance* dtmi = Object::cast_to<DetourNavigationMeshInstance>(get_parent());
+	DetourNavigation* dtmi = Object::cast_to<DetourNavigation>(get_parent());
 	if (dtmi == NULL) {
 		return;
 	}
 	dtmi->build_navmesh(this);
+	save_mesh();
 }
 
 
@@ -140,6 +129,7 @@ dtNavMesh* DetourNavigationMesh::load_mesh() {
 	}
 	else {
 		detour_navmesh = dt_navmesh;
+		build_debug_mesh();
 		return dt_navmesh;
 	}
 }

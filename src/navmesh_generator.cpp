@@ -17,9 +17,7 @@ void DetourNavigationMeshGenerator::build() {
 	Vector3 bmin = bounding_box.position;
 	Vector3 bmax = bounding_box.position + bounding_box.size;
 
-	Godot::print("hoeee 1");
 	Godot::print(navmesh_parameters->get_cell_size());
-	Godot::print("hoeee 2");
 	/* We define width and height of the grid */
 	int gridH = 0, gridW = 0;
 	rcCalcGridSize(
@@ -398,11 +396,10 @@ void DetourNavigationMeshGenerator::add_meshdata(
 		ERR_CONTINUE((index_count == 0 || (index_count % 3) != 0));
 
 		int face_count = index_count / 3;
-		Array a = p_mesh->surface_get_arrays(i);
-		PoolVector3Array mesh_vertices(a[Mesh::ARRAY_VERTEX]);
 
+		PoolVector3Array mesh_vertices(p_mesh->surface_get_arrays(i)[Mesh::ARRAY_VERTEX]);
 		if (p_mesh->surface_get_format(i) & Mesh::ARRAY_FORMAT_INDEX) {
-			PoolIntArray mesh_indices = a[Mesh::ARRAY_INDEX];
+			PoolIntArray mesh_indices = p_mesh->surface_get_arrays(i)[Mesh::ARRAY_INDEX];
 			PoolIntArray::Read ir = mesh_indices.read();
 
 			for (int j = 0; j < mesh_vertices.size(); j++) {

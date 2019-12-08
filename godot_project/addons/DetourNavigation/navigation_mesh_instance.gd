@@ -1,3 +1,2 @@
-tool
 extends Spatial
 
