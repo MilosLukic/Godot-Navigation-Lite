@@ -4,6 +4,3 @@
 *.obj
 *.import
 .vs/*
-godot-cpp
-*.bin
-*.dll
