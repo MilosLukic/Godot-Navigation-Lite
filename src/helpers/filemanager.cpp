@@ -20,7 +20,7 @@ struct NavMeshTileHeader
 	int dataSize;
 };
 
-dtNavMesh* FileManager::loadAll(const char* path)
+dtNavMesh* FileManager::loadNavigationMesh(const char* path)
 {
 	FILE* fp = fopen(path, "rb");
 	if (!fp) return 0;
@@ -90,7 +90,17 @@ dtNavMesh* FileManager::loadAll(const char* path)
 	return mesh;
 }
 
-void FileManager::saveAll(const char* path, const dtNavMesh* mesh)
+void FileManager::deleteFile(const char* path) {
+	FILE* fp = fopen(path, "wb");
+	if (!fp)
+		return;
+	if (remove(path) != 0) {
+		// Failed to delete a file
+	}
+
+}
+
+void FileManager::saveNavigationMesh(const char* path, const dtNavMesh* mesh)
 {
 	if (!mesh) return;
 
@@ -124,6 +134,158 @@ void FileManager::saveAll(const char* path, const dtNavMesh* mesh)
 		fwrite(&tileHeader, sizeof(tileHeader), 1, fp);
 
 		fwrite(tile->data, tile->dataSize, 1, fp);
+	}
+
+	fclose(fp);
+}
+
+static const int TILECACHESET_MAGIC = 'T' << 24 | 'S' << 16 | 'E' << 8 | 'T'; //'TSET';
+static const int TILECACHESET_VERSION = 1;
+
+struct TileCacheSetHeader
+{
+	int magic;
+	int version;
+	int numTiles;
+	dtNavMeshParams meshParams;
+	dtTileCacheParams cacheParams;
+};
+
+struct TileCacheTileHeader
+{
+	dtCompressedTileRef tileRef;
+	int dataSize;
+};
+
+void FileManager::saveNavigationMeshCached(const char* path, const dtTileCache* m_tileCache, const dtNavMesh* m_navMesh)
+{
+	if (!m_tileCache) return;
+
+	FILE* fp = fopen(path, "wb");
+	if (!fp)
+		return;
+
+	// Store header.
+	TileCacheSetHeader header;
+	header.magic = TILECACHESET_MAGIC;
+	header.version = TILECACHESET_VERSION;
+	header.numTiles = 0;
+	for (int i = 0; i < m_tileCache->getTileCount(); ++i)
+	{
+		const dtCompressedTile* tile = m_tileCache->getTile(i);
+		if (!tile || !tile->header || !tile->dataSize) continue;
+		header.numTiles++;
+	}
+	memcpy(&header.cacheParams, m_tileCache->getParams(), sizeof(dtTileCacheParams));
+	memcpy(&header.meshParams, m_navMesh->getParams(), sizeof(dtNavMeshParams));
+	fwrite(&header, sizeof(TileCacheSetHeader), 1, fp);
+
+	// Store tiles.
+	for (int i = 0; i < m_tileCache->getTileCount(); ++i)
+	{
+		const dtCompressedTile* tile = m_tileCache->getTile(i);
+		if (!tile || !tile->header || !tile->dataSize) continue;
+
+		TileCacheTileHeader tileHeader;
+		tileHeader.tileRef = m_tileCache->getTileRef(tile);
+		tileHeader.dataSize = tile->dataSize;
+		fwrite(&tileHeader, sizeof(tileHeader), 1, fp);
+
+		fwrite(tile->data, tile->dataSize, 1, fp);
+	}
+
+	fclose(fp);
+}
+
+void FileManager::loadNavigationMeshCached(const char* path, dtTileCache* m_tileCache, dtNavMesh* m_navMesh)
+{
+	FILE* fp = fopen(path, "rb");
+	if (!fp) return;
+
+	// Read header.
+	TileCacheSetHeader header;
+	size_t headerReadReturnCode = fread(&header, sizeof(TileCacheSetHeader), 1, fp);
+	if (headerReadReturnCode != 1)
+	{
+		// Error or early EOF
+		fclose(fp);
+		return;
+	}
+	if (header.magic != TILECACHESET_MAGIC)
+	{
+		fclose(fp);
+		return;
+	}
+	if (header.version != TILECACHESET_VERSION)
+	{
+		fclose(fp);
+		return;
+	}
+
+	m_navMesh = dtAllocNavMesh();
+	if (!m_navMesh)
+	{
+		fclose(fp);
+		return;
+	}
+	dtStatus status = m_navMesh->init(&header.meshParams);
+	if (dtStatusFailed(status))
+	{
+		fclose(fp);
+		return;
+	}
+
+	m_tileCache = dtAllocTileCache();
+	if (!m_tileCache)
+	{
+		fclose(fp);
+		return;
+	}
+	LinearAllocator *m_talloc = new LinearAllocator(32000);
+	FastLZCompressor *m_tcomp = new FastLZCompressor;
+	//MeshProcess m_tmproc = new MeshProcess;
+	status = m_tileCache->init(&header.cacheParams, m_talloc, m_tcomp, NULL);//m_tmproc);
+	if (dtStatusFailed(status))
+	{
+		fclose(fp);
+		return;
+	}
+
+	// Read tiles.
+	for (int i = 0; i < header.numTiles; ++i)
+	{
+		TileCacheTileHeader tileHeader;
+		size_t tileHeaderReadReturnCode = fread(&tileHeader, sizeof(tileHeader), 1, fp);
+		if (tileHeaderReadReturnCode != 1)
+		{
+			// Error or early EOF
+			fclose(fp);
+			return;
+		}
+		if (!tileHeader.tileRef || !tileHeader.dataSize)
+			break;
+
+		unsigned char* data = (unsigned char*)dtAlloc(tileHeader.dataSize, DT_ALLOC_PERM);
+		if (!data) break;
+		memset(data, 0, tileHeader.dataSize);
+		size_t tileDataReadReturnCode = fread(data, tileHeader.dataSize, 1, fp);
+		if (tileDataReadReturnCode != 1)
+		{
+			// Error or early EOF
+			dtFree(data);
+			fclose(fp);
+			return;
+		}
+
+		dtCompressedTileRef tile = 0;
+		dtStatus addTileStatus = m_tileCache->addTile(data, tileHeader.dataSize, DT_COMPRESSEDTILE_FREE_DATA, &tile);
+		if (dtStatusFailed(addTileStatus))
+		{
+			dtFree(data);
+		}
+
+		if (tile)
+			m_tileCache->buildNavMeshTile(tile, m_navMesh);
 	}
 
 	fclose(fp);

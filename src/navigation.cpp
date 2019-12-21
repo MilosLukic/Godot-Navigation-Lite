@@ -4,66 +4,52 @@
 
 using namespace godot;
 
-void DetourNavigationMeshInstance::_register_methods() {
-	register_method("_ready", &DetourNavigationMeshInstance::_ready);
-	register_method("build_mesh", &DetourNavigationMeshInstance::build_mesh);
-	register_method("find_path", &DetourNavigationMeshInstance::find_path);
+void DetourNavigation::_register_methods() {
+	register_method("_ready", &DetourNavigation::_ready);
+	register_method("create_cached_navmesh", &DetourNavigation::create_cached_navmesh);
+	register_method("create_navmesh", &DetourNavigation::create_navmesh);
 
-	register_property<DetourNavigationMeshInstance, int>(
-		"parsed_geometry_type", &DetourNavigationMeshInstance::set_parsed_geometry_type, &DetourNavigationMeshInstance::get_parsed_geometry_type, (int) PARSED_GEOMETRY_STATIC_COLLIDERS,
+	register_property<DetourNavigation, int>(
+		"parsed_geometry_type", &DetourNavigation::set_parsed_geometry_type, &DetourNavigation::get_parsed_geometry_type, (int) PARSED_GEOMETRY_STATIC_COLLIDERS,
 		GODOT_METHOD_RPC_MODE_DISABLED, GODOT_PROPERTY_USAGE_DEFAULT, GODOT_PROPERTY_HINT_ENUM, "Mesh instances,Static bodies"
 	);
 }
 
-DetourNavigationMeshInstance::DetourNavigationMeshInstance(){
-}
-
-DetourNavigationMeshInstance::~DetourNavigationMeshInstance(){
-	if (navmesh != nullptr) {
-		delete navmesh;
-	}
-}
-
-void DetourNavigationMeshInstance::_init() {
-	// initialize any variables here
+DetourNavigation::DetourNavigation(){
 	set_parsed_geometry_type(PARSED_GEOMETRY_STATIC_COLLIDERS);
 }
 
-void DetourNavigationMeshInstance::_ready() {
+DetourNavigation::~DetourNavigation(){
+}
+
+void DetourNavigation::_init() {
+}
+
+void DetourNavigation::_ready() {
 	parsed_geometry_type = PARSED_GEOMETRY_MESH_INSTANCES;
 	collision_mask |= 1;
-	//DetourNavigationMeshInstance::load_mesh();
-	if (true || navmesh == nullptr) {
-		Godot::print("Failed loading navmesh. Starting building it from scratch...");
-		DetourNavigationMeshInstance::build_mesh();
-		DetourNavigationMeshInstance::save_mesh();
+
+	for (int i = 0; i < get_child_count(); ++i) {
+		DetourNavigationMeshCached* navmesh_pc = Object::cast_to<DetourNavigationMeshCached>(get_child(i));
+		if (navmesh_pc != nullptr) {
+			Godot::print("building cached");
+			navmesh_pc->load_mesh();
+			// build_navmesh(navmesh_pc);
+			return;
+		}
+
+		DetourNavigationMesh* navmesh_p = Object::cast_to<DetourNavigationMesh>(get_child(i));
+		if (navmesh_p != nullptr) {
+			Godot::print("building regular");
+			//build_navmesh(navmesh_p);
+			navmesh_p->load_mesh();
+			return;
+		}
 	}
-	else {
-		Godot::print("Successfully loaded navmesh");
-		DetourNavigationMeshInstance::build_debug_mesh();
-	}
-
-
-
-	Godot::print("Adding obstacle");
-	unsigned int id = navmesh->add_obstacle(Vector3(-5.f, 0.f, -5.f), 4.f, 3.f);
-	dtTileCache* tile_cache = navmesh->get_tile_cache();
-	tile_cache->update(0.1f, navmesh->get_detour_navmesh());
-	build_debug_mesh();
-	DetourNavigationMeshInstance::find_path();
 }
 
-void DetourNavigationMeshInstance::find_path() {
-	DetourNavigationQuery *nav_query = new DetourNavigationQuery();
-	nav_query->init(navmesh, get_global_transform());
-	//Dictionary result = nav_query->find_path(Vector3(0.f, 0.f, 0.f), Vector3(11.f, 0.3f, 11.f), Vector3(50.0f, 3.f, 50.f), new DetourNavigationQueryFilter());
-	Dictionary result = nav_query->find_path(Vector3(3.f, 0.f, -15.f), Vector3(-5.6f, 0.3f, 2.8f), Vector3(50.0f, 3.f, 50.f), new DetourNavigationQueryFilter());
-	Godot::print(result["points"]);
-	result.clear();
-}
-
-void DetourNavigationMeshInstance::convert_static_bodies(
-	StaticBody *static_body, std::vector<Ref<Mesh>>& meshes, std::vector<Transform>& transforms, std::vector<AABB>& aabbs
+void DetourNavigation::convert_static_bodies(
+	StaticBody *static_body, std::vector<Ref<Mesh>>* meshes, std::vector<Transform>* transforms, std::vector<AABB>* aabbs
 ) {
 	for (int i = 0; i < static_body->get_child_count(); ++i) {
 		CollisionShape* collision_shape = Object::cast_to<CollisionShape>(static_body->get_child(i));
@@ -152,7 +138,7 @@ void DetourNavigationMeshInstance::convert_static_bodies(
 				w[j + 2].y = qh_mesh.vertices[qh_mesh.indices[j + 2]].y;
 				w[j + 2].z = qh_mesh.vertices[qh_mesh.indices[j + 2]].z;
 			}
-
+			
 			qh_free_mesh(qh_mesh);
 			Ref<ArrayMesh> array_mesh;
 			array_mesh.instance();
@@ -167,9 +153,9 @@ void DetourNavigationMeshInstance::convert_static_bodies(
 		if (mesh.is_valid()) {
 			MeshInstance* mi = MeshInstance::_new();
 			mi->set_mesh(mesh);
-			aabbs.push_back(mi->get_aabb());
-			meshes.push_back(mesh);
-			transforms.push_back(transform);
+			aabbs->push_back(mi->get_aabb());
+			meshes->push_back(mesh);
+			transforms->push_back(transform);
 			mi->set_mesh(NULL);
 			mi->queue_free();
 			mi->free();
@@ -178,24 +164,22 @@ void DetourNavigationMeshInstance::convert_static_bodies(
 	}
 }
 
-void DetourNavigationMeshInstance::collect_mesh_instances(Array& geometries, std::vector<Ref<Mesh>>& meshes, std::vector<Transform>& transforms, std::vector<AABB>& aabbs) {
-	/* If geometry source is MeshInstances, just collect them */
+void DetourNavigation::collect_mesh_instances(Array& geometries, std::vector<Ref<Mesh>>* meshes, std::vector<Transform>* transforms, std::vector<AABB>* aabbs) {
+	// If geometry source is MeshInstances, just collect them 
 	int geom_size = geometries.size();
 	for (int i = 0; i < geom_size; i++) {
 		if (parsed_geometry_type == PARSED_GEOMETRY_MESH_INSTANCES) {
 			MeshInstance* mesh_instance = Object::cast_to<MeshInstance>(geometries[i]);
 			if (mesh_instance) {
-				Godot::print("Found mesh instance");
-				meshes.push_back(mesh_instance->get_mesh());
-				transforms.push_back(mesh_instance->get_global_transform());
-				aabbs.push_back(mesh_instance->get_aabb());
+				meshes->push_back(mesh_instance->get_mesh());
+				transforms->push_back(mesh_instance->get_global_transform());
+				aabbs->push_back(mesh_instance->get_aabb());
 			}
 		}
 		else {
 			StaticBody* static_body = Object::cast_to<StaticBody>(geometries[i]);
 
 			if (static_body && !(static_body->get_collision_layer() & collision_mask)) {
-				Godot::print("Found static body");
 				convert_static_bodies(static_body, meshes, transforms, aabbs);
 			}
 		}
@@ -206,119 +190,48 @@ void DetourNavigationMeshInstance::collect_mesh_instances(Array& geometries, std
 	}
 }
 
-dtNavMesh* DetourNavigationMeshInstance::load_mesh() {
-	dtNavMesh* dt_navmesh = FileManager::loadAll("abc.bin");
-	if (dt_navmesh == 0) {
-		return 0;
-	}
-	else {
-		navmesh = new DetourNavigationMesh();
-		navmesh->detour_navmesh = dt_navmesh;
-		return dt_navmesh;
-	}
+void DetourNavigation::create_cached_navmesh() {
+	/*DetourNavigationMeshCached *cached_navmesh = DetourNavigationMeshCached::_new();
+	add_child(cached_navmesh);
+	cached_navmesh->set_owner(get_tree()->get_edited_scene_root());*/
 }
 
-void DetourNavigationMeshInstance::save_mesh() {
-	Godot::print("Saving navmesh...");
-	FileManager::saveAll("abc.bin", navmesh->detour_navmesh);
-	Godot::print("Navmesh successfully saved.");
-
+DetourNavigationMesh *DetourNavigation::create_navmesh(Ref<NavmeshParameters> np) {
+	DetourNavigationMesh *navmesh = DetourNavigationMesh::_new();
+	navmesh->navmesh_parameters = np;
+	add_child(navmesh);
+	navmesh->set_owner(get_tree()->get_edited_scene_root());
+	navmesh->set_name("DetourNavigationMesh");
+	return navmesh;
 }
 
-void DetourNavigationMeshInstance::build_mesh() {
-	std::vector<Ref<Mesh>> meshes; 
-	std::vector<Transform> transforms; 
-	std::vector<AABB> aabbs;
-	DetourNavigationMeshInstance::collect_mesh_instances(get_children(), meshes, transforms, aabbs);
-	Godot::print("Building navmesh...");
 
-	navmesh = new DetourNavigationMesh();
-	for (int i = 0; i < meshes.size(); i++){
-		navmesh->bounding_box.merge_with(
-			transforms[i].xform(aabbs[i])
-		);
+void DetourNavigation::build_navmesh(DetourNavigationMesh* navmesh) {
+	std::vector<Ref<Mesh>>* meshes = new std::vector<Ref<Mesh>>();
+	std::vector<Transform>* transforms = new std::vector<Transform>();
+	std::vector<AABB>* aabbs = new std::vector<AABB>();
+	DetourNavigation::collect_mesh_instances(get_children(), meshes, transforms, aabbs);
+
+	DetourNavigationMeshGenerator* dtnavmesh_gen = new DetourNavigationMeshGenerator();
+	dtnavmesh_gen->init_mesh_data(meshes, transforms, aabbs, get_global_transform());
+	dtnavmesh_gen->navmesh_parameters = navmesh->navmesh_parameters;
+	dtnavmesh_gen->build();
+	navmesh->detour_navmesh = dtnavmesh_gen->detour_navmesh;
+	navmesh->build_debug_mesh();
+
+	delete dtnavmesh_gen;
+	for (Ref<ArrayMesh> m : *meshes) {
+		if (m.is_valid()) {
+			m.unref();
+		}
 	}
-
-	navmesh->init_mesh_data(meshes, transforms, aabbs, get_global_transform());
-
-
-	float tile_edge_length = navmesh->get_tile_edge_length();
-	Vector3 bmin = navmesh->bounding_box.position;
-	Vector3 bmax = navmesh->bounding_box.position + navmesh->bounding_box.size;
-
-	/* We define width and height of the grid */
-	int gridH = 0, gridW = 0;
-	rcCalcGridSize(
-		&bmin.coord[0],
-		&bmax.coord[0],
-		navmesh->cell_size,
-		&gridW,
-		&gridH
-	);
-	navmesh->set_tile_number(gridW, gridH);
-	std::string tile_message = "Tile number set to x:" + std::to_string(navmesh->get_num_tiles_x());
-	tile_message += ", z:" + std::to_string(navmesh->get_num_tiles_z());
-	Godot::print(tile_message.c_str());
-
-	/* Calculate how many bits are required to uniquely identify all tiles */
-	unsigned int tile_bits = (unsigned int)ilog2(nextPow2(navmesh->get_num_tiles_x() * navmesh->get_num_tiles_z()));
-	tile_bits = std::min((int) tile_bits, 14);
-
-	/* Set dt navmesh parameters*/
-	unsigned int poly_bits = 22 - tile_bits;
-	unsigned int max_tiles = 1u << tile_bits;
-	unsigned int max_polys = 1 << poly_bits;
-
-	dtNavMeshParams params;
-	params.tileWidth = tile_edge_length;
-	params.tileHeight = tile_edge_length;
-	params.maxTiles = max_tiles;
-	params.maxPolys = max_polys;
-	params.orig[0] = params.orig[1] = params.orig[2] = 0.f;
-
-	
-	/* Initialize and allocate place for detour navmesh instance */
-	if (!navmesh->alloc()) {
-		Godot::print("Failed to allocate detour navmesh.");
-		return;
-	}
-	if (!navmesh->init(&params)) {
-		Godot::print("Failed to initialize detour navmesh.");
-		return;
-	}
-
-	/* Tile Cache*/
-	dtTileCacheParams tile_cache_params;
-	memset(&tile_cache_params, 0, sizeof(tile_cache_params));
-	rcVcopy(tile_cache_params.orig, &bmin.coord[0]);
-	tile_cache_params.ch = navmesh->cell_height;
-	tile_cache_params.cs = navmesh->cell_size;
-	tile_cache_params.width = navmesh->tile_size;
-	tile_cache_params.height = navmesh->tile_size;
-	tile_cache_params.maxSimplificationError = navmesh->edge_max_error;
-	tile_cache_params.maxTiles =
-		navmesh->get_num_tiles_x() * navmesh->get_num_tiles_z() * navmesh->max_layers;
-	tile_cache_params.maxObstacles = navmesh->max_obstacles;
-	tile_cache_params.walkableClimb = navmesh->agent_max_climb;
-	tile_cache_params.walkableHeight = navmesh->agent_height;
-	tile_cache_params.walkableRadius = navmesh->agent_radius;
-	if (!navmesh->alloc_tile_cache())
-		return;
-	if (!navmesh->init_tile_cache(&tile_cache_params))
-		return;
-
-	/* We start building tiles */
-	unsigned int result = navmesh->build_tiles(
-		0, 0, navmesh->get_num_tiles_x() - 1, navmesh->get_num_tiles_z() - 1
-	);
-	//Godot::print(std::to_string(result).c_str()); 
-	/* TODO: Remove this mesh instance on deinit */
-	Godot::print("Successfully initialized navmesh.");
-	DetourNavigationMeshInstance::build_debug_mesh();
-	
+	delete meshes;
+	delete transforms;
+	delete aabbs;
 }
 
-void DetourNavigationMeshInstance::_notification(int p_what) {
+void DetourNavigation::_notification(int p_what) {
+	/*
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			if (get_tree()->is_debugging_navigation_hint()) {
@@ -338,51 +251,24 @@ void DetourNavigationMeshInstance::_notification(int p_what) {
 				debug_mesh_instance->queue_free();
 				debug_mesh_instance = NULL;
 			}
-			/* Tile Cache*/
+			// Tile cache
 			set_process(false);
 		} break;
-		/* Tile Cache*/
+		// Tile Cache
 		case NOTIFICATION_PROCESS: {
 			float delta = get_process_delta_time();
-			if (navmesh != nullptr) {
-				dtTileCache* tile_cache = navmesh->get_tile_cache();
+			DetourNavigationMeshCached* cached_navm = navmesh;
+			if (cached_navm != nullptr) {
+				dtTileCache* tile_cache = cached_navm->get_tile_cache();
 				if (tile_cache) {
-					tile_cache->update(delta, navmesh->get_detour_navmesh());
+					tile_cache->update(delta, cached_navm->get_detour_navmesh());
 					if (true) { // If debug
 						Object::cast_to<MeshInstance>(debug_mesh_instance)
-							->set_mesh(navmesh->get_debug_mesh());
+							->set_mesh(cached_navm->get_debug_mesh());
 					}
 						
 				}
 			}
 		} break;
-	}
+	}*/
 }
-
-void DetourNavigationMeshInstance::build_debug_mesh() {
-	if (navmesh != nullptr) {
-		navmesh->clear_debug_mesh();
-		debug_mesh_instance = MeshInstance::_new();
-		if (navmesh) {
-			debug_mesh_instance->set_mesh(navmesh->get_debug_mesh());
-		}
-		debug_mesh_instance->set_material_override(get_debug_navigation_material());
-		add_child(debug_mesh_instance);
-	}
-}
-
-
-Ref<Material> DetourNavigationMeshInstance::get_debug_navigation_material() {
-	/*	Create a navigation mesh material - 
-		it is not exposed in godot, so we have to create it here again
-	*/
-	Ref<SpatialMaterial> line_material = Ref<SpatialMaterial>(SpatialMaterial::_new());
-	line_material->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
-	line_material->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
-	line_material->set_flag(SpatialMaterial::FLAG_SRGB_VERTEX_COLOR, true);
-	line_material->set_flag(SpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-	line_material->set_albedo(Color(0.1f, 1.0f, 0.7f, 0.4f));
-
-	return line_material;
-}
-

@@ -4,5 +4,5 @@
 
 [resource]
 resource_name = "detour_navigation"
-class_name = "DetourNavigationMeshInstance"
+class_name = "DetourNavigation"
 library = ExtResource( 1 )
