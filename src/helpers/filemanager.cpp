@@ -90,6 +90,16 @@ dtNavMesh* FileManager::loadNavigationMesh(const char* path)
 	return mesh;
 }
 
+void FileManager::deleteFile(const char* path) {
+	FILE* fp = fopen(path, "wb");
+	if (!fp)
+		return;
+	if (remove(path) != 0) {
+		// Failed to delete a file
+	}
+
+}
+
 void FileManager::saveNavigationMesh(const char* path, const dtNavMesh* mesh)
 {
 	if (!mesh) return;

@@ -8,12 +8,22 @@ using namespace godot;
 
 void DetourNavigationMesh::_register_methods() {
 	register_method("_ready", &DetourNavigationMesh::_ready);
+	register_method("_exit_tree", &DetourNavigationMesh::_exit_tree);
 	register_method("bake_navmesh", &DetourNavigationMesh::build_navmesh);
+	register_method("clear_navmesh", &DetourNavigationMesh::clear_navmesh);
 	register_property<DetourNavigationMesh, Ref<NavmeshParameters>>("parameters", &DetourNavigationMesh::navmesh_parameters, Ref<NavmeshParameters>(), 
 		GODOT_METHOD_RPC_MODE_DISABLED, GODOT_PROPERTY_USAGE_DEFAULT, GODOT_PROPERTY_HINT_RESOURCE_TYPE, "Resource");
 }
 void DetourNavigationMesh::_init() {
 	// initialize any variables here
+
+	Godot::print(std::to_string(get_instance_id()).c_str());
+}
+
+void DetourNavigationMesh::_exit_tree() {
+	if (Engine::get_singleton()->is_editor_hint()) {
+		clear_navmesh();
+	}
 }
 
 void DetourNavigationMesh::_ready() {
@@ -30,7 +40,6 @@ DetourNavigationMesh::DetourNavigationMesh(){
 }
 
 DetourNavigationMesh::~DetourNavigationMesh() {
-	Godot::print(std::to_string(get_instance_id()).c_str());
 	clear_debug_mesh();
 	release_navmesh();
 	if (navmesh_parameters.is_valid()) {
@@ -38,12 +47,23 @@ DetourNavigationMesh::~DetourNavigationMesh() {
 	}
 }
 
-
 void DetourNavigationMesh::release_navmesh() {
 	if (detour_navmesh != nullptr) {
 		dtFreeNavMesh(detour_navmesh);
 	}
 	detour_navmesh = NULL;
+	clear_debug_mesh();
+}
+
+void DetourNavigationMesh::clear_debug_mesh() {
+	if (debug_mesh.is_valid()) {
+		debug_mesh.unref();
+		Godot::print("Cleared debug mesh.");
+	}
+	if (debug_mesh_instance != nullptr) {
+		debug_mesh_instance->queue_free();
+		debug_mesh_instance = nullptr;
+	}
 }
 
 void DetourNavigationMesh::build_navmesh() {
@@ -51,10 +71,18 @@ void DetourNavigationMesh::build_navmesh() {
 	if (dtmi == NULL) {
 		return;
 	}
+	clear_navmesh();
+
 	dtmi->build_navmesh(this);
 	save_mesh();
 }
 
+void DetourNavigationMesh::clear_navmesh() {
+	release_navmesh();
+	Godot::print("Deleting file...");
+	FileManager::deleteFile("abc.bin");
+
+}
 
 Ref<ArrayMesh> DetourNavigationMesh::get_debug_mesh() {
 	if (debug_mesh.is_valid()) {

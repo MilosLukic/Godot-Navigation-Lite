@@ -201,8 +201,10 @@ DetourNavigationMesh *DetourNavigation::create_navmesh(Ref<NavmeshParameters> np
 	navmesh->navmesh_parameters = np;
 	add_child(navmesh);
 	navmesh->set_owner(get_tree()->get_edited_scene_root());
+	navmesh->set_name("DetourNavigationMesh");
 	return navmesh;
 }
+
 
 void DetourNavigation::build_navmesh(DetourNavigationMesh* navmesh) {
 	std::vector<Ref<Mesh>>* meshes = new std::vector<Ref<Mesh>>();

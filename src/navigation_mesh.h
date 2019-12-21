@@ -39,6 +39,7 @@ namespace godot {
 		~DetourNavigationMesh();
 
 		void _init();
+		void _exit_tree();
 		void _ready();
 		void build_navmesh();
 		static void _register_methods();
@@ -78,12 +79,9 @@ namespace godot {
 
 		void init_navigation_mesh_values();
 
-		void clear_debug_mesh() {
-			if (debug_mesh.is_valid()) {
-				debug_mesh.unref();
-				Godot::print("Cleared debug mesh.");
-			}
-		}
+		void clear_debug_mesh();
+
+		void clear_navmesh();
 
 		Ref<ArrayMesh> get_debug_mesh();
 	};
