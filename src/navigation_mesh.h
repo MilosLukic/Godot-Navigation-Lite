@@ -41,8 +41,13 @@ namespace godot {
 		void _init();
 		void _exit_tree();
 		void _ready();
-		void build_navmesh();
 		static void _register_methods();
+
+		void build_navmesh();
+
+		void _on_renamed(Variant v);
+		char* get_cache_file_path();
+
 
 		bool alloc();
 		void release_navmesh();
@@ -53,6 +58,7 @@ namespace godot {
 
 		void build_debug_mesh();
 		void find_path();
+		void _notification(int p_what);
 		Ref<Material> get_debug_navigation_material();
 		virtual dtTileCache* get_tile_cache() { return nullptr; };
 		MeshInstance* debug_mesh_instance = nullptr;
@@ -62,6 +68,7 @@ namespace godot {
 		Ref<ArrayMesh> debug_mesh;
 		Transform global_transform;
 		Ref<NavmeshParameters> navmesh_parameters;
+		std::string navmesh_name;
 
 		void init_mesh_data(
 			std::vector<Ref<Mesh>> *meshes, std::vector<Transform> *transforms,

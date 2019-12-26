@@ -48,8 +48,92 @@ void DetourNavigation::_ready() {
 	}
 }
 
+void DetourNavigation::create_cached_navmesh() {
+	/*DetourNavigationMeshCached *cached_navmesh = DetourNavigationMeshCached::_new();
+	add_child(cached_navmesh);
+	cached_navmesh->set_owner(get_tree()->get_edited_scene_root());*/
+}
+
+DetourNavigationMesh *DetourNavigation::create_navmesh(Ref<NavmeshParameters> np) {
+	DetourNavigationMesh *navmesh = DetourNavigationMesh::_new();
+	navmesh->navmesh_parameters = np;
+	add_child(navmesh);
+	navmesh->set_owner(get_tree()->get_edited_scene_root());
+	navmesh->set_name("DetourNavigationMesh");
+	return navmesh;
+}
+
+
+void DetourNavigation::build_navmesh(DetourNavigationMesh* navmesh) {
+	std::vector<Ref<Mesh>>* meshes = new std::vector<Ref<Mesh>>();
+	std::vector<Transform>* transforms = new std::vector<Transform>();
+	std::vector<AABB>* aabbs = new std::vector<AABB>();
+	DetourNavigation::collect_mesh_instances(get_children(), meshes, transforms, aabbs);
+
+	DetourNavigationMeshGenerator* dtnavmesh_gen = new DetourNavigationMeshGenerator();
+	dtnavmesh_gen->init_mesh_data(meshes, transforms, aabbs, get_global_transform());
+	dtnavmesh_gen->navmesh_parameters = navmesh->navmesh_parameters;
+	dtnavmesh_gen->build();
+	navmesh->detour_navmesh = dtnavmesh_gen->detour_navmesh;
+	navmesh->build_debug_mesh();
+
+	delete dtnavmesh_gen;
+	for (Ref<ArrayMesh> m : *meshes) {
+		if (m.is_valid()) {
+			m.unref();
+		}
+	}
+	delete meshes;
+	delete transforms;
+	delete aabbs;
+}
+
+void DetourNavigation::_notification(int p_what) {
+	/*
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			if (get_tree()->is_debugging_navigation_hint()) {
+				MeshInstance* dm = MeshInstance::_new();
+				if (navmesh != nullptr) {
+					dm->set_mesh(navmesh->get_debug_mesh());
+				}					
+				dm->set_material_override(get_debug_navigation_material());
+				add_child(dm);
+				debug_mesh_instance = dm;
+			}
+			set_process(true);
+		} break;
+		case NOTIFICATION_EXIT_TREE: {
+			if (debug_mesh_instance) {
+				debug_mesh_instance->free();
+				debug_mesh_instance->queue_free();
+				debug_mesh_instance = NULL;
+			}
+			// Tile cache
+			set_process(false);
+		} break;
+		// Tile Cache
+		case NOTIFICATION_PROCESS: {
+			float delta = get_process_delta_time();
+			DetourNavigationMeshCached* cached_navm = navmesh;
+			if (cached_navm != nullptr) {
+				dtTileCache* tile_cache = cached_navm->get_tile_cache();
+				if (tile_cache) {
+					tile_cache->update(delta, cached_navm->get_detour_navmesh());
+					if (true) { // If debug
+						Object::cast_to<MeshInstance>(debug_mesh_instance)
+							->set_mesh(cached_navm->get_debug_mesh());
+					}
+						
+				}
+			}
+		} break;
+	}*/
+}
+
+
 void DetourNavigation::convert_static_bodies(
-	StaticBody *static_body, std::vector<Ref<Mesh>>* meshes, std::vector<Transform>* transforms, std::vector<AABB>* aabbs
+	StaticBody* static_body, std::vector<Ref<Mesh>>* meshes, std::vector<Transform>* transforms, std::vector<AABB>* aabbs
 ) {
 	for (int i = 0; i < static_body->get_child_count(); ++i) {
 		CollisionShape* collision_shape = Object::cast_to<CollisionShape>(static_body->get_child(i));
@@ -138,7 +222,7 @@ void DetourNavigation::convert_static_bodies(
 				w[j + 2].y = qh_mesh.vertices[qh_mesh.indices[j + 2]].y;
 				w[j + 2].z = qh_mesh.vertices[qh_mesh.indices[j + 2]].z;
 			}
-			
+
 			qh_free_mesh(qh_mesh);
 			Ref<ArrayMesh> array_mesh;
 			array_mesh.instance();
@@ -188,87 +272,4 @@ void DetourNavigation::collect_mesh_instances(Array& geometries, std::vector<Ref
 			collect_mesh_instances(spatial->get_children(), meshes, transforms, aabbs);
 		}
 	}
-}
-
-void DetourNavigation::create_cached_navmesh() {
-	/*DetourNavigationMeshCached *cached_navmesh = DetourNavigationMeshCached::_new();
-	add_child(cached_navmesh);
-	cached_navmesh->set_owner(get_tree()->get_edited_scene_root());*/
-}
-
-DetourNavigationMesh *DetourNavigation::create_navmesh(Ref<NavmeshParameters> np) {
-	DetourNavigationMesh *navmesh = DetourNavigationMesh::_new();
-	navmesh->navmesh_parameters = np;
-	add_child(navmesh);
-	navmesh->set_owner(get_tree()->get_edited_scene_root());
-	navmesh->set_name("DetourNavigationMesh");
-	return navmesh;
-}
-
-
-void DetourNavigation::build_navmesh(DetourNavigationMesh* navmesh) {
-	std::vector<Ref<Mesh>>* meshes = new std::vector<Ref<Mesh>>();
-	std::vector<Transform>* transforms = new std::vector<Transform>();
-	std::vector<AABB>* aabbs = new std::vector<AABB>();
-	DetourNavigation::collect_mesh_instances(get_children(), meshes, transforms, aabbs);
-
-	DetourNavigationMeshGenerator* dtnavmesh_gen = new DetourNavigationMeshGenerator();
-	dtnavmesh_gen->init_mesh_data(meshes, transforms, aabbs, get_global_transform());
-	dtnavmesh_gen->navmesh_parameters = navmesh->navmesh_parameters;
-	dtnavmesh_gen->build();
-	navmesh->detour_navmesh = dtnavmesh_gen->detour_navmesh;
-	navmesh->build_debug_mesh();
-
-	delete dtnavmesh_gen;
-	for (Ref<ArrayMesh> m : *meshes) {
-		if (m.is_valid()) {
-			m.unref();
-		}
-	}
-	delete meshes;
-	delete transforms;
-	delete aabbs;
-}
-
-void DetourNavigation::_notification(int p_what) {
-	/*
-	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE: {
-			if (get_tree()->is_debugging_navigation_hint()) {
-				MeshInstance* dm = MeshInstance::_new();
-				if (navmesh != nullptr) {
-					dm->set_mesh(navmesh->get_debug_mesh());
-				}					
-				dm->set_material_override(get_debug_navigation_material());
-				add_child(dm);
-				debug_mesh_instance = dm;
-			}
-			set_process(true);
-		} break;
-		case NOTIFICATION_EXIT_TREE: {
-			if (debug_mesh_instance) {
-				debug_mesh_instance->free();
-				debug_mesh_instance->queue_free();
-				debug_mesh_instance = NULL;
-			}
-			// Tile cache
-			set_process(false);
-		} break;
-		// Tile Cache
-		case NOTIFICATION_PROCESS: {
-			float delta = get_process_delta_time();
-			DetourNavigationMeshCached* cached_navm = navmesh;
-			if (cached_navm != nullptr) {
-				dtTileCache* tile_cache = cached_navm->get_tile_cache();
-				if (tile_cache) {
-					tile_cache->update(delta, cached_navm->get_detour_navmesh());
-					if (true) { // If debug
-						Object::cast_to<MeshInstance>(debug_mesh_instance)
-							->set_mesh(cached_navm->get_debug_mesh());
-					}
-						
-				}
-			}
-		} break;
-	}*/
 }

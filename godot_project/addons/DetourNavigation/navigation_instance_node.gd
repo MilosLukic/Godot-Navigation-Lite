@@ -3,8 +3,6 @@ extends EditorPlugin
 
 var _navigation_menu_button = null
 var _navmesh_menu_button = null
-var _nodes_to_free_on_exit = []
-
 
 const CREATE_CACHED_NAVMESH = 0
 const CREATE_NAVMESH = 1
@@ -41,7 +39,6 @@ func _enter_tree():
 	_navigation_menu_button.get_popup().connect("id_pressed", self, "_on_navigation_menu_id_pressed")
 	add_control_to_container(CONTAINER_SPATIAL_EDITOR_MENU, _navigation_menu_button)
 	_navigation_menu_button.hide()
-	_nodes_to_free_on_exit.append(_navigation_menu_button)
 	
 	# Add menu for navigation mesh class
 	_navmesh_menu_button = MenuButton.new()
@@ -51,7 +48,6 @@ func _enter_tree():
 	_navmesh_menu_button.get_popup().connect("id_pressed", self, "_on_navmesh_menu_id_pressed")
 	add_control_to_container(CONTAINER_SPATIAL_EDITOR_MENU, _navmesh_menu_button)
 	_navmesh_menu_button.hide()
-	_nodes_to_free_on_exit.append(_navmesh_menu_button)
 
 func handles(object):
 	if object is Node:
@@ -69,9 +65,17 @@ func handles(object):
 
 func _exit_tree():
 	# When the plugin node exits the tree, remove the custom type
-	remove_control_from_container(CONTAINER_TOOLBAR, _navigation_menu_button)
-	for node in _nodes_to_free_on_exit:
-		node.queue_free()
+	#remove_control_from_container(CONTAINER_SPATIAL_EDITOR_MENU, _navigation_menu_button)
+	#remove_control_from_container(CONTAINER_SPATIAL_EDITOR_MENU, _navmesh_menu_button)
+
+	_navmesh_menu_button.queue_free()
+	_navmesh_menu_button = null
+	
+	_navigation_menu_button.queue_free()
+	_navigation_menu_button = null
+
+	remove_custom_type("DetourNavigation")
+	remove_custom_type("DetourNavigationMesh")
 
 
 func _on_navigation_menu_id_pressed(id):

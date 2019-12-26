@@ -1,4 +1,5 @@
 #include "filemanager.h"
+#include <direct.h>
 
 using namespace godot;
 
@@ -94,10 +95,30 @@ void FileManager::deleteFile(const char* path) {
 	FILE* fp = fopen(path, "wb");
 	if (!fp)
 		return;
+	fclose(fp);
 	if (remove(path) != 0) {
 		// Failed to delete a file
 	}
 
+}
+
+void FileManager::moveFile(const char* path, const char* newPath) {
+	FILE* fp = fopen(path, "rb");
+
+	if (!fp)
+		return;
+	fclose(fp);
+
+	if (rename(path, newPath) != 0) {
+		// Failed to rename a file
+	}
+
+}
+
+void FileManager::createDirectory(const char* path) {
+	if (_mkdir(path) != 0) {
+		// Failed to rename a file
+	}
 }
 
 void FileManager::saveNavigationMesh(const char* path, const dtNavMesh* mesh)
@@ -160,7 +181,6 @@ struct TileCacheTileHeader
 void FileManager::saveNavigationMeshCached(const char* path, const dtTileCache* m_tileCache, const dtNavMesh* m_navMesh)
 {
 	if (!m_tileCache) return;
-
 	FILE* fp = fopen(path, "wb");
 	if (!fp)
 		return;
