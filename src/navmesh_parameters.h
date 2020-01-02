@@ -39,6 +39,24 @@ namespace godot {
 			PARTITION_MONOTONE,
 		};
 	};
+
+	class CachedNavmeshParameters : public NavmeshParameters {
+		GODOT_CLASS(CachedNavmeshParameters, Resource);
+	public:
+		CachedNavmeshParameters();
+		~CachedNavmeshParameters();
+
+		void _init();
+
+		void _ready();
+
+		static void _register_methods();
+
+		SETGET(max_obstacles, int);
+		SETGET(max_layers, int);
+
+
+	};
 }
 
 #endif

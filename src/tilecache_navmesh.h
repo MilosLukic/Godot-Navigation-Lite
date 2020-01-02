@@ -9,17 +9,33 @@ namespace godot {
 	class DetourNavigationMeshCached: public DetourNavigationMesh {
 		GODOT_CLASS(DetourNavigationMeshCached, Spatial);
 		/* TILE CACHE */
+		friend struct NavMeshProcess;
+	public:
 		dtTileCache* tile_cache;
 		dtTileCacheAlloc* tile_cache_alloc;
 		dtTileCacheCompressor* tile_cache_compressor;
 		dtTileCacheMeshProcess* mesh_process;
-		friend struct NavMeshProcess;
-	public:
 		DetourNavigationMeshCached();
 		~DetourNavigationMeshCached();
 
+		void _init();
+		void _exit_tree();
+		void _ready();
+		static void _register_methods();
+		void build_navmesh();
+
+		void clear_navmesh();
+
+		dtNavMesh* load_mesh();
+
+		void save_mesh();
+
+		void _on_renamed(Variant v);
+
 		int max_obstacles;
 		int max_layers;
+
+		Ref<CachedNavmeshParameters> navmesh_parameters;
 
 		std::vector<int> tile_queue;
 		std::vector<Vector3> offmesh_vertices;

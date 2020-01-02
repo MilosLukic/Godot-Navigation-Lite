@@ -13,6 +13,7 @@ const CLEAR_NAVMESH = 1
 var currently_selected = null
 onready var navigation_script = preload("res://bin/detour_navigation.gdns")
 onready var navmesh_parameters = preload("res://bin/navmesh_parameters.gdns")
+onready var cached_navmesh_parameters = preload("res://bin/cached_navmesh_parameters.gdns")
 
 func _enter_tree():
 	# When this plugin node enters tree, add the custom type
@@ -20,13 +21,22 @@ func _enter_tree():
 		"DetourNavigation", 
 		"Spatial", 
 		load("res://addons/DetourNavigation/detour_navigation_bootstrap.gd"), 
-		load("res://addons/DetourNavigation/icons/navigation_icon.svg"))
+		load("res://addons/DetourNavigation/icons/navigation_icon.svg")
+	)
 	
 	add_custom_type(
 		"DetourNavigationMesh", 
 		"Spatial", 
 		load("res://addons/DetourNavigation/detour_navigation_mesh_bootstrap.gd"), 
-		load("res://addons/DetourNavigation/icons/navigation_mesh_instance_icon.svg"))
+		load("res://addons/DetourNavigation/icons/navigation_mesh_instance_icon.svg")
+	)
+	
+	add_custom_type(
+		"DetourNavigationMeshCached", 
+		"Spatial", 
+		load("res://addons/DetourNavigation/detour_navigation_mesh_cached_bootstrap.gd"), 
+		load("res://addons/DetourNavigation/icons/navigation_mesh_instance_icon.svg")
+	)
 
 	var editor_interface = get_editor_interface()
 	var base_control = editor_interface.get_base_control()
@@ -76,11 +86,12 @@ func _exit_tree():
 
 	remove_custom_type("DetourNavigation")
 	remove_custom_type("DetourNavigationMesh")
+	remove_custom_type("DetourNavigationMeshCached")
 
 
 func _on_navigation_menu_id_pressed(id):
 	if id == CREATE_CACHED_NAVMESH:
-		currently_selected.create_cached_navmesh(navmesh_parameters.new())
+		currently_selected.create_cached_navmesh(cached_navmesh_parameters.new())
 	elif id == CREATE_NAVMESH:
 		currently_selected.create_navmesh(navmesh_parameters.new())
 

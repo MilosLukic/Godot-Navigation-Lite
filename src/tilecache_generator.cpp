@@ -43,6 +43,31 @@ DetourNavigationMeshCacheGenerator::~DetourNavigationMeshCacheGenerator() {
 	
 }
 
+void DetourNavigationMeshCacheGenerator::build() {
+	DetourNavigationMeshGenerator::navmesh_parameters = navmesh_parameters;
+
+	joint_build();
+	dtTileCacheParams tile_cache_params;
+	memset(&tile_cache_params, 0, sizeof(tile_cache_params));
+	rcVcopy(tile_cache_params.orig, &bounding_box.position[0]);
+	tile_cache_params.ch = navmesh_parameters->get_cell_height();
+	tile_cache_params.cs = navmesh_parameters->get_cell_size();
+	tile_cache_params.width = navmesh_parameters->get_tile_size();
+	tile_cache_params.height = navmesh_parameters->get_tile_size();
+	tile_cache_params.maxSimplificationError = navmesh_parameters->get_edge_max_error();
+	tile_cache_params.maxTiles = get_num_tiles_x() * get_num_tiles_z() * navmesh_parameters->get_max_layers();
+	tile_cache_params.maxObstacles = navmesh_parameters->get_max_obstacles();
+	tile_cache_params.walkableClimb = navmesh_parameters->get_agent_max_climb();
+	tile_cache_params.walkableHeight = navmesh_parameters->get_agent_height();
+	tile_cache_params.walkableRadius = navmesh_parameters->get_agent_radius();
+	if (!alloc_tile_cache())
+		return;
+	if (!init_tile_cache(&tile_cache_params))
+		return;
+	unsigned int result = build_tiles(
+		0, 0, get_num_tiles_x() - 1, get_num_tiles_z() - 1
+	);
+}
 
 unsigned int DetourNavigationMeshCacheGenerator::build_tiles(
 	int x1, int z1, int x2, int z2

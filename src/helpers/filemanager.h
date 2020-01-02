@@ -19,7 +19,7 @@ namespace godot {
 		static void moveFile(const char* path, const char* new_path);
 		static void createDirectory(const char* path);
 		static void saveNavigationMeshCached(const char* path, const dtTileCache* m_tileCache, const dtNavMesh* m_navMesh);
-		static void loadNavigationMeshCached(const char* path, dtTileCache* m_tileCache, dtNavMesh* m_navMesh);
+		static void loadNavigationMeshCached(const char* path, dtTileCache* m_tileCache, dtNavMesh* m_navMesh, dtTileCacheMeshProcess* m_tmproc);
 	};
 }
 

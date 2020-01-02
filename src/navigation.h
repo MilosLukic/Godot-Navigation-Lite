@@ -33,6 +33,7 @@
 #include "RecastAssert.h"
 #include "helpers.h"
 #include "navmesh_generator.h"
+#include "tilecache_generator.h"
 
 
 namespace godot {
@@ -71,9 +72,12 @@ namespace godot {
 		void _init();
 		void _ready();
 
+		DetourNavigationMeshCached *create_cached_navmesh(Ref<CachedNavmeshParameters> np);
+
 		DetourNavigationMesh *create_navmesh(Ref<NavmeshParameters> np);
-		void create_cached_navmesh();
+
 		void build_navmesh(DetourNavigationMesh *navigation);
+		void build_navmesh_cached(DetourNavigationMeshCached* navmesh);
 		void _notification(int p_what);
 
 	};

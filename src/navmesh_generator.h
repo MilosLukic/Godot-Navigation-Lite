@@ -55,6 +55,7 @@ namespace godot {
 		};
 
 		void build();
+		void joint_build();
 		bool alloc();
 		bool init(dtNavMeshParams* params);
 

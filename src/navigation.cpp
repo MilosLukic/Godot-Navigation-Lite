@@ -48,10 +48,13 @@ void DetourNavigation::_ready() {
 	}
 }
 
-void DetourNavigation::create_cached_navmesh() {
-	/*DetourNavigationMeshCached *cached_navmesh = DetourNavigationMeshCached::_new();
+DetourNavigationMeshCached *DetourNavigation::create_cached_navmesh(Ref<CachedNavmeshParameters> np) {
+	DetourNavigationMeshCached *cached_navmesh = DetourNavigationMeshCached::_new();
+	cached_navmesh->navmesh_parameters = np;
 	add_child(cached_navmesh);
-	cached_navmesh->set_owner(get_tree()->get_edited_scene_root());*/
+	cached_navmesh->set_owner(get_tree()->get_edited_scene_root());
+	cached_navmesh->set_name("CachedDetourNavigationMesh");
+	return cached_navmesh;
 }
 
 DetourNavigationMesh *DetourNavigation::create_navmesh(Ref<NavmeshParameters> np) {
@@ -75,6 +78,36 @@ void DetourNavigation::build_navmesh(DetourNavigationMesh* navmesh) {
 	dtnavmesh_gen->navmesh_parameters = navmesh->navmesh_parameters;
 	dtnavmesh_gen->build();
 	navmesh->detour_navmesh = dtnavmesh_gen->detour_navmesh;
+	navmesh->build_debug_mesh();
+
+	delete dtnavmesh_gen;
+	for (Ref<ArrayMesh> m : *meshes) {
+		if (m.is_valid()) {
+			m.unref();
+		}
+	}
+	delete meshes;
+	delete transforms;
+	delete aabbs;
+}
+
+void DetourNavigation::build_navmesh_cached(DetourNavigationMeshCached* navmesh) {
+	std::vector<Ref<Mesh>>* meshes = new std::vector<Ref<Mesh>>();
+	std::vector<Transform>* transforms = new std::vector<Transform>();
+	std::vector<AABB>* aabbs = new std::vector<AABB>();
+	DetourNavigation::collect_mesh_instances(get_children(), meshes, transforms, aabbs);
+
+
+	DetourNavigationMeshCacheGenerator* dtnavmesh_gen = new DetourNavigationMeshCacheGenerator();
+	dtnavmesh_gen->init_mesh_data(meshes, transforms, aabbs, get_global_transform());
+	dtnavmesh_gen->navmesh_parameters = navmesh->navmesh_parameters;
+
+	dtnavmesh_gen->build();
+	navmesh->detour_navmesh = dtnavmesh_gen->detour_navmesh;
+	navmesh->tile_cache = dtnavmesh_gen->get_tile_cache();
+	navmesh->tile_cache_compressor = dtnavmesh_gen->get_tile_cache_compressor();
+	navmesh->mesh_process = dtnavmesh_gen->get_mesh_process();
+
 	navmesh->build_debug_mesh();
 
 	delete dtnavmesh_gen;

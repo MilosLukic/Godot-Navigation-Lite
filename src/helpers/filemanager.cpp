@@ -1,5 +1,6 @@
 #include "filemanager.h"
 #include <direct.h>
+#include <Godot.hpp>
 
 using namespace godot;
 
@@ -217,7 +218,7 @@ void FileManager::saveNavigationMeshCached(const char* path, const dtTileCache* 
 	fclose(fp);
 }
 
-void FileManager::loadNavigationMeshCached(const char* path, dtTileCache* m_tileCache, dtNavMesh* m_navMesh)
+void FileManager::loadNavigationMeshCached(const char* path, dtTileCache* m_tileCache, dtNavMesh* m_navMesh, dtTileCacheMeshProcess *m_tmproc)
 {
 	FILE* fp = fopen(path, "rb");
 	if (!fp) return;
@@ -263,8 +264,7 @@ void FileManager::loadNavigationMeshCached(const char* path, dtTileCache* m_tile
 	}
 	LinearAllocator *m_talloc = new LinearAllocator(32000);
 	FastLZCompressor *m_tcomp = new FastLZCompressor;
-	//MeshProcess m_tmproc = new MeshProcess;
-	status = m_tileCache->init(&header.cacheParams, m_talloc, m_tcomp, NULL);//m_tmproc);
+	status = m_tileCache->init(&header.cacheParams, m_talloc, m_tcomp, m_tmproc);
 	if (dtStatusFailed(status))
 	{
 		fclose(fp);

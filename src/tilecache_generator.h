@@ -5,7 +5,7 @@
 
 
 namespace godot {
-	class DetourNavigationMeshCacheGenerator : DetourNavigationMeshGenerator {
+	class DetourNavigationMeshCacheGenerator : public DetourNavigationMeshGenerator {
 		dtTileCache* tile_cache;
 		dtTileCacheAlloc* tile_cache_alloc;
 		dtTileCacheCompressor* tile_cache_compressor;
@@ -14,9 +14,8 @@ namespace godot {
 	public:
 		DetourNavigationMeshCacheGenerator();
 		~DetourNavigationMeshCacheGenerator();
-		/* TILE CACHE */
-		int max_obstacles;
-		int max_layers;
+		void build();
+		Ref<CachedNavmeshParameters> navmesh_parameters;
 
 		std::vector<int> tile_queue;
 		std::vector<Vector3> offmesh_vertices;
@@ -39,6 +38,11 @@ namespace godot {
 		dtTileCache* get_tile_cache() {
 			return tile_cache;
 		}
+		
+		dtTileCacheMeshProcess* get_mesh_process() {
+			return mesh_process;
+		}
+
 		dtTileCacheCompressor* get_tile_cache_compressor() {
 			return tile_cache_compressor;
 		}

@@ -8,8 +8,16 @@ DetourNavigationMeshGenerator::~DetourNavigationMeshGenerator() {
 }
 
 void DetourNavigationMeshGenerator::build() {
+	joint_build();
+	unsigned int result = build_tiles(
+		0, 0, get_num_tiles_x() - 1, get_num_tiles_z() - 1
+	);
+}
+
+void DetourNavigationMeshGenerator::joint_build() {
+	Godot::print(navmesh_parameters->get_tile_size());
 	for (int i = 0; i < input_meshes->size(); i++) {
-			bounding_box.merge_with(
+		bounding_box.merge_with(
 			input_transforms->at(i).xform(input_aabbs->at(i))
 		);
 	}
@@ -60,38 +68,6 @@ void DetourNavigationMeshGenerator::build() {
 		Godot::print("Failed to initialize detour navmesh.");
 		return;
 	}
-	/*DetourNavigationMeshCached* cached_navm = dynamic_cast<DetourNavigationMeshCached*>(navmesh);
-	if (cached_navm != nullptr)
-	{
-		dtTileCacheParams tile_cache_params;
-		memset(&tile_cache_params, 0, sizeof(tile_cache_params));
-		rcVcopy(tile_cache_params.orig, &bmin.coord[0]);
-		tile_cache_params.ch = cached_navm->cell_height;
-		tile_cache_params.cs = cached_navm->cell_size;
-		tile_cache_params.width = cached_navm->tile_size;
-		tile_cache_params.height = cached_navm->tile_size;
-		tile_cache_params.maxSimplificationError = cached_navm->edge_max_error;
-		tile_cache_params.maxTiles = get_num_tiles_x() * get_num_tiles_z() * max_layers;
-		tile_cache_params.maxObstacles = cached_navm->max_obstacles;
-		tile_cache_params.walkableClimb = cached_navm->agent_max_climb;
-		tile_cache_params.walkableHeight = cached_navm->agent_height;
-		tile_cache_params.walkableRadius = cached_navm->agent_radius;
-		if (!cached_navm->alloc_tile_cache())
-			return;
-		if (!cached_navm->init_tile_cache(&tile_cache_params))
-			return;
-
-		unsigned int result = cached_navm->build_tiles(
-			0, 0, navmesh->get_num_tiles_x() - 1, navmesh->get_num_tiles_z() - 1
-		);
-		cached_navm->build_debug_mesh();
-	}
-	else {*/
-		unsigned int result = build_tiles(
-			0, 0, get_num_tiles_x() - 1, get_num_tiles_z() - 1
-		);
-	//}
-
 }
 
 unsigned int DetourNavigationMeshGenerator::build_tiles(

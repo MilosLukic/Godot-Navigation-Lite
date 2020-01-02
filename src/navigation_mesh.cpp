@@ -16,6 +16,7 @@ void DetourNavigationMesh::_register_methods() {
 	register_property<DetourNavigationMesh, Ref<NavmeshParameters>>("parameters", &DetourNavigationMesh::navmesh_parameters, Ref<NavmeshParameters>(), 
 		GODOT_METHOD_RPC_MODE_DISABLED, GODOT_PROPERTY_USAGE_DEFAULT, GODOT_PROPERTY_HINT_RESOURCE_TYPE, "Resource");
 }
+
 void DetourNavigationMesh::_init() {
 	// initialize any variables here
 
