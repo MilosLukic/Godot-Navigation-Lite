@@ -18,9 +18,6 @@ void DetourNavigationMesh::_register_methods() {
 }
 
 void DetourNavigationMesh::_init() {
-	// initialize any variables here
-
-	Godot::print(std::to_string(get_instance_id()).c_str());
 }
 
 void DetourNavigationMesh::_exit_tree() {
@@ -32,7 +29,7 @@ void DetourNavigationMesh::_ready() {
 	navmesh_name = get_name().utf8().get_data();
 	/*
 	Godot::print("Adding obstacle");
-	DetourNavigationMeshCached* cached_navm = (DetourNavigationMeshCached *)navmesh;
+	DetourNavigationMeshCached* cached_navm = (DetourNavigationMeshCached *) navmesh;
 	unsigned int id = cached_navm->add_obstacle(Vector3(-5.f, 0.f, -5.f), 4.f, 3.f);
 	dtTileCache* tile_cache = cached_navm->get_tile_cache();
 	tile_cache->update(0.1f, cached_navm->get_detour_navmesh());
@@ -55,14 +52,13 @@ void DetourNavigationMesh::_on_renamed(Variant v) {
 	char* previous_path = get_cache_file_path();
 	navmesh_name = get_name().utf8().get_data();
 	char* current_path = get_cache_file_path();
-	Godot::print("renaming");
 	FileManager::moveFile(previous_path, current_path);
 }
 
 char *DetourNavigationMesh::get_cache_file_path() {
 	std::string postfix = ".bin";
 	std::string prefix = ".navcache/";
-	std::string main = navmesh_name;
+	std::string main = get_name().utf8().get_data();
 	return _strdup((prefix + main + postfix).c_str());
 }
 
@@ -78,7 +74,6 @@ void DetourNavigationMesh::release_navmesh() {
 void DetourNavigationMesh::clear_debug_mesh() {
 	if (debug_mesh.is_valid()) {
 		debug_mesh.unref();
-		Godot::print("Cleared debug mesh.");
 	}
 	if (debug_mesh_instance != nullptr) {
 		debug_mesh_instance->queue_free();
@@ -182,12 +177,8 @@ dtNavMesh* DetourNavigationMesh::load_mesh() {
 }
 
 void DetourNavigationMesh::save_mesh() {
-	Godot::print("Saving navmesh...");
 	FileManager::createDirectory(".navcache");
-	Godot::print(get_cache_file_path());
 	FileManager::saveNavigationMesh(get_cache_file_path(), get_detour_navmesh());
-	Godot::print("Navmesh successfully saved.");
-
 }
 
 
@@ -219,18 +210,15 @@ void DetourNavigationMesh::find_path() {
 	nav_query->init(this, get_global_transform());
 	//Dictionary result = nav_query->find_path(Vector3(0.f, 0.f, 0.f), Vector3(11.f, 0.3f, 11.f), Vector3(50.0f, 3.f, 50.f), new DetourNavigationQueryFilter());
 	Dictionary result = nav_query->find_path(Vector3(3.f, 0.f, -15.f), Vector3(-5.6f, 0.3f, 2.8f), Vector3(50.0f, 3.f, 50.f), new DetourNavigationQueryFilter());
-	Godot::print(result["points"]);
 	result.clear();
 }
 
 void DetourNavigationMesh::_notification(int p_what) {
 	switch (p_what) {
 	case NOTIFICATION_PREDELETE: {
-
-		Godot::print("Deleting file!");
-		if (Engine::get_singleton()->is_editor_hint()) {
+		/*if (Engine::get_singleton()->is_editor_hint()) {
 			FileManager::deleteFile(get_cache_file_path());
-		}
+		}*/
 	} break;
 	/*case NOTIFICATION_EXIT_TREE: {
 		if (debug_mesh_instance) {

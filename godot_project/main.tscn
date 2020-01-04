@@ -59,6 +59,7 @@ script = ExtResource( 3 )
 [node name="DetourNavigation" type="Spatial" parent="."]
 script = ExtResource( 2 )
 parsed_geometry_type = 0
+collision_mask = -843055103
 
 [node name="MeshInstance" type="MeshInstance" parent="DetourNavigation"]
 transform = Transform( 1, 0, 0, 0, -1.62921e-07, 1, 0, -1, -1.62921e-07, 0.341867, -0.0555032, 0.228902 )
@@ -98,6 +99,12 @@ material/0 = null
 [node name="StaticBody" type="StaticBody" parent="DetourNavigation/MeshInstance5"]
 
 [node name="CollisionShape" type="CollisionShape" parent="DetourNavigation/MeshInstance5/StaticBody"]
+shape = SubResource( 6 )
+
+[node name="StaticBody2" type="StaticBody" parent="DetourNavigation"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -9.75438, 0, 4.59667 )
+
+[node name="CollisionShape" type="CollisionShape" parent="DetourNavigation/StaticBody2"]
 shape = SubResource( 6 )
 
 [node name="MeshInstance6" type="MeshInstance" parent="DetourNavigation"]

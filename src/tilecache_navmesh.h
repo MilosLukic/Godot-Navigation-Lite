@@ -11,13 +11,14 @@ namespace godot {
 		/* TILE CACHE */
 		friend struct NavMeshProcess;
 	public:
-		dtTileCache* tile_cache;
-		dtTileCacheAlloc* tile_cache_alloc;
-		dtTileCacheCompressor* tile_cache_compressor;
-		dtTileCacheMeshProcess* mesh_process;
+		dtTileCache* tile_cache = nullptr;
+		dtTileCacheAlloc* tile_cache_alloc = nullptr;
+		dtTileCacheCompressor* tile_cache_compressor = nullptr;
+		dtTileCacheMeshProcess* mesh_process = nullptr;
+
 		DetourNavigationMeshCached();
 		~DetourNavigationMeshCached();
-
+		
 		void _init();
 		void _exit_tree();
 		void _ready();
@@ -31,6 +32,11 @@ namespace godot {
 		void save_mesh();
 
 		void _on_renamed(Variant v);
+
+
+		dtTileCache* get_tile_cache() {
+			return tile_cache;
+		}
 
 		int max_obstacles;
 		int max_layers;

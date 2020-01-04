@@ -220,6 +220,8 @@ void FileManager::saveNavigationMeshCached(const char* path, const dtTileCache* 
 
 void FileManager::loadNavigationMeshCached(const char* path, dtTileCache* m_tileCache, dtNavMesh* m_navMesh, dtTileCacheMeshProcess *m_tmproc)
 {
+
+	Godot::print(path);
 	FILE* fp = fopen(path, "rb");
 	if (!fp) return;
 
@@ -232,6 +234,7 @@ void FileManager::loadNavigationMeshCached(const char* path, dtTileCache* m_tile
 		fclose(fp);
 		return;
 	}
+
 	if (header.magic != TILECACHESET_MAGIC)
 	{
 		fclose(fp);
@@ -243,7 +246,6 @@ void FileManager::loadNavigationMeshCached(const char* path, dtTileCache* m_tile
 		return;
 	}
 
-	m_navMesh = dtAllocNavMesh();
 	if (!m_navMesh)
 	{
 		fclose(fp);
@@ -256,7 +258,6 @@ void FileManager::loadNavigationMeshCached(const char* path, dtTileCache* m_tile
 		return;
 	}
 
-	m_tileCache = dtAllocTileCache();
 	if (!m_tileCache)
 	{
 		fclose(fp);
@@ -304,8 +305,9 @@ void FileManager::loadNavigationMeshCached(const char* path, dtTileCache* m_tile
 			dtFree(data);
 		}
 
-		if (tile)
+		if (tile) {
 			m_tileCache->buildNavMeshTile(tile, m_navMesh);
+		}
 	}
 
 	fclose(fp);

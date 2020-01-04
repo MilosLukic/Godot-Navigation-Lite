@@ -13,10 +13,11 @@ void DetourNavigation::_register_methods() {
 		"parsed_geometry_type", &DetourNavigation::set_parsed_geometry_type, &DetourNavigation::get_parsed_geometry_type, (int) PARSED_GEOMETRY_STATIC_COLLIDERS,
 		GODOT_METHOD_RPC_MODE_DISABLED, GODOT_PROPERTY_USAGE_DEFAULT, GODOT_PROPERTY_HINT_ENUM, "Mesh instances,Static bodies"
 	);
+	register_property<DetourNavigation, int>("collision_mask", &DetourNavigation::set_collision_mask, &DetourNavigation::get_collision_mask, 1, 
+		GODOT_METHOD_RPC_MODE_DISABLED, GODOT_PROPERTY_USAGE_DEFAULT, GODOT_PROPERTY_HINT_LAYERS_3D_PHYSICS);
 }
 
 DetourNavigation::DetourNavigation(){
-	set_parsed_geometry_type(PARSED_GEOMETRY_STATIC_COLLIDERS);
 }
 
 DetourNavigation::~DetourNavigation(){
@@ -26,22 +27,16 @@ void DetourNavigation::_init() {
 }
 
 void DetourNavigation::_ready() {
-	parsed_geometry_type = PARSED_GEOMETRY_MESH_INSTANCES;
-	collision_mask |= 1;
 
 	for (int i = 0; i < get_child_count(); ++i) {
 		DetourNavigationMeshCached* navmesh_pc = Object::cast_to<DetourNavigationMeshCached>(get_child(i));
 		if (navmesh_pc != nullptr) {
-			Godot::print("building cached");
 			navmesh_pc->load_mesh();
-			// build_navmesh(navmesh_pc);
 			return;
 		}
 
 		DetourNavigationMesh* navmesh_p = Object::cast_to<DetourNavigationMesh>(get_child(i));
 		if (navmesh_p != nullptr) {
-			Godot::print("building regular");
-			//build_navmesh(navmesh_p);
 			navmesh_p->load_mesh();
 			return;
 		}
@@ -173,7 +168,6 @@ void DetourNavigation::convert_static_bodies(
 		if (collision_shape == NULL) {
 			continue;
 		}
-
 		Transform transform = collision_shape->get_global_transform();
 
 		Ref<Mesh> mesh;
@@ -296,7 +290,7 @@ void DetourNavigation::collect_mesh_instances(Array& geometries, std::vector<Ref
 		else {
 			StaticBody* static_body = Object::cast_to<StaticBody>(geometries[i]);
 
-			if (static_body && !(static_body->get_collision_layer() & collision_mask)) {
+			if (static_body && static_body->get_collision_layer() & collision_mask) {
 				convert_static_bodies(static_body, meshes, transforms, aabbs);
 			}
 		}

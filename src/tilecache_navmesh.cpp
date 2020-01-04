@@ -44,17 +44,23 @@ DetourNavigationMeshCached::DetourNavigationMeshCached() {
 	max_obstacles = DEFAULT_MAX_OBSTACLES;
 	max_layers = DEFAULT_MAX_LAYERS;
 
-	tile_cache = 0;
-	tile_cache_alloc = new LinearAllocator(64000);
-	tile_cache_compressor = new FastLZCompressor();
 	mesh_process = new NavMeshProcess(this);
 }
 
 DetourNavigationMeshCached::~DetourNavigationMeshCached() {
-	dtFreeTileCache(get_tile_cache());
+	Godot::print("hoooo");
+	if (tile_cache != nullptr) {
+		dtFreeTileCache(tile_cache);
+	}
 
-	delete tile_cache_compressor;
-	delete mesh_process;
+	if (tile_cache_compressor != nullptr) {
+		delete tile_cache_compressor;
+	}
+
+	if (mesh_process != nullptr) {
+		delete mesh_process;
+	}
+
 }
 
 
@@ -79,8 +85,10 @@ void DetourNavigationMeshCached::_exit_tree() {
 
 
 void DetourNavigationMeshCached::_ready() {
+	Godot::print("ready 1");
 	get_tree()->connect("node_renamed", this, "_on_renamed");
-	//navmesh_name = get_name().utf8().get_data();
+	navmesh_name = get_name().utf8().get_data();
+	Godot::print("ready");
 }
 
 void DetourNavigationMeshCached::build_navmesh() {
@@ -100,10 +108,10 @@ void DetourNavigationMeshCached::clear_navmesh() {
 }
 
 dtNavMesh* DetourNavigationMeshCached::load_mesh() {
-	Godot::print("hoj");
-	mesh_process = new NavMeshProcess(this);
-	FileManager::loadNavigationMeshCached(get_cache_file_path(), tile_cache, get_detour_navmesh(), mesh_process);
-	Godot::print("heej");
+	detour_navmesh = dtAllocNavMesh();
+	tile_cache = dtAllocTileCache();
+
+	FileManager::loadNavigationMeshCached(get_cache_file_path(), tile_cache, detour_navmesh, mesh_process);
 	if (detour_navmesh == 0) {
 		return 0;
 	}
@@ -121,7 +129,6 @@ void DetourNavigationMeshCached::save_mesh() {
 	Godot::print(get_cache_file_path());
 	FileManager::saveNavigationMeshCached(get_cache_file_path(), tile_cache, get_detour_navmesh());
 	Godot::print("Cached navmesh successfully saved.");
-
 }
 
 

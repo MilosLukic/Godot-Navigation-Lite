@@ -17,5 +17,5 @@ extern "C" void GDN_EXPORT godot_nativescript_init(void* handle) {
 	godot::register_tool_class<godot::DetourNavigationMesh>();
 	godot::register_tool_class<godot::NavmeshParameters>();
 	godot::register_tool_class<godot::CachedNavmeshParameters>();
-	godot::register_class<godot::DetourNavigationMeshCached>();
+	godot::register_tool_class<godot::DetourNavigationMeshCached>();
 }
