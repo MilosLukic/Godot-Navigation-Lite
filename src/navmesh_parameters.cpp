@@ -40,15 +40,12 @@ void NavmeshParameters::_register_methods() {
 	register_property<NavmeshParameters, Vector3>("padding", &(NavmeshParameters::set_padding), &(NavmeshParameters::get_padding), Vector3(1.0f, 1.0f, 1.0f));
 }
 void NavmeshParameters::_init() {
-	Godot::print("navmehs parameters inited");
 }
 
 void NavmeshParameters::_ready() {
-	Godot::print("navmehs parameters ready");
 }
 
 NavmeshParameters::NavmeshParameters() {
-	Godot::print("navmehs parameters constructor called");
 	tile_size = DEFAULT_TILE_SIZE;
 	cell_size = DEFAULT_CELL_SIZE;
 	cell_height = DEFAULT_CELL_HEIGHT;
@@ -69,7 +66,6 @@ NavmeshParameters::NavmeshParameters() {
 }
 
 NavmeshParameters::~NavmeshParameters() {
-	Godot::print("deconstruct navmesh parameters");
 
 }
 
@@ -82,11 +78,9 @@ CachedNavmeshParameters::~CachedNavmeshParameters() {
 }
 
 void CachedNavmeshParameters::_init() {
-	Godot::print("cached navmesh parameters inited");
 }
 
 void CachedNavmeshParameters::_ready() {
-	Godot::print("cached navmesh parameters ready");
 }
 
 

@@ -8,6 +8,7 @@ DetourNavigationQuery::DetourNavigationQuery(){
 }
 
 DetourNavigationQuery::~DetourNavigationQuery() {
+	dtFreeNavMeshQuery(navmesh_query);
 }
 
 DetourNavigationQueryFilter::DetourNavigationQueryFilter(){
@@ -15,10 +16,11 @@ DetourNavigationQueryFilter::DetourNavigationQueryFilter(){
 }
 
 DetourNavigationQueryFilter::~DetourNavigationQueryFilter() {
+	delete dt_query_filter;
 }
 
 void DetourNavigationQuery::init(
-	DetourNavigationMesh *mesh,
+	dtNavMesh *dtMesh,
 	const Transform& xform
 ) {
 	navmesh_query = dtAllocNavMeshQuery();
@@ -26,7 +28,7 @@ void DetourNavigationQuery::init(
 		ERR_PRINT("Failed to create navigation query.");
 		return;
 	}
-	if (dtStatusFailed(navmesh_query->init(mesh->get_detour_navmesh(), MAX_POLYS))) {
+	if (dtStatusFailed(navmesh_query->init(dtMesh, MAX_POLYS))) {
 		ERR_PRINT("Failed to initialize navigation query.");
 		return;
 	}
@@ -51,6 +53,7 @@ Dictionary DetourNavigationQuery::find_path(
 	for (int i = 0; i < points->size(); i++) {
 		w[i] = transform.xform((*points)[i]);
 	}
+
 	return result;
 }
 
@@ -70,7 +73,6 @@ Dictionary DetourNavigationQuery::_find_path(
 
 	dtPolyRef pstart;
 	dtPolyRef pend;
-
 	navmesh_query->findNearestPoly(
 		&start.coord[0], &extents.coord[0],
 		filter->dt_query_filter, &pstart, NULL
@@ -83,7 +85,7 @@ Dictionary DetourNavigationQuery::_find_path(
 	if (!pstart || !pend) {
 		return ret;
 	}
-		
+
 	int num_polys = 0;
 	int num_path_points = 0;
 	navmesh_query->findPath(
@@ -96,7 +98,7 @@ Dictionary DetourNavigationQuery::_find_path(
 	if (!num_polys) {
 		return ret;
 	}
-		
+
 	Vector3 actual_end = end;
 	if (query_data->polys[num_polys - 1] != pend) {
 		Vector3 tmp;

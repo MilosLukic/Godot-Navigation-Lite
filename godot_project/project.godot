@@ -21,7 +21,7 @@ config/icon="res://icon.png"
 
 [editor_plugins]
 
-enabled=PoolStringArray( "DetourNavigation" )
+enabled=PoolStringArray( "detour-navigation" )
 
 [layer_names]
 

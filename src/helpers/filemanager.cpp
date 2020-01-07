@@ -220,8 +220,6 @@ void FileManager::saveNavigationMeshCached(const char* path, const dtTileCache* 
 
 void FileManager::loadNavigationMeshCached(const char* path, dtTileCache* m_tileCache, dtNavMesh* m_navMesh, dtTileCacheMeshProcess *m_tmproc)
 {
-
-	Godot::print(path);
 	FILE* fp = fopen(path, "rb");
 	if (!fp) return;
 
@@ -286,7 +284,7 @@ void FileManager::loadNavigationMeshCached(const char* path, dtTileCache* m_tile
 		if (!tileHeader.tileRef || !tileHeader.dataSize)
 			break;
 
-		unsigned char* data = (unsigned char*)dtAlloc(tileHeader.dataSize, DT_ALLOC_PERM);
+		unsigned char* data = (unsigned char*) dtAlloc(tileHeader.dataSize, DT_ALLOC_PERM);
 		if (!data) break;
 		memset(data, 0, tileHeader.dataSize);
 		size_t tileDataReadReturnCode = fread(data, tileHeader.dataSize, 1, fp);

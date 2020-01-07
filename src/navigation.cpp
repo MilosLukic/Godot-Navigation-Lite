@@ -11,13 +11,15 @@ void DetourNavigation::_register_methods() {
 
 	register_property<DetourNavigation, int>(
 		"parsed_geometry_type", &DetourNavigation::set_parsed_geometry_type, &DetourNavigation::get_parsed_geometry_type, (int) PARSED_GEOMETRY_STATIC_COLLIDERS,
-		GODOT_METHOD_RPC_MODE_DISABLED, GODOT_PROPERTY_USAGE_DEFAULT, GODOT_PROPERTY_HINT_ENUM, "Mesh instances,Static bodies"
+		GODOT_METHOD_RPC_MODE_DISABLED, GODOT_PROPERTY_USAGE_DEFAULT, GODOT_PROPERTY_HINT_ENUM, "Static bodies,Mesh instances"
 	);
 	register_property<DetourNavigation, int>("collision_mask", &DetourNavigation::set_collision_mask, &DetourNavigation::get_collision_mask, 1, 
 		GODOT_METHOD_RPC_MODE_DISABLED, GODOT_PROPERTY_USAGE_DEFAULT, GODOT_PROPERTY_HINT_LAYERS_3D_PHYSICS);
 }
 
 DetourNavigation::DetourNavigation(){
+	set_collision_mask(1);
+	set_parsed_geometry_type(PARSED_GEOMETRY_STATIC_COLLIDERS);
 }
 
 DetourNavigation::~DetourNavigation(){
@@ -32,13 +34,12 @@ void DetourNavigation::_ready() {
 		DetourNavigationMeshCached* navmesh_pc = Object::cast_to<DetourNavigationMeshCached>(get_child(i));
 		if (navmesh_pc != nullptr) {
 			navmesh_pc->load_mesh();
-			return;
+			//Godot::print((navmesh_pc->find_path(Vector3(4.f, 0.f, 4.f), Vector3(10.f, 0.f, 10.f)))["points"]);
 		}
 
 		DetourNavigationMesh* navmesh_p = Object::cast_to<DetourNavigationMesh>(get_child(i));
 		if (navmesh_p != nullptr) {
 			navmesh_p->load_mesh();
-			return;
 		}
 	}
 }

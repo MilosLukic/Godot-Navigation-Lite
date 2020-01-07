@@ -41,8 +41,9 @@ namespace godot {
 	class DetourNavigation : public Spatial {
 		GODOT_CLASS(DetourNavigation, Spatial)
 		enum ParsedGeometryType {
-			PARSED_GEOMETRY_MESH_INSTANCES = 1,
-			PARSED_GEOMETRY_STATIC_COLLIDERS = 2
+			PARSED_GEOMETRY_STATIC_COLLIDERS = 0,
+			PARSED_GEOMETRY_MESH_INSTANCES = 1
+			
 		};
 	private:
 		/* geometry_source can be 0 = static bodies, 1 = meshes */

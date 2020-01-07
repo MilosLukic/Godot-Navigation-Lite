@@ -1,9 +1,10 @@
-[gd_scene load_steps=15 format=2]
+[gd_scene load_steps=16 format=2]
 
-[ext_resource path="res://bin/detour_navigation.gdnlib" type="GDNativeLibrary" id=1]
-[ext_resource path="res://bin/detour_navigation.gdns" type="Script" id=2]
+[ext_resource path="res://addons/detour-navigation/bin/detour_navigation.gdns" type="Script" id=1]
+[ext_resource path="res://addons/detour-navigation/bin/cached_navmesh_parameters.gdns" type="Script" id=2]
 [ext_resource path="res://main.gd" type="Script" id=3]
-[ext_resource path="res://bin/cached_navmesh_parameters.gdns" type="Script" id=4]
+[ext_resource path="res://addons/detour-navigation/bin/detour_navigation.gdnlib" type="GDNativeLibrary" id=4]
+[ext_resource path="res://scene1.tscn" type="PackedScene" id=5]
 
 [sub_resource type="QuadMesh" id=1]
 size = Vector2( 32, 32 )
@@ -32,10 +33,10 @@ data = PoolVector3Array( 0, 0, 2.7835, 0, 0, 2.7835, 0, -0.0347, 2.7805, 0, 0, 2
 
 [sub_resource type="NativeScript" id=9]
 class_name = "DetourNavigationMeshCached"
-library = ExtResource( 1 )
+library = ExtResource( 4 )
 
 [sub_resource type="Resource" id=10]
-script = ExtResource( 4 )
+script = ExtResource( 2 )
 cell_size = 0.3
 tile_size = 64
 cell_height = 0.2
@@ -57,9 +58,7 @@ max_layers = 8
 script = ExtResource( 3 )
 
 [node name="DetourNavigation" type="Spatial" parent="."]
-script = ExtResource( 2 )
-parsed_geometry_type = 0
-collision_mask = -843055103
+script = ExtResource( 1 )
 
 [node name="MeshInstance" type="MeshInstance" parent="DetourNavigation"]
 transform = Transform( 1, 0, 0, 0, -1.62921e-07, 1, 0, -1, -1.62921e-07, 0.341867, -0.0555032, 0.228902 )
@@ -81,15 +80,7 @@ material/0 = null
 [node name="CollisionShape" type="CollisionShape" parent="DetourNavigation/MeshInstance2/StaticBody"]
 shape = SubResource( 5 )
 
-[node name="MeshInstance3" type="MeshInstance" parent="DetourNavigation"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 5.97, 0, 4.59667 )
-mesh = SubResource( 4 )
-material/0 = null
-
-[node name="StaticBody" type="StaticBody" parent="DetourNavigation/MeshInstance3"]
-
-[node name="CollisionShape" type="CollisionShape" parent="DetourNavigation/MeshInstance3/StaticBody"]
-shape = SubResource( 6 )
+[node name="MeshInstance3" parent="DetourNavigation" instance=ExtResource( 5 )]
 
 [node name="MeshInstance5" type="MeshInstance" parent="DetourNavigation"]
 transform = Transform( 0.793831, 0.199666, 0.574426, 0, 0.944566, -0.328323, -0.608138, 0.260633, 0.749826, -4.55754, 0, -7.94257 )
@@ -126,6 +117,9 @@ material/0 = null
 
 [node name="CollisionShape" type="CollisionShape" parent="DetourNavigation/MeshInstance4/StaticBody"]
 shape = SubResource( 8 )
+
+[node name="scene" parent="DetourNavigation" instance=ExtResource( 5 )]
+transform = Transform( 0.997671, 0, -0.0899292, 0, 1, 0, 0.0682068, 0, 1.31541, -9.19744, 0, 12.148 )
 
 [node name="CachedDetourNavigationMesh" type="Spatial" parent="DetourNavigation"]
 script = SubResource( 9 )

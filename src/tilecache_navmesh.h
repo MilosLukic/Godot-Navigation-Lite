@@ -2,10 +2,11 @@
 #define TILECACHE_NAVMESH_H
 
 #include "navigation_mesh.h"
+#include "tilecache_generator.h"
+
 
 
 namespace godot {
-	struct NavMeshProcess;
 	class DetourNavigationMeshCached: public DetourNavigationMesh {
 		GODOT_CLASS(DetourNavigationMeshCached, Spatial);
 		/* TILE CACHE */
@@ -14,7 +15,7 @@ namespace godot {
 		dtTileCache* tile_cache = nullptr;
 		dtTileCacheAlloc* tile_cache_alloc = nullptr;
 		dtTileCacheCompressor* tile_cache_compressor = nullptr;
-		dtTileCacheMeshProcess* mesh_process = nullptr;
+		NavMeshProcess* mesh_process = nullptr;
 
 		DetourNavigationMeshCached();
 		~DetourNavigationMeshCached();
@@ -26,6 +27,7 @@ namespace godot {
 		void build_navmesh();
 
 		void clear_navmesh();
+		Dictionary find_path(Variant from, Variant to);
 
 		dtNavMesh* load_mesh();
 
@@ -50,8 +52,8 @@ namespace godot {
 		std::vector<unsigned char> offmesh_areas;
 		std::vector<unsigned char> offmesh_dir;
 
-		unsigned int add_obstacle(const Vector3& pos, real_t radius, real_t height);
-		void remove_obstacle(unsigned int id);
+		unsigned int add_obstacle(Vector3 pos, float radius, float height);
+		void remove_obstacle(int id);
 
 
 

@@ -1,0 +1,8 @@
+[gd_resource type="NativeScript" load_steps=2 format=2]
+
+[ext_resource path="res://addons/detour-navigation/bin/detour_navigation_mesh.gdnlib" type="GDNativeLibrary" id=1]
+
+[resource]
+resource_name = "detour_navigation_mesh"
+class_name = "DetourNavigationMesh"
+library = ExtResource( 1 )

@@ -4,14 +4,13 @@
 
 static const int DEFAULT_MAX_OBSTACLES = 1024;
 static const int DEFAULT_MAX_LAYERS = 16;
-
+/*
 struct godot::NavMeshProcess : public dtTileCacheMeshProcess {
 	godot::DetourNavigationMeshCached* nav;
 	inline explicit NavMeshProcess(godot::DetourNavigationMeshCached* mesh) :
 		nav(mesh) {}
 	virtual void process(struct dtNavMeshCreateParams* params,
 		unsigned char* polyAreas, unsigned short* polyFlags) {
-		/* Add proper flags and offmesh connections here */
 		for (int i = 0; i < params->polyCount; i++) {
 			if (polyAreas[i] != RC_NULL_AREA) {
 				polyFlags[i] = RC_WALKABLE_AREA;
@@ -35,7 +34,7 @@ struct godot::NavMeshProcess : public dtTileCacheMeshProcess {
 			params->offMeshConDir = NULL;
 		}
 	}
-};
+}; */
 
 using namespace godot;
 
@@ -44,11 +43,9 @@ DetourNavigationMeshCached::DetourNavigationMeshCached() {
 	max_obstacles = DEFAULT_MAX_OBSTACLES;
 	max_layers = DEFAULT_MAX_LAYERS;
 
-	mesh_process = new NavMeshProcess(this);
 }
 
 DetourNavigationMeshCached::~DetourNavigationMeshCached() {
-	Godot::print("hoooo");
 	if (tile_cache != nullptr) {
 		dtFreeTileCache(tile_cache);
 	}
@@ -71,6 +68,9 @@ void DetourNavigationMeshCached::_register_methods() {
 	register_method("bake_navmesh", &DetourNavigationMeshCached::build_navmesh);
 	register_method("_on_renamed", &DetourNavigationMeshCached::_on_renamed);
 	register_method("clear_navmesh", &DetourNavigationMeshCached::clear_navmesh);
+	register_method("find_path", &DetourNavigationMeshCached::find_path);
+	register_method("add_obstacle", &DetourNavigationMeshCached::add_obstacle);
+	register_method("remove_obstacle", &DetourNavigationMeshCached::remove_obstacle);
 	register_property<DetourNavigationMeshCached, Ref<CachedNavmeshParameters>>("parameters", &DetourNavigationMeshCached::navmesh_parameters, Ref<CachedNavmeshParameters>(),
 		GODOT_METHOD_RPC_MODE_DISABLED, GODOT_PROPERTY_USAGE_DEFAULT, GODOT_PROPERTY_HINT_RESOURCE_TYPE, "Resource");
 }
@@ -85,10 +85,8 @@ void DetourNavigationMeshCached::_exit_tree() {
 
 
 void DetourNavigationMeshCached::_ready() {
-	Godot::print("ready 1");
 	get_tree()->connect("node_renamed", this, "_on_renamed");
 	navmesh_name = get_name().utf8().get_data();
-	Godot::print("ready");
 }
 
 void DetourNavigationMeshCached::build_navmesh() {
@@ -110,6 +108,7 @@ void DetourNavigationMeshCached::clear_navmesh() {
 dtNavMesh* DetourNavigationMeshCached::load_mesh() {
 	detour_navmesh = dtAllocNavMesh();
 	tile_cache = dtAllocTileCache();
+	mesh_process = new NavMeshProcess();
 
 	FileManager::loadNavigationMeshCached(get_cache_file_path(), tile_cache, detour_navmesh, mesh_process);
 	if (detour_navmesh == 0) {
@@ -124,11 +123,8 @@ dtNavMesh* DetourNavigationMeshCached::load_mesh() {
 }
 
 void DetourNavigationMeshCached::save_mesh() {
-	Godot::print("Saving cached navmesh...");
 	FileManager::createDirectory(".navcache");
-	Godot::print(get_cache_file_path());
 	FileManager::saveNavigationMeshCached(get_cache_file_path(), tile_cache, get_detour_navmesh());
-	Godot::print("Cached navmesh successfully saved.");
 }
 
 
@@ -136,13 +132,12 @@ void DetourNavigationMeshCached::_on_renamed(Variant v) {
 	char* previous_path = get_cache_file_path();
 	navmesh_name = get_name().utf8().get_data();
 	char* current_path = get_cache_file_path();
-	Godot::print("renaming");
 	FileManager::moveFile(previous_path, current_path);
 }
 
 
-unsigned int DetourNavigationMeshCached::add_obstacle(const Vector3& pos,
-	real_t radius, real_t height) {
+unsigned int DetourNavigationMeshCached::add_obstacle(Vector3 pos,
+	float radius, float height) {
 	/* Need to test how this works and why this needed at all */
 	/* TODO implement navmesh changes queue */
 	//	while (tile_cache->isObstacleQueueFull())
@@ -154,9 +149,10 @@ unsigned int DetourNavigationMeshCached::add_obstacle(const Vector3& pos,
 		ERR_PRINT("can't add obstacle");
 		return 0;
 	}
-	return (unsigned int)ref;
+	return (unsigned int) ref;
 }
-void DetourNavigationMeshCached::remove_obstacle(unsigned int id) {
+
+void DetourNavigationMeshCached::remove_obstacle(int id) {
 	/* Need to test how this works and why this needed at all */
 	/* TODO implement navmesh changes queue */
 	//	while (tile_cache->isObstacleQueueFull())
@@ -165,3 +161,15 @@ void DetourNavigationMeshCached::remove_obstacle(unsigned int id) {
 		ERR_PRINT("failed to remove obstacle");
 }
 
+Dictionary DetourNavigationMeshCached::find_path(Variant from, Variant to) {
+
+	if (!nav_query) {
+		nav_query = new DetourNavigationQuery();
+		nav_query->init(get_detour_navmesh(), get_global_transform());
+		query_filter = new DetourNavigationQueryFilter();
+	}
+
+	//Dictionary result = nav_query->find_path(Vector3(0.f, 0.f, 0.f), Vector3(11.f, 0.3f, 11.f), Vector3(50.0f, 3.f, 50.f), new DetourNavigationQueryFilter());
+	Dictionary result = nav_query->find_path((Vector3) from, (Vector3) to, Vector3(50.0f, 50.f, 50.f), query_filter);
+	return result;
+}

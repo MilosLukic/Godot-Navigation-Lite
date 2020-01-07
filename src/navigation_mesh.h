@@ -22,6 +22,7 @@
 #include "DetourNavMesh.h"
 #include "DetourNavMeshBuilder.h"
 #include "DetourTileCache.h"
+#include "navigation_query.h"
 #include "Recast.h"
 #include "filemanager.h"
 
@@ -57,11 +58,14 @@ namespace godot {
 		void save_mesh();
 
 		void build_debug_mesh();
-		void find_path();
+		Dictionary find_path(Variant from, Variant to);
 		void _notification(int p_what);
 		Ref<Material> get_debug_navigation_material();
 		virtual dtTileCache* get_tile_cache() { return nullptr; };
 		MeshInstance* debug_mesh_instance = nullptr;
+
+		DetourNavigationQuery *nav_query = nullptr;
+		DetourNavigationQueryFilter *query_filter = nullptr;
 
 		AABB bounding_box;
 		dtNavMesh* detour_navmesh = nullptr;

@@ -13,6 +13,7 @@ void DetourNavigationMesh::_register_methods() {
 	register_method("bake_navmesh", &DetourNavigationMesh::build_navmesh);
 	register_method("_on_renamed", &DetourNavigationMesh::_on_renamed);
 	register_method("clear_navmesh", &DetourNavigationMesh::clear_navmesh);
+	register_method("find_path", &DetourNavigationMesh::find_path);
 	register_property<DetourNavigationMesh, Ref<NavmeshParameters>>("parameters", &DetourNavigationMesh::navmesh_parameters, Ref<NavmeshParameters>(), 
 		GODOT_METHOD_RPC_MODE_DISABLED, GODOT_PROPERTY_USAGE_DEFAULT, GODOT_PROPERTY_HINT_RESOURCE_TYPE, "Resource");
 }
@@ -69,6 +70,14 @@ void DetourNavigationMesh::release_navmesh() {
 	}
 	detour_navmesh = NULL;
 	clear_debug_mesh();
+	if (nav_query != nullptr) {
+		delete nav_query;
+		nav_query = nullptr;
+	}
+	if (query_filter != nullptr) {
+		delete query_filter;
+		query_filter = nullptr;
+	}
 }
 
 void DetourNavigationMesh::clear_debug_mesh() {
@@ -205,12 +214,17 @@ Ref<Material> DetourNavigationMesh::get_debug_navigation_material() {
 	return line_material;
 }
 
-void DetourNavigationMesh::find_path() {
-	DetourNavigationQuery* nav_query = new DetourNavigationQuery();
-	nav_query->init(this, get_global_transform());
+Dictionary DetourNavigationMesh::find_path(Variant from, Variant to) {
+
+	if (!nav_query) {
+		nav_query = new DetourNavigationQuery();
+		nav_query->init(get_detour_navmesh(), get_global_transform());
+		query_filter = new DetourNavigationQueryFilter();
+	}
+
 	//Dictionary result = nav_query->find_path(Vector3(0.f, 0.f, 0.f), Vector3(11.f, 0.3f, 11.f), Vector3(50.0f, 3.f, 50.f), new DetourNavigationQueryFilter());
-	Dictionary result = nav_query->find_path(Vector3(3.f, 0.f, -15.f), Vector3(-5.6f, 0.3f, 2.8f), Vector3(50.0f, 3.f, 50.f), new DetourNavigationQueryFilter());
-	result.clear();
+	Dictionary result = nav_query->find_path((Vector3)from, (Vector3)to, Vector3(50.0f, 50.f, 50.f), query_filter);
+	return result;
 }
 
 void DetourNavigationMesh::_notification(int p_what) {

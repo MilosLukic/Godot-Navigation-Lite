@@ -1,9 +1,0 @@
-[gd_resource type="NativeScript" load_steps=2 format=2]
-
-[ext_resource path="res://bin/navmesh_parameters.gdnlib" type="GDNativeLibrary" id=1]
-
-[resource]
-resource_name = "navmesh_parameters"
-class_name = "NavmeshParameters"
-library = ExtResource( 1 )
-_sections_unfolded = [ "Resource" ]
