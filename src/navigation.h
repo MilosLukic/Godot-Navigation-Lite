@@ -50,12 +50,16 @@ namespace godot {
 		SETGET(collision_mask, int);
 		SETGET(parsed_geometry_type, int);
 
+		SETGET(cache_objects, bool);
+		SETGET(cache_collision_mask, int);
+
 		void collect_mesh_instances(
 			Array& geometries,
 			std::vector<Ref<Mesh>> *meshes, 
 			std::vector<Transform> *transforms, 
 			std::vector<AABB> *aabbs
 		);
+
 
 		void convert_static_bodies(
 			StaticBody* static_body, 
@@ -64,11 +68,21 @@ namespace godot {
 			std::vector<AABB>* aabbs
 		);
 		
+		struct DynamicObstacle {
+			StaticBody* static_body;
+			int obstacle_id;
+		};
+		std::map<int, int>;
+
 	public:
 		static void _register_methods();
 
 		DetourNavigation();
 		~DetourNavigation();
+
+		void _exit_tree();
+
+		void _enter_tree();
 
 		void _init();
 		void _ready();
@@ -77,9 +91,16 @@ namespace godot {
 
 		DetourNavigationMesh *create_navmesh(Ref<NavmeshParameters> np);
 
+		std::vector<DetourNavigationMeshCached *> cached_navmeshes;
+		std::vector<StaticBody *> to_add_obstacles;
+		std::vector<StaticBody *> to_remove_obstacles;
+
 		void build_navmesh(DetourNavigationMesh *navigation);
 		void build_navmesh_cached(DetourNavigationMeshCached* navmesh);
 		void _notification(int p_what);
+
+		void _on_node_added(Variant node);
+		void _on_node_removed(Variant node);
 
 	};
 
