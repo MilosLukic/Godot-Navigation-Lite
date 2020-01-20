@@ -7,6 +7,12 @@
 
 
 namespace godot {
+	struct NavMeshProcess : public dtTileCacheMeshProcess
+	{
+		virtual void process(struct dtNavMeshCreateParams* params,
+			unsigned char* polyAreas, unsigned short* polyFlags);
+	};
+
 	class DetourNavigationMeshCached: public DetourNavigationMesh {
 		GODOT_CLASS(DetourNavigationMeshCached, Spatial);
 		/* TILE CACHE */
@@ -19,7 +25,8 @@ namespace godot {
 
 		DetourNavigationMeshCached();
 		~DetourNavigationMeshCached();
-		
+
+		Dictionary dynamic_obstacles;
 		void _init();
 		void _exit_tree();
 		void _ready();
@@ -35,13 +42,15 @@ namespace godot {
 
 		void _on_renamed(Variant v);
 
+		unsigned int add_box_obstacle(Vector3 pos, Vector3 extents, float rotationY);
+
 
 		dtTileCache* get_tile_cache() {
 			return tile_cache;
 		}
 
-		int max_obstacles;
-		int max_layers;
+		int max_obstacles = 0;
+		int max_layers = 0;
 
 		Ref<CachedNavmeshParameters> navmesh_parameters;
 
@@ -52,7 +61,7 @@ namespace godot {
 		std::vector<unsigned char> offmesh_areas;
 		std::vector<unsigned char> offmesh_dir;
 
-		unsigned int add_obstacle(Vector3 pos, float radius, float height);
+		unsigned int add_cylynder_obstacle(Vector3 pos, float radius, float height);
 		void remove_obstacle(int id);
 
 

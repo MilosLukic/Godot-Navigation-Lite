@@ -13,6 +13,7 @@
 #include <SceneTree.hpp>
 #include <MeshInstance.hpp>
 #include <BoxShape.hpp>
+#include <OS.hpp>
 #include <CapsuleShape.hpp>
 #include <CylinderShape.hpp>
 #include <SphereShape.hpp>
@@ -68,11 +69,7 @@ namespace godot {
 			std::vector<AABB>* aabbs
 		);
 		
-		struct DynamicObstacle {
-			StaticBody* static_body;
-			int obstacle_id;
-		};
-		std::map<int, int>;
+		std::vector<StaticBody*> *dyn_bodies_to_add = nullptr;
 
 	public:
 		static void _register_methods();
@@ -86,6 +83,16 @@ namespace godot {
 
 		void _init();
 		void _ready();
+
+		void update_tilecache();
+
+		void add_box_obstacle_to_all(int64_t instance_id, Vector3 position, Vector3 extents, float rotationY);
+
+
+		void remove_obstacle(CollisionShape* collision_shape);
+
+
+		void _process();
 
 		DetourNavigationMeshCached *create_cached_navmesh(Ref<CachedNavmeshParameters> np);
 

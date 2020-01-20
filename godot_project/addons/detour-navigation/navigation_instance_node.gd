@@ -1,6 +1,7 @@
 tool
 extends EditorPlugin
 
+
 var _navigation_menu_button = null
 var _navmesh_menu_button = null
 
@@ -11,33 +12,36 @@ const BAKE_NAVMESH = 0
 const CLEAR_NAVMESH = 1
 
 var currently_selected = null
-onready var navigation_script = preload("res://addons/detour-navigation/bin/detour_navigation.gdns")
-onready var navmesh_parameters = preload("res://addons/detour-navigation/bin/navmesh_parameters.gdns")
-onready var cached_navmesh_parameters = preload("res://addons/detour-navigation/bin/cached_navmesh_parameters.gdns")
+var navigation_script = null
+var navmesh_parameters = null
+var cached_navmesh_parameters = null
+
 
 func _enter_tree():
+	navigation_script = preload("res://addons/detour-navigation/bin/detour_navigation.gdns")
+	navmesh_parameters = preload("res://addons/detour-navigation/bin/navmesh_parameters.gdns")
+	cached_navmesh_parameters = preload("res://addons/detour-navigation/bin/cached_navmesh_parameters.gdns")
+
+	
 	# When this plugin node enters tree, add the custom type
 	add_custom_type(
 		"DetourNavigation", 
 		"Spatial", 
-		load("res://addons/detour-navigation/detour_navigation_bootstrap.gd"), 
-		load("res://addons/detour-navigation/icons/navigation_icon.svg")
+		preload("res://addons/detour-navigation/detour_navigation_bootstrap.gd"), 
+		preload("res://addons/detour-navigation/icons/navigation_icon.svg")
 	)
-	
 	add_custom_type(
 		"DetourNavigationMesh", 
 		"Spatial", 
-		load("res://addons/detour-navigation/detour_navigation_mesh_bootstrap.gd"), 
-		load("res://addons/detour-navigation/icons/navigation_mesh_instance_icon.svg")
+		preload("res://addons/detour-navigation/detour_navigation_mesh_bootstrap.gd"), 
+		preload("res://addons/detour-navigation/icons/navigation_mesh_instance_icon.svg")
 	)
-	
 	add_custom_type(
 		"DetourNavigationMeshCached", 
 		"Spatial", 
-		load("res://addons/detour-navigation/detour_navigation_mesh_cached_bootstrap.gd"), 
-		load("res://addons/detour-navigation/icons/navigation_mesh_instance_icon.svg")
+		preload("res://addons/detour-navigation/detour_navigation_mesh_cached_bootstrap.gd"), 
+		preload("res://addons/detour-navigation/icons/navigation_mesh_instance_icon.svg")
 	)
-
 	var editor_interface = get_editor_interface()
 	var base_control = editor_interface.get_base_control()
 	
@@ -77,16 +81,16 @@ func _exit_tree():
 	# When the plugin node exits the tree, remove the custom type
 	#remove_control_from_container(CONTAINER_SPATIAL_EDITOR_MENU, _navigation_menu_button)
 	#remove_control_from_container(CONTAINER_SPATIAL_EDITOR_MENU, _navmesh_menu_button)
-
 	_navmesh_menu_button.queue_free()
 	_navmesh_menu_button = null
 	
 	_navigation_menu_button.queue_free()
 	_navigation_menu_button = null
-
+	
 	remove_custom_type("DetourNavigation")
 	remove_custom_type("DetourNavigationMesh")
 	remove_custom_type("DetourNavigationMeshCached")
+	
 
 
 func _on_navigation_menu_id_pressed(id):

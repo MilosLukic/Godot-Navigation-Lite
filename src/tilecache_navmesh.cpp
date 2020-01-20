@@ -4,39 +4,38 @@
 
 static const int DEFAULT_MAX_OBSTACLES = 1024;
 static const int DEFAULT_MAX_LAYERS = 16;
-/*
-struct godot::NavMeshProcess : public dtTileCacheMeshProcess {
-	godot::DetourNavigationMeshCached* nav;
-	inline explicit NavMeshProcess(godot::DetourNavigationMeshCached* mesh) :
-		nav(mesh) {}
-	virtual void process(struct dtNavMeshCreateParams* params,
-		unsigned char* polyAreas, unsigned short* polyFlags) {
-		for (int i = 0; i < params->polyCount; i++) {
-			if (polyAreas[i] != RC_NULL_AREA) {
-				polyFlags[i] = RC_WALKABLE_AREA;
-			}
-				
-		}
-		params->offMeshConCount = nav->offmesh_radius.size();
-		if (params->offMeshConCount > 0) {
-			params->offMeshConVerts =
-				reinterpret_cast<const float*>(&nav->offmesh_vertices[0]);
-			params->offMeshConRad = &nav->offmesh_radius[0];
-			params->offMeshConFlags = &nav->offmesh_flags[0];
-			params->offMeshConAreas = &nav->offmesh_areas[0];
-			params->offMeshConDir = &nav->offmesh_dir[0];
-		}
-		else {
-			params->offMeshConVerts = NULL;
-			params->offMeshConRad = NULL;
-			params->offMeshConFlags = NULL;
-			params->offMeshConAreas = NULL;
-			params->offMeshConDir = NULL;
-		}
-	}
-}; */
+
+
+
 
 using namespace godot;
+
+void NavMeshProcess::process(struct dtNavMeshCreateParams* params,
+	unsigned char* polyAreas, unsigned short* polyFlags) {
+	for (int i = 0; i < params->polyCount; i++) {
+		if (polyAreas[i] != RC_NULL_AREA) {
+			polyFlags[i] = RC_WALKABLE_AREA;
+		}
+
+	}
+	/*
+	params->offMeshConCount = nav->offmesh_radius.size();
+	if (params->offMeshConCount > 0) {
+		params->offMeshConVerts =
+			reinterpret_cast<const float*>(&nav->offmesh_vertices[0]);
+		params->offMeshConRad = &nav->offmesh_radius[0];
+		params->offMeshConFlags = &nav->offmesh_flags[0];
+		params->offMeshConAreas = &nav->offmesh_areas[0];
+		params->offMeshConDir = &nav->offmesh_dir[0];
+	}
+	else {
+		params->offMeshConVerts = NULL;
+		params->offMeshConRad = NULL;
+		params->offMeshConFlags = NULL;
+		params->offMeshConAreas = NULL;
+		params->offMeshConDir = NULL;
+	}*/
+}
 
 
 DetourNavigationMeshCached::DetourNavigationMeshCached() {
@@ -69,7 +68,8 @@ void DetourNavigationMeshCached::_register_methods() {
 	register_method("_on_renamed", &DetourNavigationMeshCached::_on_renamed);
 	register_method("clear_navmesh", &DetourNavigationMeshCached::clear_navmesh);
 	register_method("find_path", &DetourNavigationMeshCached::find_path);
-	register_method("add_obstacle", &DetourNavigationMeshCached::add_obstacle);
+	register_method("add_box_obstacle", &DetourNavigationMeshCached::add_box_obstacle);
+	register_method("add_cylynder_obstacle", &DetourNavigationMeshCached::add_cylynder_obstacle);
 	register_method("remove_obstacle", &DetourNavigationMeshCached::remove_obstacle);
 	register_property<DetourNavigationMeshCached, Ref<CachedNavmeshParameters>>("parameters", &DetourNavigationMeshCached::navmesh_parameters, Ref<CachedNavmeshParameters>(),
 		GODOT_METHOD_RPC_MODE_DISABLED, GODOT_PROPERTY_USAGE_DEFAULT, GODOT_PROPERTY_HINT_RESOURCE_TYPE, "Resource");
@@ -87,6 +87,7 @@ void DetourNavigationMeshCached::_exit_tree() {
 void DetourNavigationMeshCached::_ready() {
 	get_tree()->connect("node_renamed", this, "_on_renamed");
 	navmesh_name = get_name().utf8().get_data();
+
 }
 
 void DetourNavigationMeshCached::build_navmesh() {
@@ -136,17 +137,26 @@ void DetourNavigationMeshCached::_on_renamed(Variant v) {
 }
 
 
-unsigned int DetourNavigationMeshCached::add_obstacle(Vector3 pos,
-	float radius, float height) {
-	/* Need to test how this works and why this needed at all */
-	/* TODO implement navmesh changes queue */
-	//	while (tile_cache->isObstacleQueueFull())
-	//		tile_cache->update(1, navMesh_);
+unsigned int DetourNavigationMeshCached::add_box_obstacle(
+	Vector3 pos, Vector3 extents, float rotationY
+){
 	dtObstacleRef ref = 0;
+	extents = extents;
+	if (dtStatusFailed(
+		tile_cache->addBoxObstacle(&pos.coord[0], &extents.coord[0], rotationY, &ref))) {
+		ERR_PRINT("Can't add obstacle");
+		return 0;
+	}
+	return (unsigned int) ref;
+}
 
+unsigned int DetourNavigationMeshCached::add_cylynder_obstacle(
+	Vector3 pos, float radius, float height 
+) {
+	dtObstacleRef ref = 0;
 	if (dtStatusFailed(
 		tile_cache->addObstacle(&pos.coord[0], radius, height, &ref))) {
-		ERR_PRINT("can't add obstacle");
+		ERR_PRINT("Can't add obstacle");
 		return 0;
 	}
 	return (unsigned int) ref;

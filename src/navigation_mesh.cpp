@@ -19,6 +19,9 @@ void DetourNavigationMesh::_register_methods() {
 }
 
 void DetourNavigationMesh::_init() {
+	if (OS::get_singleton()->is_stdout_verbose()) {
+		Godot::print("Navigation mesh init function called.");
+	}
 }
 
 void DetourNavigationMesh::_exit_tree() {
@@ -26,18 +29,18 @@ void DetourNavigationMesh::_exit_tree() {
 
 
 void DetourNavigationMesh::_ready() {
+	if (OS::get_singleton()->is_stdout_verbose()) {
+		Godot::print("Navigation mesh ready function called.");
+	}
+
 	get_tree()->connect("node_renamed", this, "_on_renamed");
 	navmesh_name = get_name().utf8().get_data();
-	/*
-	Godot::print("Adding obstacle");
-	DetourNavigationMeshCached* cached_navm = (DetourNavigationMeshCached *) navmesh;
-	unsigned int id = cached_navm->add_obstacle(Vector3(-5.f, 0.f, -5.f), 4.f, 3.f);
-	dtTileCache* tile_cache = cached_navm->get_tile_cache();
-	tile_cache->update(0.1f, cached_navm->get_detour_navmesh());
-	*/
 }
 
 DetourNavigationMesh::DetourNavigationMesh(){
+	if (OS::get_singleton()->is_stdout_verbose()) {
+		Godot::print("Navigation mesh constructor function called.");
+	}
 }
 
 DetourNavigationMesh::~DetourNavigationMesh() {
@@ -50,6 +53,7 @@ DetourNavigationMesh::~DetourNavigationMesh() {
 
 
 void DetourNavigationMesh::_on_renamed(Variant v) {
+	Godot::print("Renamed");
 	char* previous_path = get_cache_file_path();
 	navmesh_name = get_name().utf8().get_data();
 	char* current_path = get_cache_file_path();

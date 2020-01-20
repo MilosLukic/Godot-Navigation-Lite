@@ -1,36 +1,11 @@
 #include "tilecache_generator.h"
+#include "tilecache_navmesh.h"
 
 
 using namespace godot;
 
-void NavMeshProcess::process(struct dtNavMeshCreateParams* params,
-	unsigned char* polyAreas, unsigned short* polyFlags) {
-	for (int i = 0; i < params->polyCount; i++) {
-		if (polyAreas[i] != RC_NULL_AREA) {
-			polyFlags[i] = RC_WALKABLE_AREA;
-		}
-
-	}
-	/*
-	params->offMeshConCount = nav->offmesh_radius.size();
-	if (params->offMeshConCount > 0) {
-		params->offMeshConVerts =
-			reinterpret_cast<const float*>(&nav->offmesh_vertices[0]);
-		params->offMeshConRad = &nav->offmesh_radius[0];
-		params->offMeshConFlags = &nav->offmesh_flags[0];
-		params->offMeshConAreas = &nav->offmesh_areas[0];
-		params->offMeshConDir = &nav->offmesh_dir[0];
-	}
-	else {
-		params->offMeshConVerts = NULL;
-		params->offMeshConRad = NULL;
-		params->offMeshConFlags = NULL;
-		params->offMeshConAreas = NULL;
-		params->offMeshConDir = NULL;
-	}*/
-}
-
 DetourNavigationMeshCacheGenerator::DetourNavigationMeshCacheGenerator() {
+	Godot::print("TIle cache generator constructor");
 	tile_cache_alloc = new LinearAllocator(64000);
 	tile_cache_compressor = new FastLZCompressor();
 	mesh_process = new NavMeshProcess();

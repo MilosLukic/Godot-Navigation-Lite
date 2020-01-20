@@ -1,5 +1,6 @@
 #ifndef NAVIGATION_QUERY_H
 #define NAVIGATION_QUERY_H
+#include <string>
 #include <DetourNavMeshQuery.h>
 #include <Godot.hpp>
 #include <Dictionary.hpp>
@@ -19,7 +20,7 @@ namespace godot {
 		godot::Transform transform;
 		godot::Transform inverse;
 	protected:
-		static const int MAX_POLYS = 2048;
+		static const int MAX_POLYS = 256;
 
 		Dictionary _find_path(const Vector3& start, const Vector3& end, const Vector3& extents, DetourNavigationQueryFilter *filter);
 	public:

@@ -6,6 +6,7 @@ using namespace godot;
 
 void DetourNavigation::_register_methods() {
 	register_method("_ready", &DetourNavigation::_ready);
+	register_method("_process", &DetourNavigation::_process);
 	register_method("create_cached_navmesh", &DetourNavigation::create_cached_navmesh);
 	register_method("create_navmesh", &DetourNavigation::create_navmesh);
 	register_method("_exit_tree", &DetourNavigation::_exit_tree);
@@ -26,7 +27,11 @@ void DetourNavigation::_register_methods() {
 }
 
 DetourNavigation::DetourNavigation(){
+	if (OS::get_singleton()->is_stdout_verbose()) {
+		Godot::print("Navigation constructor function called.");
+	}
 	set_collision_mask(1);
+	set_cache_collision_mask(2);
 	set_parsed_geometry_type(PARSED_GEOMETRY_STATIC_COLLIDERS);
 }
 
@@ -35,27 +40,36 @@ DetourNavigation::~DetourNavigation(){
 
 
 void DetourNavigation::_exit_tree() {
-	get_tree()->disconnect("node_added", this, "_on_node_added");
-	get_tree()->disconnect("node_removed", this, "_on_node_removed");
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		get_tree()->disconnect("node_added", this, "_on_node_added");
+		get_tree()->disconnect("node_removed", this, "_on_node_removed");
+	}
 }
 
 void DetourNavigation::_enter_tree() {
-	get_tree()->connect("node_added", this, "_on_node_added");
-	get_tree()->connect("node_removed", this, "_on_node_removed");
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		get_tree()->connect("node_added", this, "_on_node_added");
+		get_tree()->connect("node_removed", this, "_on_node_removed");
+	}
 }
 
 void DetourNavigation::_init() {
-	
+	if (OS::get_singleton()->is_stdout_verbose()) {
+		Godot::print("Navigation init function called.");
+	}
+	dyn_bodies_to_add = new std::vector<StaticBody*>();
 }
 
 void DetourNavigation::_ready() {
+	if (OS::get_singleton()->is_stdout_verbose()) {
+		Godot::print("Navigation ready function called.");
+	}
 
 	for (int i = 0; i < get_child_count(); ++i) {
 		DetourNavigationMeshCached* navmesh_pc = Object::cast_to<DetourNavigationMeshCached>(get_child(i));
 		if (navmesh_pc != nullptr) {
 			navmesh_pc->load_mesh();
 			cached_navmeshes.push_back(navmesh_pc);
-			//Godot::print((navmesh_pc->find_path(Vector3(4.f, 0.f, 4.f), Vector3(10.f, 0.f, 10.f)))["points"]);
 		}
 
 		DetourNavigationMesh* navmesh_p = Object::cast_to<DetourNavigationMesh>(get_child(i));
@@ -63,8 +77,100 @@ void DetourNavigation::_ready() {
 			navmesh_p->load_mesh();
 		}
 	}
+	if (Engine::get_singleton()->is_editor_hint()) {
+		set_process(false);
+	}
 
 }
+void DetourNavigation::update_tilecache() {
+	for (int i = 0; i < get_child_count(); ++i) {
+		DetourNavigationMeshCached* navmesh_pc = Object::cast_to<DetourNavigationMeshCached>(get_child(i));
+		if (navmesh_pc != nullptr) {
+			navmesh_pc->get_tile_cache()->update(0.1f, navmesh_pc->get_detour_navmesh());
+
+			if (get_tree()->is_debugging_navigation_hint()) {
+				navmesh_pc->build_debug_mesh();
+			}
+		}
+	}
+
+}
+void DetourNavigation::add_box_obstacle_to_all(int64_t instance_id, Vector3 position, Vector3 extents, float rotationY) {
+	
+	for (int i = 0; i < get_child_count(); ++i) {
+		DetourNavigationMeshCached* navmesh_pc = Object::cast_to<DetourNavigationMeshCached>(get_child(i));
+		if (navmesh_pc != nullptr) {
+			unsigned int ref_id = navmesh_pc->add_box_obstacle(position, extents, rotationY);
+
+			navmesh_pc->dynamic_obstacles[instance_id] = (Variant) ref_id;
+		}
+
+	}
+}
+
+void DetourNavigation::remove_obstacle(CollisionShape* collision_shape) {
+
+	Ref<Shape> s = collision_shape->get_shape();
+
+	for (int i = 0; i < get_child_count(); ++i) {
+		DetourNavigationMeshCached* navmesh_pc = Object::cast_to<DetourNavigationMeshCached>(get_child(i));
+		if (navmesh_pc != nullptr) {
+			navmesh_pc->remove_obstacle(navmesh_pc->dynamic_obstacles[collision_shape->get_instance_id()]);
+		}
+
+	}
+}
+
+
+void DetourNavigation::_process() {
+	for (StaticBody * static_body : *dyn_bodies_to_add) {
+
+		for (int i = 0; i < static_body->get_child_count(); ++i) {
+			CollisionShape* collision_shape = Object::cast_to<CollisionShape>(static_body->get_child(i));
+			if (collision_shape == NULL) {
+				continue;
+			}
+			Transform transform = collision_shape->get_global_transform();
+
+			Ref<Shape> s = collision_shape->get_shape();
+
+			BoxShape* box = Object::cast_to<BoxShape>(*s);
+			if (box) {
+				add_box_obstacle_to_all(collision_shape->get_instance_id(), transform.get_origin(), box->get_extents(), transform.basis.get_euler().y);
+			}
+		}
+	
+	
+	}
+
+	update_tilecache();
+	dyn_bodies_to_add->clear();
+
+}
+
+void DetourNavigation::_on_node_added(Variant node) {
+	CollisionShape* collision_shape = Object::cast_to<CollisionShape>(node.operator Object * ());
+	if (collision_shape) {
+		StaticBody* static_body = Object::cast_to<StaticBody>(collision_shape->get_parent());
+		if (static_body && static_body->get_collision_layer() & cache_collision_mask) {
+			dyn_bodies_to_add->push_back(static_body);
+			set_process(true);
+		}
+	}
+
+}
+
+void DetourNavigation::_on_node_removed(Variant node) {
+	CollisionShape* collision_shape = Object::cast_to<CollisionShape>(node.operator Object * ());
+	if (collision_shape) {
+		StaticBody* static_body = Object::cast_to<StaticBody>(collision_shape->get_parent());
+		if (static_body && static_body->get_collision_layer() & cache_collision_mask) {
+			remove_obstacle(collision_shape);
+		}
+	}
+}
+
+
 
 DetourNavigationMeshCached *DetourNavigation::create_cached_navmesh(Ref<CachedNavmeshParameters> np) {
 	DetourNavigationMeshCached *cached_navmesh = DetourNavigationMeshCached::_new();
@@ -143,26 +249,6 @@ void DetourNavigation::_notification(int p_what) {
 
 }
 
-void DetourNavigation::_on_node_added(Variant node) {
-	CollisionShape* collision_shape = Object::cast_to<CollisionShape>(node.operator Object * ());
-	if (collision_shape) {
-		StaticBody* static_body = Object::cast_to<StaticBody>(collision_shape->get_parent());
-		if (static_body && static_body->get_collision_layer() & collision_mask) {
-			Godot::print("static body added 2");
-		}
-	}
-
-}
-
-void DetourNavigation::_on_node_removed(Variant node) {
-	CollisionShape* collision_shape = Object::cast_to<CollisionShape>(node.operator Object * ());
-	if (collision_shape) {
-		StaticBody *static_body = Object::cast_to<StaticBody>(collision_shape->get_parent());
-		if (static_body && static_body->get_collision_layer() & collision_mask) {
-			Godot::print("static body removed 2");
-		}
-	}
-}
 
 void DetourNavigation::convert_static_bodies(
 	StaticBody* static_body, std::vector<Ref<Mesh>>* meshes, std::vector<Transform>* transforms, std::vector<AABB>* aabbs

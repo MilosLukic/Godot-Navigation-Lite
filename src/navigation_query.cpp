@@ -4,6 +4,7 @@ using namespace godot;
 
 
 DetourNavigationQuery::DetourNavigationQuery(){
+	Godot::print("Navigation query constructor called");
 	query_data = new QueryData();
 }
 
@@ -12,6 +13,7 @@ DetourNavigationQuery::~DetourNavigationQuery() {
 }
 
 DetourNavigationQueryFilter::DetourNavigationQueryFilter(){
+	Godot::print("Navigation query filter constructor called");
 	dt_query_filter = new dtQueryFilter();
 }
 
@@ -53,84 +55,67 @@ Dictionary DetourNavigationQuery::find_path(
 	for (int i = 0; i < points->size(); i++) {
 		w[i] = transform.xform((*points)[i]);
 	}
-
 	return result;
 }
 
 
 Dictionary DetourNavigationQuery::_find_path(
-	const Vector3& start, 
+	const Vector3& start,
 	const Vector3& end,
 	const Vector3& extents,
-	DetourNavigationQueryFilter *filter
+	DetourNavigationQueryFilter* filter
 ) {
 	/* Internal function for finding path */
 	Dictionary ret;
 	if (!navmesh_query) {
 		return ret;
 	}
-		
 
-	dtPolyRef pstart;
-	dtPolyRef pend;
-	navmesh_query->findNearestPoly(
-		&start.coord[0], &extents.coord[0],
-		filter->dt_query_filter, &pstart, NULL
-	);
-	int stat = navmesh_query->findNearestPoly(
-		&end.coord[0], &extents.coord[0],
-		filter->dt_query_filter, &pend, NULL
-	);
 
-	if (!pstart || !pend) {
-		return ret;
-	}
+	dtStatus status;
+	dtPolyRef StartPoly;
+	float StartNearest[3];
+	dtPolyRef EndPoly;
+	float EndNearest[3];
+	dtPolyRef PolyPath[MAX_POLYS];
+	int nPathCount = 0;
+	float StraightPath[MAX_POLYS * 2 * 3];
+	int nVertCount = 0;
 
-	int num_polys = 0;
-	int num_path_points = 0;
-	navmesh_query->findPath(
-		pstart, pend, 
-		&start.coord[0], &end.coord[0],
-		filter->dt_query_filter, query_data->polys,
-		&num_polys, MAX_POLYS
-	);
 
-	if (!num_polys) {
-		return ret;
-	}
+	// find the start polygon
+	status = navmesh_query->findNearestPoly(&start.coord[0], &extents.coord[0], filter->dt_query_filter, &StartPoly, StartNearest);
+	if ((status & DT_FAILURE) || (status & DT_STATUS_DETAIL_MASK)) return ret; // couldn't find a polygon
 
-	Vector3 actual_end = end;
-	if (query_data->polys[num_polys - 1] != pend) {
-		Vector3 tmp;
-		navmesh_query->closestPointOnPoly(
-			query_data->polys[num_polys - 1],
-			&end.coord[0], &tmp.coord[0], NULL
-		);
-		actual_end = tmp;
-	}
+	// find the end polygon
+	status = navmesh_query->findNearestPoly(&end.coord[0], &extents.coord[0], filter->dt_query_filter, &EndPoly, EndNearest);
+	if ((status & DT_FAILURE) || (status & DT_STATUS_DETAIL_MASK)) return ret; // couldn't find a polygon
 
-	navmesh_query->findStraightPath(
-		&start.coord[0], &actual_end.coord[0], 
-		query_data->polys, num_polys,
-		&query_data->path_points[0].coord[0], 
-		&query_data->path_flags[0], query_data->path_polys, 
-		&num_path_points, MAX_POLYS
-	);
+	status = navmesh_query->findPath(StartPoly, EndPoly, StartNearest, EndNearest, filter->dt_query_filter, PolyPath, &nPathCount, MAX_POLYS);
+	if ((status & DT_FAILURE) || (status & DT_STATUS_DETAIL_MASK)) return ret; // couldn't create a path
+	if (nPathCount == 0) return ret; // couldn't find a path
+
+	status = navmesh_query->findStraightPath(StartNearest, EndNearest, PolyPath, nPathCount, StraightPath, NULL, NULL, &nVertCount, MAX_POLYS * 2 * 3);
+	if ((status & DT_FAILURE) || (status & DT_STATUS_DETAIL_MASK)) return ret; // couldn't create a path
+	if (nVertCount == 0) return ret; // couldn't find a path
 
 	PoolVector3Array points;
 	PoolIntArray flags;
-	points.resize(num_path_points);
-	flags.resize(num_path_points);
+	points.resize(nVertCount);
+	flags.resize(nVertCount);
 
 	PoolVector3Array::Write points_write = points.write();
 	PoolIntArray::Write flags_write = flags.write();
 
-	for (int i = 0; i < num_path_points; i++) {
-		points_write[i] = query_data->path_points[i];
-		flags_write[i] = query_data->path_flags[i];
+	int nIndex = 0;
+	for (int nVert = 0; nVert < nVertCount; nVert++)
+	{
+		points_write[nVert] = Vector3(StraightPath[nIndex], StraightPath[nIndex + 1], StraightPath[nIndex + 2]);
+		nIndex += 3;
 	}
 
 	ret["points"] = points;
 	ret["flags"] = flags;
 	return ret;
+
 }

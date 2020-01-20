@@ -6,14 +6,6 @@
 
 namespace godot {
 
-	struct NavMeshProcess : public dtTileCacheMeshProcess
-	{
-
-		virtual void process(struct dtNavMeshCreateParams* params,
-			unsigned char* polyAreas, unsigned short* polyFlags);
-	};
-
-
 	class DetourNavigationMeshCacheGenerator : public DetourNavigationMeshGenerator {
 		dtTileCache* tile_cache;
 		dtTileCacheAlloc* tile_cache_alloc;

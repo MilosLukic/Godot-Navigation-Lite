@@ -69,9 +69,9 @@ namespace godot {
 
 		AABB bounding_box;
 		dtNavMesh* detour_navmesh = nullptr;
-		Ref<ArrayMesh> debug_mesh;
+		Ref<ArrayMesh> debug_mesh = nullptr;
 		Transform global_transform;
-		Ref<NavmeshParameters> navmesh_parameters;
+		Ref<NavmeshParameters> navmesh_parameters = nullptr;
 		std::string navmesh_name;
 
 		void init_mesh_data(
