@@ -5,7 +5,7 @@
 using namespace godot;
 
 DetourNavigationMeshCacheGenerator::DetourNavigationMeshCacheGenerator() {
-	Godot::print("TIle cache generator constructor");
+	Godot::print("Tile cache generator constructor");
 	tile_cache_alloc = new LinearAllocator(64000);
 	tile_cache_compressor = new FastLZCompressor();
 	mesh_process = new NavMeshProcess();

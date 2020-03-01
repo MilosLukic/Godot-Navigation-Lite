@@ -29,6 +29,7 @@
 namespace godot {
 	class DetourNavigationMeshGenerator{
 	protected:
+		std::vector<int64_t>* collision_ids;
 		std::vector<Ref<Mesh>>* input_meshes;
 		std::vector<Transform>* input_transforms;
 		std::vector<AABB>* input_aabbs;
@@ -66,10 +67,6 @@ namespace godot {
 		dtNavMesh* get_detour_navmesh() {
 			return detour_navmesh;
 		}
-
-		inline real_t get_tile_edge_length() {
-			return (real_t)( navmesh_parameters->get_tile_size() * navmesh_parameters->get_cell_size());
-		};
 
 		void set_tile_number(int xSize, int zSize) {
 

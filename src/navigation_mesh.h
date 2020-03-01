@@ -36,6 +36,8 @@ namespace godot {
 		std::vector<Transform> *input_transforms;
 		std::vector<AABB> *input_aabbs;
 	public:
+		std::vector<int64_t>* collision_ids;
+
 		DetourNavigationMesh();
 		~DetourNavigationMesh();
 

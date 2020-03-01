@@ -51,22 +51,28 @@ namespace godot {
 		SETGET(collision_mask, int);
 		SETGET(parsed_geometry_type, int);
 
+		SETGET(dynamic_objects, bool);
+		SETGET(dynamic_collision_mask, int);
+
 		SETGET(cache_objects, bool);
 		SETGET(cache_collision_mask, int);
+
 
 		void collect_mesh_instances(
 			Array& geometries,
 			std::vector<Ref<Mesh>> *meshes, 
 			std::vector<Transform> *transforms, 
-			std::vector<AABB> *aabbs
+			std::vector<AABB> *aabbs,
+			std::vector<int64_t> *collision_ids
 		);
 
 
-		void convert_static_bodies(
-			StaticBody* static_body, 
+		void convert_collision_shape(
+			CollisionShape* collision_shape, 
 			std::vector<Ref<Mesh>>* meshes, 
 			std::vector<Transform>* transforms, 
-			std::vector<AABB>* aabbs
+			std::vector<AABB>* aabbs,
+			std::vector<int64_t>* collision_ids
 		);
 		
 		std::vector<StaticBody*> *dyn_bodies_to_add = nullptr;
@@ -105,6 +111,8 @@ namespace godot {
 		void build_navmesh(DetourNavigationMesh *navigation);
 		void build_navmesh_cached(DetourNavigationMeshCached* navmesh);
 		void _notification(int p_what);
+
+		int process_large_mesh(MeshInstance* mesh_instance, int64_t collision_id, std::vector<Ref<Mesh>>* meshes, std::vector<Transform>* transforms, std::vector<AABB>* aabbs, std::vector<int64_t>* collision_ids);
 
 		void _on_node_added(Variant node);
 		void _on_node_removed(Variant node);

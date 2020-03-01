@@ -26,18 +26,18 @@ extents = Vector3( 1, 4, 1 )
 [sub_resource type="ConvexPolygonShape" id=6]
 points = PoolVector3Array( -1, -4.21643, -1, -1, -4.21643, 0.962435, -1, 4.21643, -1, -1, 4.21643, 0.962435, 0.962435, -4.21643, -1, 0.962435, 4.21643, -1, 0.991192, -4.34, 0.991192, 0.991192, 4.34, 0.991192 )
 
-[sub_resource type="BoxShape" id=10]
+[sub_resource type="BoxShape" id=7]
 extents = Vector3( 1, 4, 1 )
 
-[sub_resource type="CapsuleMesh" id=7]
+[sub_resource type="CapsuleMesh" id=8]
 radius = 0.2
 mid_height = 5.167
 
-[sub_resource type="NativeScript" id=8]
+[sub_resource type="NativeScript" id=9]
 class_name = "DetourNavigationMeshCached"
 library = ExtResource( 1 )
 
-[sub_resource type="Resource" id=9]
+[sub_resource type="Resource" id=10]
 script = ExtResource( 4 )
 cell_size = 0.2
 tile_size = 32
@@ -61,6 +61,8 @@ script = ExtResource( 3 )
 
 [node name="DetourNavigation" type="Spatial" parent="."]
 script = ExtResource( 2 )
+dynamic_objects = true
+dynamic_objects_collision_mask = -842150451
 cache_objects_collision_mask = 2
 
 [node name="Floor" type="MeshInstance" parent="DetourNavigation"]
@@ -79,6 +81,7 @@ mesh = SubResource( 1 )
 material/0 = SubResource( 2 )
 
 [node name="StaticBody" type="StaticBody" parent="DetourNavigation/Floor2"]
+collision_layer = 0
 
 [node name="CollisionShape" type="CollisionShape" parent="DetourNavigation/Floor2/StaticBody"]
 shape = SubResource( 3 )
@@ -95,7 +98,7 @@ collision_layer = 2
 shape = SubResource( 5 )
 
 [node name="DynObst2" type="MeshInstance" parent="DetourNavigation"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.116606, 0, -1.19247 )
+transform = Transform( 1, 0, 0, 0, 0.837871, 0, 0, 0, 1, 0.116606, 0, -1.19247 )
 mesh = SubResource( 4 )
 material/0 = null
 
@@ -146,23 +149,23 @@ material/0 = null
 [node name="StaticBody" type="StaticBody" parent="DetourNavigation/StatObst4"]
 
 [node name="CollisionShape" type="CollisionShape" parent="DetourNavigation/StatObst4/StaticBody"]
-shape = SubResource( 10 )
+shape = SubResource( 7 )
 
 [node name="Start" type="MeshInstance" parent="DetourNavigation"]
 transform = Transform( 1, 0, 0, 0, -1.62921e-07, 1, 0, -1, -1.62921e-07, -9.176, 0, 8.90109 )
-mesh = SubResource( 7 )
+mesh = SubResource( 8 )
 material/0 = null
 
 [node name="Finish" type="MeshInstance" parent="DetourNavigation"]
 transform = Transform( 1, 0, 0, 0, -1.62921e-07, 1, 0, -1, -1.62921e-07, 6.52072, 0, -3.79273 )
-mesh = SubResource( 7 )
+mesh = SubResource( 8 )
 material/0 = null
 script = ExtResource( 6 )
 
 [node name="CachedDetourNavigationMesh" type="Spatial" parent="DetourNavigation"]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0411072, -1.90735e-06, 0.0335331 )
-script = SubResource( 8 )
-parameters = SubResource( 9 )
+script = SubResource( 9 )
+parameters = SubResource( 10 )
 
 [node name="Camera" type="Camera" parent="."]
 transform = Transform( 1, 0, 0, 0, 0.490204, 0.871607, 0, -0.871608, 0.490204, 1.134, 18.85, 15.337 )

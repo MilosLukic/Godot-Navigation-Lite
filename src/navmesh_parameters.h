@@ -33,12 +33,16 @@ namespace godot {
 		SETGET(detail_sample_max_error, float);
 		SETGET(padding, Vector3);
 
+		inline real_t get_tile_edge_length() {
+			return (real_t)(get_tile_size() * get_cell_size());
+		};
 
 		enum partition_t {
 			PARTITION_WATERSHED,
 			PARTITION_MONOTONE,
 		};
 	};
+
 
 	class CachedNavmeshParameters : public NavmeshParameters {
 		GODOT_CLASS(CachedNavmeshParameters, Resource);

@@ -15,17 +15,15 @@ void DetourNavigationMeshGenerator::build() {
 }
 
 void DetourNavigationMeshGenerator::joint_build() {
-	Godot::print(navmesh_parameters->get_tile_size());
 	for (int i = 0; i < input_meshes->size(); i++) {
 		bounding_box.merge_with(
 			input_transforms->at(i).xform(input_aabbs->at(i))
 		);
 	}
-	float tile_edge_length = get_tile_edge_length();
+	float tile_edge_length = navmesh_parameters->get_tile_edge_length();
 	Vector3 bmin = bounding_box.position;
 	Vector3 bmax = bounding_box.position + bounding_box.size;
 
-	Godot::print(navmesh_parameters->get_cell_size());
 	/* We define width and height of the grid */
 	int gridH = 0, gridW = 0;
 	rcCalcGridSize(
