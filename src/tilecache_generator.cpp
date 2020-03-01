@@ -12,7 +12,7 @@ DetourNavigationMeshCacheGenerator::DetourNavigationMeshCacheGenerator() {
 }
 
 DetourNavigationMeshCacheGenerator::~DetourNavigationMeshCacheGenerator() {
-	
+
 }
 
 void DetourNavigationMeshCacheGenerator::build() {

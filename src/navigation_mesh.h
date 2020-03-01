@@ -19,6 +19,7 @@
 #include "helpers.h"
 #include "navmesh_parameters.h"
 #include "tilecache_helpers.h"
+#include "navmesh_generator.h"
 #include "DetourNavMesh.h"
 #include "DetourNavMeshBuilder.h"
 #include "DetourTileCache.h"
@@ -32,11 +33,14 @@ namespace godot {
 	class DetourNavigationMesh : public Spatial {
 		GODOT_CLASS(DetourNavigationMesh, Spatial);
 	protected:
-		std::vector<Ref<Mesh>> *input_meshes;
-		std::vector<Transform> *input_transforms;
-		std::vector<AABB> *input_aabbs;
+		std::vector<Ref<Mesh>> *input_meshes = nullptr;
+		std::vector<Transform> *input_transforms = nullptr;
+		std::vector<AABB> *input_aabbs = nullptr;
 	public:
-		std::vector<int64_t>* collision_ids;
+		std::vector<int64_t>* collision_ids = nullptr;
+
+		SETGET(collision_mask, int);
+
 
 		DetourNavigationMesh();
 		~DetourNavigationMesh();
@@ -59,15 +63,19 @@ namespace godot {
 		dtNavMesh* load_mesh();
 		void save_mesh();
 
+
 		void build_debug_mesh();
 		Dictionary find_path(Variant from, Variant to);
 		void _notification(int p_what);
 		Ref<Material> get_debug_navigation_material();
 		virtual dtTileCache* get_tile_cache() { return nullptr; };
+
 		MeshInstance* debug_mesh_instance = nullptr;
 
 		DetourNavigationQuery *nav_query = nullptr;
 		DetourNavigationQueryFilter *query_filter = nullptr;
+
+		DetourNavigationMeshGenerator* generator = nullptr;
 
 		AABB bounding_box;
 		dtNavMesh* detour_navmesh = nullptr;
@@ -75,16 +83,6 @@ namespace godot {
 		Transform global_transform;
 		Ref<NavmeshParameters> navmesh_parameters = nullptr;
 		std::string navmesh_name;
-
-		void init_mesh_data(
-			std::vector<Ref<Mesh>> *meshes, std::vector<Transform> *transforms,
-			std::vector<AABB> *aabbs, Transform g_transform
-		) {
-			global_transform = g_transform;
-			input_aabbs = aabbs;
-			input_transforms = transforms;
-			input_meshes = meshes;
-		}
 
 		dtNavMesh* get_detour_navmesh() {
 			return detour_navmesh;

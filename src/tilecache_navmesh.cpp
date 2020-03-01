@@ -41,6 +41,7 @@ void NavMeshProcess::process(struct dtNavMeshCreateParams* params,
 DetourNavigationMeshCached::DetourNavigationMeshCached() {
 	max_obstacles = DEFAULT_MAX_OBSTACLES;
 	max_layers = DEFAULT_MAX_LAYERS;
+	set_dynamic_collision_mask(2);
 
 }
 
@@ -71,6 +72,11 @@ void DetourNavigationMeshCached::_register_methods() {
 	register_method("add_box_obstacle", &DetourNavigationMeshCached::add_box_obstacle);
 	register_method("add_cylynder_obstacle", &DetourNavigationMeshCached::add_cylynder_obstacle);
 	register_method("remove_obstacle", &DetourNavigationMeshCached::remove_obstacle);
+
+
+	register_property<DetourNavigationMeshCached, bool>("dynamic_objects", &DetourNavigationMeshCached::dynamic_objects, true);
+	register_property<DetourNavigationMeshCached, int>("dynamic_objects_collision_mask", &DetourNavigationMeshCached::set_dynamic_collision_mask, &DetourNavigationMeshCached::get_dynamic_collision_mask, 1,
+		GODOT_METHOD_RPC_MODE_DISABLED, GODOT_PROPERTY_USAGE_DEFAULT, GODOT_PROPERTY_HINT_LAYERS_3D_PHYSICS);
 	register_property<DetourNavigationMeshCached, Ref<CachedNavmeshParameters>>("parameters", &DetourNavigationMeshCached::navmesh_parameters, Ref<CachedNavmeshParameters>(),
 		GODOT_METHOD_RPC_MODE_DISABLED, GODOT_PROPERTY_USAGE_DEFAULT, GODOT_PROPERTY_HINT_RESOURCE_TYPE, "Resource");
 }

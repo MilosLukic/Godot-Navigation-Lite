@@ -14,6 +14,11 @@ void DetourNavigationMesh::_register_methods() {
 	register_method("_on_renamed", &DetourNavigationMesh::_on_renamed);
 	register_method("clear_navmesh", &DetourNavigationMesh::clear_navmesh);
 	register_method("find_path", &DetourNavigationMesh::find_path);
+
+	register_property<DetourNavigationMesh, int>("collision_mask", &DetourNavigationMesh::set_collision_mask, &DetourNavigationMesh::get_collision_mask, 1,
+		GODOT_METHOD_RPC_MODE_DISABLED, GODOT_PROPERTY_USAGE_DEFAULT, GODOT_PROPERTY_HINT_LAYERS_3D_PHYSICS);
+
+
 	register_property<DetourNavigationMesh, Ref<NavmeshParameters>>("parameters", &DetourNavigationMesh::navmesh_parameters, Ref<NavmeshParameters>(), 
 		GODOT_METHOD_RPC_MODE_DISABLED, GODOT_PROPERTY_USAGE_DEFAULT, GODOT_PROPERTY_HINT_RESOURCE_TYPE, "Resource");
 }
@@ -41,6 +46,7 @@ DetourNavigationMesh::DetourNavigationMesh(){
 	if (OS::get_singleton()->is_stdout_verbose()) {
 		Godot::print("Navigation mesh constructor function called.");
 	}
+	set_collision_mask(1);
 }
 
 DetourNavigationMesh::~DetourNavigationMesh() {
@@ -49,6 +55,10 @@ DetourNavigationMesh::~DetourNavigationMesh() {
 	if (navmesh_parameters.is_valid()) {
 		navmesh_parameters.unref();
 	}
+	if (generator != nullptr) {
+		delete generator;
+	}
+	
 }
 
 
@@ -230,6 +240,8 @@ Dictionary DetourNavigationMesh::find_path(Variant from, Variant to) {
 	Dictionary result = nav_query->find_path((Vector3)from, (Vector3)to, Vector3(50.0f, 50.f, 50.f), query_filter);
 	return result;
 }
+
+
 
 void DetourNavigationMesh::_notification(int p_what) {
 	switch (p_what) {

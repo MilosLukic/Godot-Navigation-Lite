@@ -18,6 +18,9 @@ namespace godot {
 		/* TILE CACHE */
 		friend struct NavMeshProcess;
 	public:
+		SETGET(dynamic_objects, bool);
+		SETGET(dynamic_collision_mask, int);
+
 		dtTileCache* tile_cache = nullptr;
 		dtTileCacheAlloc* tile_cache_alloc = nullptr;
 		dtTileCacheCompressor* tile_cache_compressor = nullptr;

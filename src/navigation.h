@@ -54,16 +54,14 @@ namespace godot {
 		SETGET(dynamic_objects, bool);
 		SETGET(dynamic_collision_mask, int);
 
-		SETGET(cache_objects, bool);
-		SETGET(cache_collision_mask, int);
-
 
 		void collect_mesh_instances(
 			Array& geometries,
 			std::vector<Ref<Mesh>> *meshes, 
 			std::vector<Transform> *transforms, 
 			std::vector<AABB> *aabbs,
-			std::vector<int64_t> *collision_ids
+			std::vector<int64_t> *collision_ids,
+			DetourNavigationMesh* navmesh
 		);
 
 
@@ -76,7 +74,9 @@ namespace godot {
 		);
 		
 		std::vector<StaticBody*> *dyn_bodies_to_add = nullptr;
-
+		std::vector<StaticBody*>* static_bodies_to_add = nullptr;
+		std::vector<CollisionShape*>* collisions_to_remove = nullptr;
+		
 	public:
 		static void _register_methods();
 
@@ -84,6 +84,8 @@ namespace godot {
 		~DetourNavigation();
 
 		void _exit_tree();
+
+		void _on_tree_exiting();
 
 		void _enter_tree();
 
@@ -97,6 +99,8 @@ namespace godot {
 
 		void remove_obstacle(CollisionShape* collision_shape);
 
+		void remove_static_object(CollisionShape* collision_shape);
+
 
 		void _process();
 
@@ -104,9 +108,9 @@ namespace godot {
 
 		DetourNavigationMesh *create_navmesh(Ref<NavmeshParameters> np);
 
+		std::vector<DetourNavigationMesh*> navmeshes;
 		std::vector<DetourNavigationMeshCached *> cached_navmeshes;
-		std::vector<StaticBody *> to_add_obstacles;
-		std::vector<StaticBody *> to_remove_obstacles;
+
 
 		void build_navmesh(DetourNavigationMesh *navigation);
 		void build_navmesh_cached(DetourNavigationMeshCached* navmesh);
@@ -114,8 +118,11 @@ namespace godot {
 
 		int process_large_mesh(MeshInstance* mesh_instance, int64_t collision_id, std::vector<Ref<Mesh>>* meshes, std::vector<Transform>* transforms, std::vector<AABB>* aabbs, std::vector<int64_t>* collision_ids);
 
-		void _on_node_added(Variant node);
-		void _on_node_removed(Variant node);
+		void _on_cache_object_added(Variant node);
+		void _on_cache_object_removed(Variant node);
+
+		void _on_static_object_added(Variant node);
+		void _on_static_object_removed(Variant node);
 
 	};
 

@@ -5,10 +5,19 @@ DetourNavigationMeshGenerator::DetourNavigationMeshGenerator() {
 }
 
 DetourNavigationMeshGenerator::~DetourNavigationMeshGenerator() {
+	for (Ref<ArrayMesh> m : *input_meshes) {
+		if (m.is_valid()) {
+			m.unref();
+		}
+	}
+	delete input_meshes;
+	delete input_transforms;
+	delete input_aabbs;
 }
 
 void DetourNavigationMeshGenerator::build() {
 	joint_build();
+
 	unsigned int result = build_tiles(
 		0, 0, get_num_tiles_x() - 1, get_num_tiles_z() - 1
 	);
@@ -340,10 +349,50 @@ bool DetourNavigationMeshGenerator::build_tile(int x, int z) {
 void DetourNavigationMeshGenerator::get_tile_bounding_box(
 	int x, int z, Vector3& bmin, Vector3& bmax
 ) {
-	const float tile_edge_length = (float)navmesh_parameters->get_tile_size() * navmesh_parameters->get_cell_size();
+	const float tile_edge_length = (float) navmesh_parameters->get_tile_size() * navmesh_parameters->get_cell_size();
 	bmin = bounding_box.position + Vector3(tile_edge_length * (float)x, 0, tile_edge_length * (float)z);
 	bmax = bmin + Vector3(tile_edge_length, bounding_box.size.y, tile_edge_length);
 }
+
+
+void DetourNavigationMeshGenerator::remove_collision_shape(int64_t collision_id) {
+	int start = -1;
+	int end = -1;
+	for (int i = 0; i < input_meshes->size(); i++) {
+		if (collision_ids->at(i) == collision_id) {
+			if (start == -1) {
+				start = i;
+				end = i;
+			}
+			else {
+				end = i;
+			}
+		}
+	}
+	end++;
+	Godot::print((std::to_string(input_meshes->size()) + "   ::   " + std::to_string(end) + " = " + std::to_string(collision_id)).c_str());
+	if (start > -1 && end > -1) {
+		input_meshes->erase(input_meshes->begin() + start, input_meshes->begin() + end);
+		input_transforms->erase(input_transforms->begin() + start, input_transforms->begin() + end);
+		input_aabbs->erase(input_aabbs->begin() + start, input_aabbs->begin() + end);
+		collision_ids->erase(collision_ids->begin() + start, collision_ids->begin() + end);
+	}
+	Godot::print((std::to_string(input_meshes->size()) + "   ::   " + std::to_string(end) + " = " + std::to_string(collision_id)).c_str());
+}
+
+void DetourNavigationMeshGenerator::recalculate_tiles(AABB changes_bounding_box) {
+	Godot::print("recalculating tiles...");
+	build_tile(4, 4);
+	build_tile(4, 5);
+	build_tile(4, 6);
+	build_tile(5, 4);
+	build_tile(5, 5);
+	build_tile(5, 6);
+	build_tile(6, 4);
+	build_tile(6, 5);
+	build_tile(6, 6);
+}
+
 
 void DetourNavigationMeshGenerator::add_meshdata(
 	int mesh_index, std::vector<float>& p_verticies, std::vector<int>& p_indices

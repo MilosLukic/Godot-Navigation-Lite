@@ -28,14 +28,15 @@
 
 namespace godot {
 	class DetourNavigationMeshGenerator{
-	protected:
+	public:
+		DetourNavigationMeshGenerator();
+		~DetourNavigationMeshGenerator();
+
+
 		std::vector<int64_t>* collision_ids;
 		std::vector<Ref<Mesh>>* input_meshes;
 		std::vector<Transform>* input_transforms;
 		std::vector<AABB>* input_aabbs;
-	public:
-		DetourNavigationMeshGenerator();
-		~DetourNavigationMeshGenerator();
 
 		Ref<NavmeshParameters> navmesh_parameters;
 		Transform global_transform;
@@ -47,12 +48,13 @@ namespace godot {
 
 		void init_mesh_data(
 			std::vector<Ref<Mesh>>* meshes, std::vector<Transform>* transforms,
-			std::vector<AABB>* aabbs, Transform g_transform
+			std::vector<AABB>* aabbs, Transform g_transform, std::vector<int64_t>* c_ids
 		) {
 			global_transform = g_transform;
 			input_aabbs = aabbs;
 			input_transforms = transforms;
 			input_meshes = meshes;
+			collision_ids = c_ids;
 		};
 
 		void build();
@@ -94,6 +96,10 @@ namespace godot {
 		void get_tile_bounding_box(
 			int x, int z, Vector3& bmin, Vector3& bmax
 		);
+
+		void remove_collision_shape(int64_t collision_id);
+
+		void recalculate_tiles(AABB changes_bounding_box);
 
 		void add_meshdata(
 			int mesh_index, std::vector<float>& p_verticies, std::vector<int>& p_indices
