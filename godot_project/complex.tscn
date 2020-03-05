@@ -1,10 +1,10 @@
 [gd_scene load_steps=13 format=2]
 
 [ext_resource path="res://ComplexArraymesh.tres" type="ArrayMesh" id=1]
-[ext_resource path="res://addons/detour-navigation/bin/detour_navigation.gdns" type="Script" id=2]
+[ext_resource path="res://addons/godot-navigation-lite/bin/detour_navigation.gdns" type="Script" id=2]
 [ext_resource path="res://main.gd" type="Script" id=3]
-[ext_resource path="res://addons/detour-navigation/bin/detour_navigation.gdnlib" type="GDNativeLibrary" id=4]
-[ext_resource path="res://addons/detour-navigation/bin/navmesh_parameters.gdns" type="Script" id=5]
+[ext_resource path="res://addons/godot-navigation-lite/bin/detour_navigation.gdnlib" type="GDNativeLibrary" id=4]
+[ext_resource path="res://addons/godot-navigation-lite/bin/navmesh_parameters.gdns" type="Script" id=5]
 [ext_resource path="res://2dOverlay.gd" type="Script" id=7]
 
 [sub_resource type="NativeScript" id=1]
