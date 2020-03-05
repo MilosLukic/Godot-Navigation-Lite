@@ -17,10 +17,15 @@ namespace godot {
 		GODOT_CLASS(DetourNavigationMeshCached, Spatial);
 		/* TILE CACHE */
 		friend struct NavMeshProcess;
+	protected:
+		int dynamic_collision_mask;
 	public:
-		SETGET(dynamic_objects, bool);
-		SETGET(dynamic_collision_mask, int);
+		void set_dynamic_collision_mask(int mask);
+		int get_dynamic_collision_mask() {
+			return dynamic_collision_mask;
+		}
 
+		DetourNavigationMeshCacheGenerator* generator = nullptr;
 		dtTileCache* tile_cache = nullptr;
 		dtTileCacheAlloc* tile_cache_alloc = nullptr;
 		dtTileCacheCompressor* tile_cache_compressor = nullptr;
@@ -64,7 +69,7 @@ namespace godot {
 		std::vector<unsigned char> offmesh_areas;
 		std::vector<unsigned char> offmesh_dir;
 
-		unsigned int add_cylynder_obstacle(Vector3 pos, float radius, float height);
+		unsigned int add_cylinder_obstacle(Vector3 pos, float radius, float height);
 		void remove_obstacle(int id);
 
 

@@ -48,11 +48,12 @@ namespace godot {
 		};
 	private:
 		/* geometry_source can be 0 = static bodies, 1 = meshes */
-		SETGET(collision_mask, int);
-		SETGET(parsed_geometry_type, int);
+		float aggregated_time_passed = 0.f;
 
+		SETGET(parsed_geometry_type, int);
 		SETGET(dynamic_objects, bool);
 		SETGET(dynamic_collision_mask, int);
+		SETGET(collision_mask, int);
 
 
 		void collect_mesh_instances(
@@ -79,7 +80,7 @@ namespace godot {
 		
 	public:
 		static void _register_methods();
-
+		
 		DetourNavigation();
 		~DetourNavigation();
 
@@ -92,17 +93,18 @@ namespace godot {
 		void _init();
 		void _ready();
 
+		void recalculate_masks();
+
 		void update_tilecache();
 
-		void add_box_obstacle_to_all(int64_t instance_id, Vector3 position, Vector3 extents, float rotationY);
+		void add_box_obstacle_to_all(int64_t instance_id, Vector3 position, Vector3 extents, float rotationY, int collision_layer);
+
+		void add_cylinder_obstacle_to_all(int64_t instance_id, Vector3 position, float radius, float height, int collision_layer);
 
 
 		void remove_obstacle(CollisionShape* collision_shape);
 
-		void remove_static_object(CollisionShape* collision_shape);
-
-
-		void _process();
+		void _process(float passed);
 
 		DetourNavigationMeshCached *create_cached_navmesh(Ref<CachedNavmeshParameters> np);
 

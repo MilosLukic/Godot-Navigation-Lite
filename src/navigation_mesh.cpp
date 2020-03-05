@@ -46,7 +46,7 @@ DetourNavigationMesh::DetourNavigationMesh(){
 	if (OS::get_singleton()->is_stdout_verbose()) {
 		Godot::print("Navigation mesh constructor function called.");
 	}
-	set_collision_mask(1);
+	collision_mask = 1;
 }
 
 DetourNavigationMesh::~DetourNavigationMesh() {
@@ -58,12 +58,20 @@ DetourNavigationMesh::~DetourNavigationMesh() {
 	if (generator != nullptr) {
 		delete generator;
 	}
-	
 }
 
+void DetourNavigationMesh::set_collision_mask(int cm) {
+	collision_mask = cm;
+
+	Node* parent = get_parent();
+	DetourNavigation* navigation = Object::cast_to<DetourNavigation>(parent);
+
+	if (navigation) {
+		navigation->recalculate_masks();
+	}
+}
 
 void DetourNavigationMesh::_on_renamed(Variant v) {
-	Godot::print("Renamed");
 	char* previous_path = get_cache_file_path();
 	navmesh_name = get_name().utf8().get_data();
 	char* current_path = get_cache_file_path();
@@ -206,11 +214,13 @@ void DetourNavigationMesh::save_mesh() {
 
 
 void DetourNavigationMesh::build_debug_mesh() {
-	clear_debug_mesh();
-	debug_mesh_instance = MeshInstance::_new();
-	debug_mesh_instance->set_mesh(get_debug_mesh());
-	debug_mesh_instance->set_material_override(get_debug_navigation_material());
-	add_child(debug_mesh_instance);
+	if (get_tree()->is_debugging_navigation_hint() || Engine::get_singleton()->is_editor_hint()) {
+		clear_debug_mesh();
+		debug_mesh_instance = MeshInstance::_new();
+		debug_mesh_instance->set_mesh(get_debug_mesh());
+		debug_mesh_instance->set_material_override(get_debug_navigation_material());
+		add_child(debug_mesh_instance);
+	}
 }
 
 

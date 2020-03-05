@@ -41,7 +41,7 @@ void NavMeshProcess::process(struct dtNavMeshCreateParams* params,
 DetourNavigationMeshCached::DetourNavigationMeshCached() {
 	max_obstacles = DEFAULT_MAX_OBSTACLES;
 	max_layers = DEFAULT_MAX_LAYERS;
-	set_dynamic_collision_mask(2);
+	dynamic_collision_mask = 2;
 
 }
 
@@ -57,7 +57,9 @@ DetourNavigationMeshCached::~DetourNavigationMeshCached() {
 	if (mesh_process != nullptr) {
 		delete mesh_process;
 	}
-
+	if (generator != nullptr) {
+		delete generator;
+	}
 }
 
 
@@ -70,11 +72,15 @@ void DetourNavigationMeshCached::_register_methods() {
 	register_method("clear_navmesh", &DetourNavigationMeshCached::clear_navmesh);
 	register_method("find_path", &DetourNavigationMeshCached::find_path);
 	register_method("add_box_obstacle", &DetourNavigationMeshCached::add_box_obstacle);
-	register_method("add_cylynder_obstacle", &DetourNavigationMeshCached::add_cylynder_obstacle);
+	register_method("add_cylinder_obstacle", &DetourNavigationMeshCached::add_cylinder_obstacle);
 	register_method("remove_obstacle", &DetourNavigationMeshCached::remove_obstacle);
 
 
-	register_property<DetourNavigationMeshCached, bool>("dynamic_objects", &DetourNavigationMeshCached::dynamic_objects, true);
+
+	register_property<DetourNavigationMesh, int>("collision_mask", &DetourNavigationMesh::set_collision_mask, &DetourNavigationMesh::get_collision_mask, 1,
+		GODOT_METHOD_RPC_MODE_DISABLED, GODOT_PROPERTY_USAGE_DEFAULT, GODOT_PROPERTY_HINT_LAYERS_3D_PHYSICS);
+
+
 	register_property<DetourNavigationMeshCached, int>("dynamic_objects_collision_mask", &DetourNavigationMeshCached::set_dynamic_collision_mask, &DetourNavigationMeshCached::get_dynamic_collision_mask, 1,
 		GODOT_METHOD_RPC_MODE_DISABLED, GODOT_PROPERTY_USAGE_DEFAULT, GODOT_PROPERTY_HINT_LAYERS_3D_PHYSICS);
 	register_property<DetourNavigationMeshCached, Ref<CachedNavmeshParameters>>("parameters", &DetourNavigationMeshCached::navmesh_parameters, Ref<CachedNavmeshParameters>(),
@@ -96,6 +102,16 @@ void DetourNavigationMeshCached::_ready() {
 
 }
 
+void DetourNavigationMeshCached::set_dynamic_collision_mask(int cm) {
+	dynamic_collision_mask = cm;
+	Node* parent = get_parent();
+	DetourNavigation* navigation = Object::cast_to<DetourNavigation>(parent);
+
+	if (navigation) {
+		Godot::print("haa0");
+		navigation->recalculate_masks();
+	}
+}
 void DetourNavigationMeshCached::build_navmesh() {
 	DetourNavigation* dtmi = Object::cast_to<DetourNavigation>(get_parent());
 	if (dtmi == NULL) {
@@ -147,7 +163,6 @@ unsigned int DetourNavigationMeshCached::add_box_obstacle(
 	Vector3 pos, Vector3 extents, float rotationY
 ){
 	dtObstacleRef ref = 0;
-	extents = extents;
 	if (dtStatusFailed(
 		tile_cache->addBoxObstacle(&pos.coord[0], &extents.coord[0], rotationY, &ref))) {
 		ERR_PRINT("Can't add obstacle");
@@ -156,7 +171,7 @@ unsigned int DetourNavigationMeshCached::add_box_obstacle(
 	return (unsigned int) ref;
 }
 
-unsigned int DetourNavigationMeshCached::add_cylynder_obstacle(
+unsigned int DetourNavigationMeshCached::add_cylinder_obstacle(
 	Vector3 pos, float radius, float height 
 ) {
 	dtObstacleRef ref = 0;

@@ -36,11 +36,9 @@ namespace godot {
 		std::vector<Ref<Mesh>> *input_meshes = nullptr;
 		std::vector<Transform> *input_transforms = nullptr;
 		std::vector<AABB> *input_aabbs = nullptr;
+		int collision_mask;
 	public:
 		std::vector<int64_t>* collision_ids = nullptr;
-
-		SETGET(collision_mask, int);
-
 
 		DetourNavigationMesh();
 		~DetourNavigationMesh();
@@ -69,6 +67,12 @@ namespace godot {
 		void _notification(int p_what);
 		Ref<Material> get_debug_navigation_material();
 		virtual dtTileCache* get_tile_cache() { return nullptr; };
+
+		int get_collision_mask() {
+			return collision_mask;
+		}
+
+		void set_collision_mask(int cm);
 
 		MeshInstance* debug_mesh_instance = nullptr;
 
