@@ -64,9 +64,6 @@ bool DetourNavigationMeshCacheGenerator::build_tile(int x, int z) {
 
 	/* Tile Cache */
 	dtTileCache* tile_cache = get_tile_cache();
-	tile_cache->removeTile(nav->getTileRefAt(x, z, 0), NULL, NULL);
-
-	// nav->removeTile(nav->getTileRefAt(x, z, 0), NULL, NULL); // <- removed due to tilecache
 
 	rcConfig config;
 	init_rc_config(config, bmin, bmax);
@@ -96,6 +93,8 @@ bool DetourNavigationMeshCacheGenerator::build_tile(int x, int z) {
 	}
 
 	for (int i = 0; i < heightfield_layer_set->nlayers; i++) {
+		tile_cache->removeTile(tile_cache->getTileRef(tile_cache->getTileAt(x, z, i)), NULL, NULL);
+
 		dtTileCacheLayerHeader header;
 		header.magic = DT_TILECACHE_MAGIC;
 		header.version = DT_TILECACHE_VERSION;
@@ -125,13 +124,15 @@ bool DetourNavigationMeshCacheGenerator::build_tile(int x, int z) {
 		dtCompressedTileRef tileRef;
 		int status = tile_cache->addTile(tile_data, tile_data_size,
 			DT_COMPRESSEDTILE_FREE_DATA, &tileRef);
+
 		if (dtStatusFailed((dtStatus)status)) {
 			dtFree(tile_data);
 			tile_data = NULL;
+			ERR_PRINT("Failed to add tile cache tile.");
+			return false;
 		}
 		tile_cache->buildNavMeshTilesAt(x, z, nav);
 	}
-
 	return true;
 }
 
@@ -155,4 +156,26 @@ bool DetourNavigationMeshCacheGenerator::init_tile_cache(dtTileCacheParams* para
 		return false;
 	}
 	return true;
+}
+
+/**
+ * Rebuilds all the tiles that were marked as dirty
+ */
+void DetourNavigationMeshCacheGenerator::recalculate_tiles() {
+	Godot::print("Rebuilding tiles cached");
+	if (dirty_tiles == nullptr) {
+		return;
+	}
+	for (int i = 0; i < get_num_tiles_x(); i++) {
+		for (int j = 0; j < get_num_tiles_z(); j++) {
+			if (dirty_tiles[i][j] == 1) {
+				Godot::print((std::to_string(i) + std::to_string(j)).c_str());
+				build_tile(i, j);
+				dirty_tiles[i][j] = 0;
+			}
+		}
+	}
+
+	// get_tile_cache()->update(0, get_detour_navmesh());
+	Godot::print("Done rebuilding cached.");
 }

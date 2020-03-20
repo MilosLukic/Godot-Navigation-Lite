@@ -1,46 +1,43 @@
 extends ColorRect
 
-class Line:
-
-	var id
-	var color
-	var thickness
-	var a = Vector2()
-	var b = Vector2()
+var ids = []
+var colors = []
+var thickness = []
+var a_s = []
+var b_s = []
 
 var lines = []
-var camera_node
+var camera_node = null
 
 func _ready():
-
 	camera_node = $"../Camera"
 
 func _draw():
+	for index in range(ids.size()):
+		draw_line(a_s[index], b_s[index], colors[index], thickness[index])
 
-	for line in lines:
-
-		draw_line(line.a, line.b, line.color, line.thickness)
-
-func _process(delta):
-
+func _process(_delta):
 	update()
 
-func draw_line3D(id, vector_a, vector_b, color, thickness):
-	for line in lines:
-		if line.id == id:
-			line.color = color
-			line.a = camera_node.unproject_position(vector_a)
-			line.b = camera_node.unproject_position(vector_b)
-			line.thickness = thickness
+func draw_line3D(given_id, vector_a, vector_b, color, given_thickness):
+	for index in range(ids.size()):
+		if ids[index] == given_id:
+			colors[index] = color
+			a_s[index] = camera_node.unproject_position(vector_a)
+			b_s[index] = camera_node.unproject_position(vector_b)
+			thickness[index] = given_thickness
 			return
-	var new_line = Line.new()
-	new_line.id = id
-	new_line.color = color
-	new_line.a = camera_node.unproject_position(vector_a)
-	new_line.b = camera_node.unproject_position(vector_b)
-	new_line.thickness = thickness
-
-	lines.append(new_line)
+			
+	ids.append(given_id)
+	colors.append(color)
+	a_s.append(camera_node.unproject_position(vector_a))
+	b_s.append(camera_node.unproject_position(vector_b))
+	thickness.append(given_thickness)
 
 func remove_lines():
-	lines = []
+	ids = []
+	colors = []
+	thickness = []
+	a_s = []
+	b_s = []
+

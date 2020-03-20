@@ -37,7 +37,12 @@ namespace godot {
 		std::vector<Transform> *input_transforms = nullptr;
 		std::vector<AABB> *input_aabbs = nullptr;
 		int collision_mask;
+		Color debug_mesh_color;
 	public:
+		SETGET(input_meshes_storage, Array);
+		SETGET(input_transforms_storage, Array);
+		SETGET(input_aabbs_storage, Array);
+		SETGET(collision_ids_storage, Array);
 		std::vector<int64_t>* collision_ids = nullptr;
 
 		DetourNavigationMesh();
@@ -65,6 +70,8 @@ namespace godot {
 		void build_debug_mesh();
 		Dictionary find_path(Variant from, Variant to);
 		void _notification(int p_what);
+		void store_inputs();
+
 		Ref<Material> get_debug_navigation_material();
 		virtual dtTileCache* get_tile_cache() { return nullptr; };
 
@@ -86,10 +93,28 @@ namespace godot {
 		Ref<ArrayMesh> debug_mesh = nullptr;
 		Transform global_transform;
 		Ref<NavmeshParameters> navmesh_parameters = nullptr;
-		std::string navmesh_name;
+		std::string navmesh_name = "default";
+
+		void set_generator(DetourNavigationMeshGenerator* g) {
+			generator = g;
+		}
+		DetourNavigationMeshGenerator* get_generator() {
+			return generator;
+		}
 
 		dtNavMesh* get_detour_navmesh() {
 			return detour_navmesh;
+		}
+
+		Color get_debug_mesh_color() {
+			return debug_mesh_color;
+		}
+		
+		void set_debug_mesh_color(Color dmc) {
+			debug_mesh_color = dmc;
+			if (debug_mesh_instance != nullptr && debug_mesh_instance->get_material_override() != nullptr) {
+				((Ref<SpatialMaterial>) (debug_mesh_instance->get_material_override()))->set_albedo(debug_mesh_color);
+			}
 		}
 
 		void init_navigation_mesh_values();

@@ -2,6 +2,7 @@
 #define NAVMESH_PARAMETERS_H
 
 #include <Godot.hpp>
+#include <OS.hpp>
 #include <Resource.hpp>
 #include "helpers.h"
 

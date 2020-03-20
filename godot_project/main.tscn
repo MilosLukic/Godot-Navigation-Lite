@@ -1,12 +1,13 @@
-[gd_scene load_steps=20 format=2]
+[gd_scene load_steps=23 format=2]
 
 [ext_resource path="res://addons/godot-navigation-lite/bin/detour_navigation.gdnlib" type="GDNativeLibrary" id=1]
 [ext_resource path="res://addons/godot-navigation-lite/bin/detour_navigation.gdns" type="Script" id=2]
 [ext_resource path="res://main.gd" type="Script" id=3]
 [ext_resource path="res://addons/godot-navigation-lite/bin/cached_navmesh_parameters.gdns" type="Script" id=4]
-[ext_resource path="res://scene1.tscn" type="PackedScene" id=5]
+[ext_resource path="res://addons/godot-navigation-lite/bin/navmesh_parameters.gdns" type="Script" id=5]
 [ext_resource path="res://Finish.gd" type="Script" id=6]
 [ext_resource path="res://2dOverlay.gd" type="Script" id=7]
+[ext_resource path="res://Camera.gd" type="Script" id=8]
 
 [sub_resource type="QuadMesh" id=1]
 size = Vector2( 32, 32 )
@@ -38,25 +39,46 @@ radius = 0.2
 mid_height = 5.167
 
 [sub_resource type="NativeScript" id=11]
-class_name = "DetourNavigationMeshCached"
+class_name = "DetourNavigationMesh"
 library = ExtResource( 1 )
 
 [sub_resource type="Resource" id=12]
+script = ExtResource( 5 )
+cell_size = 0.2
+tile_size = 32
+cell_height = 0.2
+agent_height = 2.0
+agent_radius = 0.146
+agent_max_climb = 0.9
+agent_max_slope = 45.0
+region_min_size = 1.0
+region_merge_size = 20.0
+edge_max_length = 12.0
+edge_max_error = 1.3
+detail_sample_distance = 6.0
+detail_sample_max_error = 1.0
+padding = Vector3( 1, 1, 1 )
+
+[sub_resource type="NativeScript" id=13]
+class_name = "DetourNavigationMeshCached"
+library = ExtResource( 1 )
+
+[sub_resource type="Resource" id=14]
 script = ExtResource( 4 )
 cell_size = 0.2
 tile_size = 32
 cell_height = 0.2
 agent_height = 2.0
-agent_radius = 0.6
+agent_radius = 0.146
 agent_max_climb = 0.9
 agent_max_slope = 45.0
 region_min_size = 1.0
-region_merge_size = 4.0
+region_merge_size = 20.0
 edge_max_length = 12.0
 edge_max_error = 1.3
 detail_sample_distance = 6.0
 detail_sample_max_error = 1.0
-padding = Vector3( 0.1, 0.1, 0.1 )
+padding = Vector3( 1, 1, 1 )
 max_obstacles = 1000
 max_layers = 8
 
@@ -130,24 +152,25 @@ collision_layer = 2
 [node name="CollisionShape" type="CollisionShape" parent="DetourNavigation/DynObst4/StaticBody"]
 shape = SubResource( 7 )
 
-[node name="StatObst1" parent="DetourNavigation" instance=ExtResource( 5 )]
-
 [node name="StatObst2" type="MeshInstance" parent="DetourNavigation"]
 transform = Transform( 0.793831, 0.199666, 0.574426, 0, 0.944566, -0.328323, -0.608138, 0.260633, 0.749826, -4.55754, 0, -7.94257 )
 mesh = SubResource( 4 )
 material/0 = null
 
 [node name="StaticBody" type="StaticBody" parent="DetourNavigation/StatObst2"]
+collision_layer = 2
 
 [node name="CollisionShape" type="CollisionShape" parent="DetourNavigation/StatObst2/StaticBody"]
 shape = SubResource( 8 )
 
 [node name="StatObst3" type="MeshInstance" parent="DetourNavigation"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -4.07762, 0, 4.59667 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -2.07215, 0, 4.59667 )
+layers = 2
 mesh = SubResource( 4 )
 material/0 = null
 
 [node name="StaticBody" type="StaticBody" parent="DetourNavigation/StatObst3"]
+collision_layer = 2
 
 [node name="CollisionShape" type="CollisionShape" parent="DetourNavigation/StatObst3/StaticBody"]
 shape = SubResource( 8 )
@@ -158,6 +181,7 @@ mesh = SubResource( 4 )
 material/0 = null
 
 [node name="StaticBody" type="StaticBody" parent="DetourNavigation/StatObst4"]
+collision_layer = 2
 
 [node name="CollisionShape" type="CollisionShape" parent="DetourNavigation/StatObst4/StaticBody"]
 shape = SubResource( 9 )
@@ -173,14 +197,22 @@ mesh = SubResource( 10 )
 material/0 = null
 script = ExtResource( 6 )
 
-[node name="CachedDetourNavigationMesh" type="Spatial" parent="DetourNavigation"]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0411072, -1.90735e-06, 0.0335331 )
+[node name="DetourNavigationMesh" type="Spatial" parent="DetourNavigation"]
+visible = false
 script = SubResource( 11 )
-dynamic_objects_collision_mask = 6
+collision_mask = 3
 parameters = SubResource( 12 )
+
+[node name="CachedDetourNavigationMesh" type="Spatial" parent="DetourNavigation"]
+script = SubResource( 13 )
+collision_mask = 3
+dynamic_objects_collision_mask = 4
+debug_mesh_color = Color( 1, 0.639216, 0.827451, 0.4 )
+parameters = SubResource( 14 )
 
 [node name="Camera" type="Camera" parent="."]
 transform = Transform( 1, 0, 0, 0, 0.490204, 0.871607, 0, -0.871608, 0.490204, 1.134, 18.85, 15.337 )
+script = ExtResource( 8 )
 
 [node name="GeomDraw" type="ColorRect" parent="."]
 margin_right = 1021.0

@@ -15,6 +15,8 @@ var currently_selected = null
 var navigation_script = null
 var navmesh_parameters = null
 var cached_navmesh_parameters = null
+var cached_navmesh = null
+var navmesh = null
 
 
 func _enter_tree():
@@ -22,7 +24,6 @@ func _enter_tree():
 	navmesh_parameters = preload("res://addons/godot-navigation-lite/bin/navmesh_parameters.gdns")
 	cached_navmesh_parameters = preload("res://addons/godot-navigation-lite/bin/cached_navmesh_parameters.gdns")
 
-	
 	# When this plugin node enters tree, add the custom type
 	add_custom_type(
 		"DetourNavigation", 
@@ -30,18 +31,9 @@ func _enter_tree():
 		preload("res://addons/godot-navigation-lite/detour_navigation_bootstrap.gd"), 
 		preload("res://addons/godot-navigation-lite/icons/navigation_icon.svg")
 	)
-	add_custom_type(
-		"DetourNavigationMesh", 
-		"Spatial", 
-		preload("res://addons/godot-navigation-lite/detour_navigation_mesh_bootstrap.gd"), 
-		preload("res://addons/godot-navigation-lite/icons/navigation_mesh_instance_icon.svg")
-	)
-	add_custom_type(
-		"DetourNavigationMeshCached", 
-		"Spatial", 
-		preload("res://addons/godot-navigation-lite/detour_navigation_mesh_cached_bootstrap.gd"), 
-		preload("res://addons/godot-navigation-lite/icons/navigation_mesh_instance_icon.svg")
-	)
+	cached_navmesh = preload("res://addons/godot-navigation-lite/bin/detour_navigation_mesh.gdns")
+	navmesh = preload("res://addons/godot-navigation-lite/bin/detour_navigation_mesh_cached.gdns")
+
 	var editor_interface = get_editor_interface()
 	var base_control = editor_interface.get_base_control()
 	
@@ -88,8 +80,6 @@ func _exit_tree():
 	_navigation_menu_button = null
 	
 	remove_custom_type("DetourNavigation")
-	remove_custom_type("DetourNavigationMesh")
-	remove_custom_type("DetourNavigationMeshCached")
 	
 
 

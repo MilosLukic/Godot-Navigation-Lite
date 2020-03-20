@@ -4,6 +4,7 @@ var process_once = true
 onready var start = $"../Start"
 onready var camera = $"../../Camera"
 onready var nav = $"../CachedDetourNavigationMesh"
+onready var nav2 = $"../DetourNavigationMesh"
 onready var geom = $"../../GeomDraw"
 
 var line_id = 0
@@ -13,23 +14,9 @@ var path = 0
 var colors = [Color(0.5, 0, 0.7), Color(0.7, 0.5, 0), Color(1, 0.2, 0.7), Color(1, 0, 0), Color(1, 0, 1),
 Color(1, 1, 0), Color(1, 0, 0), Color(0, 1, 1), Color(0, 1, 0), Color(0, 0, 1), Color(0, 0, 0)]
 
-func _ready():
-	"""
-	var t = get_global_transform()
-	t.origin.x = 191.8
-	t.origin.z = 58.5
-	
-	set_global_transform(t)
-	draw_path()
-	
-	t.origin.x = 189.5
-	t.origin.z = 52.5
-	
-	set_global_transform(t)
-	draw_path()"""
 	
 
-func _process(delta):
+func _process(_delta):
 	if Input.is_action_just_pressed("left_click"):
 		var m_pos = get_viewport().get_mouse_position()
 		var new_origin = raycast_from_mouse(m_pos, 1)
@@ -51,7 +38,10 @@ func _process(delta):
 func draw_path():
 	var start_point = start.get_transform().origin
 	var end_point = get_transform().origin
-	var path_origins = nav.find_path(start_point, end_point)["points"]
+	var cur_nav = nav
+	if not nav:
+		cur_nav = nav2
+	var path_origins = cur_nav.find_path(start_point, end_point)["points"]
 	print(path_origins)
 	
 	if not path_origins:

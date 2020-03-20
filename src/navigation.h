@@ -76,7 +76,7 @@ namespace godot {
 		
 		std::vector<StaticBody*> *dyn_bodies_to_add = nullptr;
 		std::vector<StaticBody*>* static_bodies_to_add = nullptr;
-		std::vector<CollisionShape*>* collisions_to_remove = nullptr;
+		std::vector<int64_t>* collisions_to_remove = nullptr;
 		
 	public:
 		static void _register_methods();
@@ -104,14 +104,16 @@ namespace godot {
 
 		void remove_obstacle(CollisionShape* collision_shape);
 
+		void save_collision_shapes(DetourNavigationMeshGenerator* generator);
+
 		void _process(float passed);
 
 		DetourNavigationMeshCached *create_cached_navmesh(Ref<CachedNavmeshParameters> np);
 
 		DetourNavigationMesh *create_navmesh(Ref<NavmeshParameters> np);
 
-		std::vector<DetourNavigationMesh*> navmeshes;
-		std::vector<DetourNavigationMeshCached *> cached_navmeshes;
+		std::vector<DetourNavigationMesh*> *navmeshes = nullptr;
+		std::vector<DetourNavigationMeshCached*> *cached_navmeshes = nullptr;
 
 
 		void build_navmesh(DetourNavigationMesh *navigation);

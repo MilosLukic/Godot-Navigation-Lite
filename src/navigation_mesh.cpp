@@ -18,6 +18,13 @@ void DetourNavigationMesh::_register_methods() {
 	register_property<DetourNavigationMesh, int>("collision_mask", &DetourNavigationMesh::set_collision_mask, &DetourNavigationMesh::get_collision_mask, 1,
 		GODOT_METHOD_RPC_MODE_DISABLED, GODOT_PROPERTY_USAGE_DEFAULT, GODOT_PROPERTY_HINT_LAYERS_3D_PHYSICS);
 
+	register_property<DetourNavigationMesh, Array>("input_meshes_storage", &DetourNavigationMesh::set_input_meshes_storage, &DetourNavigationMesh::get_input_meshes_storage, Array(),
+		GODOT_METHOD_RPC_MODE_DISABLED, GODOT_PROPERTY_USAGE_STORAGE, GODOT_PROPERTY_HINT_NONE);
+
+	register_property<DetourNavigationMesh, Color>(
+		"debug_mesh_color", &DetourNavigationMesh::set_debug_mesh_color, &DetourNavigationMesh::get_debug_mesh_color, Color(0.1f, 1.0f, 0.7f, 0.4f)
+	);
+
 
 	register_property<DetourNavigationMesh, Ref<NavmeshParameters>>("parameters", &DetourNavigationMesh::navmesh_parameters, Ref<NavmeshParameters>(), 
 		GODOT_METHOD_RPC_MODE_DISABLED, GODOT_PROPERTY_USAGE_DEFAULT, GODOT_PROPERTY_HINT_RESOURCE_TYPE, "Resource");
@@ -30,6 +37,7 @@ void DetourNavigationMesh::_init() {
 }
 
 void DetourNavigationMesh::_exit_tree() {
+
 }
 
 
@@ -37,7 +45,6 @@ void DetourNavigationMesh::_ready() {
 	if (OS::get_singleton()->is_stdout_verbose()) {
 		Godot::print("Navigation mesh ready function called.");
 	}
-
 	get_tree()->connect("node_renamed", this, "_on_renamed");
 	navmesh_name = get_name().utf8().get_data();
 }
@@ -47,11 +54,13 @@ DetourNavigationMesh::DetourNavigationMesh(){
 		Godot::print("Navigation mesh constructor function called.");
 	}
 	collision_mask = 1;
+	debug_mesh_color = Color(0.1f, 1.0f, 0.7f, 0.4f);
 }
 
 DetourNavigationMesh::~DetourNavigationMesh() {
 	clear_debug_mesh();
 	release_navmesh();
+
 	if (navmesh_parameters.is_valid()) {
 		navmesh_parameters.unref();
 	}
@@ -215,11 +224,22 @@ void DetourNavigationMesh::save_mesh() {
 
 void DetourNavigationMesh::build_debug_mesh() {
 	if (get_tree()->is_debugging_navigation_hint() || Engine::get_singleton()->is_editor_hint()) {
-		clear_debug_mesh();
-		debug_mesh_instance = MeshInstance::_new();
+		Ref<Material> material = nullptr;
+		if (debug_mesh_instance != nullptr) {
+			material = debug_mesh_instance->get_material_override();
+			debug_mesh_instance->set_mesh(NULL);
+			if (debug_mesh.is_valid()) {
+				debug_mesh.unref();
+			}
+		}
+		else {
+			clear_debug_mesh();
+			material = get_debug_navigation_material();
+			debug_mesh_instance = MeshInstance::_new();
+			add_child(debug_mesh_instance);
+		}
 		debug_mesh_instance->set_mesh(get_debug_mesh());
-		debug_mesh_instance->set_material_override(get_debug_navigation_material());
-		add_child(debug_mesh_instance);
+		debug_mesh_instance->set_material_override(material);
 	}
 }
 
@@ -233,7 +253,7 @@ Ref<Material> DetourNavigationMesh::get_debug_navigation_material() {
 	line_material->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
 	line_material->set_flag(SpatialMaterial::FLAG_SRGB_VERTEX_COLOR, true);
 	line_material->set_flag(SpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-	line_material->set_albedo(Color(0.1f, 1.0f, 0.7f, 0.4f));
+	line_material->set_albedo(debug_mesh_color);
 
 	return line_material;
 }
@@ -252,22 +272,18 @@ Dictionary DetourNavigationMesh::find_path(Variant from, Variant to) {
 }
 
 
+void DetourNavigationMesh::store_inputs() {
+	if (generator == nullptr) {
+		Godot::print("is nullptr");
+	}
+	Godot::print(("Generator input length " + std::to_string(generator->input_meshes->size())).c_str());
+	Godot::print(("Stored input length " + std::to_string(input_meshes_storage.size())).c_str());
+	for (int i = 0; i < generator->input_meshes->size(); i++) {
+		input_meshes_storage.push_back(Variant(generator->input_meshes->at(i)));
+	}
+	Godot::print(("Stored input length " + std::to_string(input_meshes_storage.size())).c_str());
+}
 
 void DetourNavigationMesh::_notification(int p_what) {
-	switch (p_what) {
-	case NOTIFICATION_PREDELETE: {
-		/*if (Engine::get_singleton()->is_editor_hint()) {
-			FileManager::deleteFile(get_cache_file_path());
-		}*/
-	} break;
-	/*case NOTIFICATION_EXIT_TREE: {
-		if (debug_mesh_instance) {
-			debug_mesh_instance->free();
-			debug_mesh_instance->queue_free();
-			debug_mesh_instance = NULL;
-		}
-		// Tile cache
-		set_process(false);
-	} break;*/
-	}
+
 }

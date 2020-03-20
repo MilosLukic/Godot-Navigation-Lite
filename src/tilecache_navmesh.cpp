@@ -5,9 +5,6 @@
 static const int DEFAULT_MAX_OBSTACLES = 1024;
 static const int DEFAULT_MAX_LAYERS = 16;
 
-
-
-
 using namespace godot;
 
 void NavMeshProcess::process(struct dtNavMeshCreateParams* params,
@@ -16,25 +13,7 @@ void NavMeshProcess::process(struct dtNavMeshCreateParams* params,
 		if (polyAreas[i] != RC_NULL_AREA) {
 			polyFlags[i] = RC_WALKABLE_AREA;
 		}
-
 	}
-	/*
-	params->offMeshConCount = nav->offmesh_radius.size();
-	if (params->offMeshConCount > 0) {
-		params->offMeshConVerts =
-			reinterpret_cast<const float*>(&nav->offmesh_vertices[0]);
-		params->offMeshConRad = &nav->offmesh_radius[0];
-		params->offMeshConFlags = &nav->offmesh_flags[0];
-		params->offMeshConAreas = &nav->offmesh_areas[0];
-		params->offMeshConDir = &nav->offmesh_dir[0];
-	}
-	else {
-		params->offMeshConVerts = NULL;
-		params->offMeshConRad = NULL;
-		params->offMeshConFlags = NULL;
-		params->offMeshConAreas = NULL;
-		params->offMeshConDir = NULL;
-	}*/
 }
 
 
@@ -75,14 +54,20 @@ void DetourNavigationMeshCached::_register_methods() {
 	register_method("add_cylinder_obstacle", &DetourNavigationMeshCached::add_cylinder_obstacle);
 	register_method("remove_obstacle", &DetourNavigationMeshCached::remove_obstacle);
 
-
-
-	register_property<DetourNavigationMesh, int>("collision_mask", &DetourNavigationMesh::set_collision_mask, &DetourNavigationMesh::get_collision_mask, 1,
+	register_property<DetourNavigationMeshCached, int>("collision_mask", &DetourNavigationMeshCached::set_collision_mask, &DetourNavigationMeshCached::get_collision_mask, 1,
 		GODOT_METHOD_RPC_MODE_DISABLED, GODOT_PROPERTY_USAGE_DEFAULT, GODOT_PROPERTY_HINT_LAYERS_3D_PHYSICS);
 
 
 	register_property<DetourNavigationMeshCached, int>("dynamic_objects_collision_mask", &DetourNavigationMeshCached::set_dynamic_collision_mask, &DetourNavigationMeshCached::get_dynamic_collision_mask, 1,
 		GODOT_METHOD_RPC_MODE_DISABLED, GODOT_PROPERTY_USAGE_DEFAULT, GODOT_PROPERTY_HINT_LAYERS_3D_PHYSICS);
+
+	register_property<DetourNavigationMeshCached, Array>("input_meshes_storage", &DetourNavigationMesh::set_input_meshes_storage, &DetourNavigationMesh::get_input_meshes_storage, Array(),
+		GODOT_METHOD_RPC_MODE_DISABLED, GODOT_PROPERTY_USAGE_STORAGE, GODOT_PROPERTY_HINT_NONE);
+
+	register_property<DetourNavigationMeshCached, Color>(
+		"debug_mesh_color", &DetourNavigationMeshCached::set_debug_mesh_color, &DetourNavigationMeshCached::get_debug_mesh_color, Color(0.1f, 1.0f, 0.7f, 0.4f)
+		);
+
 	register_property<DetourNavigationMeshCached, Ref<CachedNavmeshParameters>>("parameters", &DetourNavigationMeshCached::navmesh_parameters, Ref<CachedNavmeshParameters>(),
 		GODOT_METHOD_RPC_MODE_DISABLED, GODOT_PROPERTY_USAGE_DEFAULT, GODOT_PROPERTY_HINT_RESOURCE_TYPE, "Resource");
 }
@@ -108,7 +93,6 @@ void DetourNavigationMeshCached::set_dynamic_collision_mask(int cm) {
 	DetourNavigation* navigation = Object::cast_to<DetourNavigation>(parent);
 
 	if (navigation) {
-		Godot::print("haa0");
 		navigation->recalculate_masks();
 	}
 }

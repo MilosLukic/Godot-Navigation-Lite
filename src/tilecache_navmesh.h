@@ -60,7 +60,7 @@ namespace godot {
 		int max_obstacles = 0;
 		int max_layers = 0;
 
-		Ref<CachedNavmeshParameters> navmesh_parameters;
+		Ref<CachedNavmeshParameters> navmesh_parameters = nullptr;
 
 		std::vector<int> tile_queue;
 		std::vector<Vector3> offmesh_vertices;
@@ -71,8 +71,6 @@ namespace godot {
 
 		unsigned int add_cylinder_obstacle(Vector3 pos, float radius, float height);
 		void remove_obstacle(int id);
-
-
 
 	};
 

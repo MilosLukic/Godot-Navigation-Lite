@@ -59,6 +59,7 @@ script = ExtResource( 2 )
 
 [node name="DetourNavigationMesh" type="Spatial" parent="DetourNavigation"]
 script = SubResource( 1 )
+collision_mask = 3
 parameters = SubResource( 2 )
 
 [node name="MeshInstance" type="MeshInstance" parent="DetourNavigation"]

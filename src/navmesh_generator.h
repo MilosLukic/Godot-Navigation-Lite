@@ -42,6 +42,8 @@ namespace godot {
 		Transform global_transform;
 		dtNavMesh* detour_navmesh;
 
+		int **dirty_tiles = nullptr;
+
 		SETGET(initialized, bool);
 		SETGET(num_tiles_x, int);
 		SETGET(num_tiles_z, int);
@@ -99,7 +101,11 @@ namespace godot {
 
 		void remove_collision_shape(int64_t collision_id);
 
-		void recalculate_tiles(AABB changes_bounding_box);
+		void init_dirty_tiles();
+
+		void mark_dirty(int start_index, int end_index);
+
+		void recalculate_tiles();
 
 		void add_meshdata(
 			int mesh_index, std::vector<float>& p_verticies, std::vector<int>& p_indices
