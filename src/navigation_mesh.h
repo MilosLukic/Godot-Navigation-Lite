@@ -29,7 +29,6 @@
 
 
 namespace godot {
-	struct NavMeshProcess;
 	class DetourNavigationMesh : public Spatial {
 		GODOT_CLASS(DetourNavigationMesh, Spatial);
 	protected:
@@ -98,6 +97,7 @@ namespace godot {
 		void set_generator(DetourNavigationMeshGenerator* g) {
 			generator = g;
 		}
+		
 		DetourNavigationMeshGenerator* get_generator() {
 			return generator;
 		}

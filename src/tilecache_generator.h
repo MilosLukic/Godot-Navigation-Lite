@@ -5,7 +5,11 @@
 
 
 namespace godot {
-
+	struct NavMeshProcess : public dtTileCacheMeshProcess
+	{
+		virtual void process(struct dtNavMeshCreateParams* params,
+			unsigned char* polyAreas, unsigned short* polyFlags);
+	};
 	class DetourNavigationMeshCacheGenerator : public DetourNavigationMeshGenerator {
 		dtTileCache* tile_cache = nullptr;
 		dtTileCacheAlloc* tile_cache_alloc = nullptr;
@@ -37,6 +41,13 @@ namespace godot {
 
 		void recalculate_tiles();
 
+		void set_navmesh_parameters(Ref<CachedNavmeshParameters> np){
+			if (navmesh_parameters.is_valid()){
+				navmesh_parameters.unref();
+			}
+			navmesh_parameters = np;
+			DetourNavigationMeshGenerator::navmesh_parameters = np;
+		}
 
 		dtTileCache* get_tile_cache() {
 			return tile_cache;

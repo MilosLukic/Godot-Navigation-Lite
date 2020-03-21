@@ -5,9 +5,14 @@ DetourNavigationMeshGenerator::DetourNavigationMeshGenerator() {
 }
 
 DetourNavigationMeshGenerator::~DetourNavigationMeshGenerator() {
-	for (Ref<ArrayMesh> m : *input_meshes) {
-		if (m.is_valid()) {
-			m.unref();
+	if (navmesh_parameters.is_valid()){
+		navmesh_parameters.unref();
+	}
+	if (input_meshes != nullptr){
+		for (Ref<ArrayMesh> m : *input_meshes) {
+			if (m.is_valid()) {
+				m.unref();
+			}
 		}
 	}
 	delete input_meshes;
@@ -49,9 +54,12 @@ void DetourNavigationMeshGenerator::joint_build() {
 
 	set_tile_number(gridW, gridH);
 
-	std::string tile_message = "Tile number set to x:" + std::to_string(get_num_tiles_x());
-	tile_message += ", z:" + std::to_string(get_num_tiles_z());
-	Godot::print(tile_message.c_str());
+	
+	if (OS::get_singleton()->is_stdout_verbose()) {
+		std::string tile_message = "Tile number set to x:" + std::to_string(get_num_tiles_x());
+		tile_message += ", z:" + std::to_string(get_num_tiles_z());
+		Godot::print(tile_message.c_str());
+	}
 
 	/* Calculate how many bits are required to uniquely identify all tiles */
 	unsigned int tile_bits = (unsigned int)ilog2(nextPow2(get_num_tiles_x() * get_num_tiles_z()));
@@ -448,8 +456,8 @@ void DetourNavigationMeshGenerator::mark_dirty(int start_index, int end_index) {
 		if (dirty_tiles == nullptr) {
 			init_dirty_tiles();
 		}
-		for (int i = std::max(0, int(std::floorf(min.x))); i < std::min(int(std::ceilf(max.x)), get_num_tiles_x()); i++) {
-			for (int j = std::max(0, int(std::floorf(min.z))); j < std::min( get_num_tiles_z(), int(std::ceilf(max.z))); j++) {
+		for (int i = std::max(0, int((min.x))); i < std::min(int(std::ceil(max.x)), get_num_tiles_x()); i++) {
+			for (int j = std::max(0, int(std::floor(min.z))); j < std::min( get_num_tiles_z(), int(std::ceil(max.z))); j++) {
 				dirty_tiles[i][j] = 1;
 			}
 		}
@@ -505,8 +513,7 @@ void DetourNavigationMeshGenerator::add_meshdata(
 		ERR_CONTINUE((index_count == 0 || (index_count % 3) != 0));
 
 		int face_count = index_count / 3;
-
-		PoolVector3Array mesh_vertices(p_mesh->surface_get_arrays(i)[Mesh::ARRAY_VERTEX]);
+		PoolVector3Array mesh_vertices = p_mesh->surface_get_arrays(i)[Mesh::ARRAY_VERTEX];
 		if (p_mesh->surface_get_format(i) & Mesh::ARRAY_FORMAT_INDEX) {
 			PoolIntArray mesh_indices = p_mesh->surface_get_arrays(i)[Mesh::ARRAY_INDEX];
 			PoolIntArray::Read ir = mesh_indices.read();

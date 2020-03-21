@@ -5,18 +5,9 @@
 #include "tilecache_generator.h"
 
 
-
 namespace godot {
-	struct NavMeshProcess : public dtTileCacheMeshProcess
-	{
-		virtual void process(struct dtNavMeshCreateParams* params,
-			unsigned char* polyAreas, unsigned short* polyFlags);
-	};
-
 	class DetourNavigationMeshCached: public DetourNavigationMesh {
 		GODOT_CLASS(DetourNavigationMeshCached, Spatial);
-		/* TILE CACHE */
-		friend struct NavMeshProcess;
 	protected:
 		int dynamic_collision_mask;
 	public:
@@ -52,6 +43,13 @@ namespace godot {
 
 		unsigned int add_box_obstacle(Vector3 pos, Vector3 extents, float rotationY);
 
+		void set_generator(DetourNavigationMeshCacheGenerator* g) {
+			generator = g;
+			DetourNavigationMesh::generator = g;
+		}
+		DetourNavigationMeshCacheGenerator* get_generator() {
+			return generator;
+		}
 
 		dtTileCache* get_tile_cache() {
 			return tile_cache;

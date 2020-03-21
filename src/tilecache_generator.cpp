@@ -12,7 +12,9 @@ DetourNavigationMeshCacheGenerator::DetourNavigationMeshCacheGenerator() {
 }
 
 DetourNavigationMeshCacheGenerator::~DetourNavigationMeshCacheGenerator() {
-
+	if (navmesh_parameters.is_valid()){
+		navmesh_parameters.unref();
+	}
 }
 
 void DetourNavigationMeshCacheGenerator::build() {

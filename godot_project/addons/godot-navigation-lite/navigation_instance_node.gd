@@ -20,9 +20,9 @@ var navmesh = null
 
 
 func _enter_tree():
-	navigation_script = preload("res://addons/godot-navigation-lite/bin/detour_navigation.gdns")
 	navmesh_parameters = preload("res://addons/godot-navigation-lite/bin/navmesh_parameters.gdns")
 	cached_navmesh_parameters = preload("res://addons/godot-navigation-lite/bin/cached_navmesh_parameters.gdns")
+	navigation_script = preload("res://addons/godot-navigation-lite/bin/detour_navigation.gdns")
 
 	# When this plugin node enters tree, add the custom type
 	add_custom_type(

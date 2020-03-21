@@ -91,7 +91,7 @@ char *DetourNavigationMesh::get_cache_file_path() {
 	std::string postfix = ".bin";
 	std::string prefix = ".navcache/";
 	std::string main = get_name().utf8().get_data();
-	return _strdup((prefix + main + postfix).c_str());
+	return strdup((prefix + main + postfix).c_str());
 }
 
 
@@ -277,11 +277,21 @@ void DetourNavigationMesh::store_inputs() {
 		Godot::print("is nullptr");
 	}
 	Godot::print(("Generator input length " + std::to_string(generator->input_meshes->size())).c_str());
-	Godot::print(("Stored input length " + std::to_string(input_meshes_storage.size())).c_str());
+	Godot::print(("Storage input length " + std::to_string(input_meshes_storage.size())).c_str());
+
+
+	input_meshes_storage.clear();
+	input_transforms_storage.clear();
+	input_aabbs_storage.clear();
+	collision_ids_storage.clear();
+	
 	for (int i = 0; i < generator->input_meshes->size(); i++) {
 		input_meshes_storage.push_back(Variant(generator->input_meshes->at(i)));
+		input_transforms_storage.push_back(Variant(generator->input_transforms->at(i)));
+		input_aabbs_storage.push_back(Variant(generator->input_aabbs->at(i)));
+		collision_ids_storage.push_back(Variant(generator->collision_ids->at(i)));
 	}
-	Godot::print(("Stored input length " + std::to_string(input_meshes_storage.size())).c_str());
+	Godot::print(("New Storage input length " + std::to_string(input_meshes_storage.size())).c_str());
 }
 
 void DetourNavigationMesh::_notification(int p_what) {

@@ -1,6 +1,6 @@
 #include "filemanager.h"
-#include <direct.h>
 #include <Godot.hpp>
+#include <Directory.hpp>
 
 using namespace godot;
 
@@ -117,9 +117,9 @@ void FileManager::moveFile(const char* path, const char* newPath) {
 }
 
 void FileManager::createDirectory(const char* path) {
-	if (_mkdir(path) != 0) {
-		// Failed to rename a file
-	}
+    Directory *dir = Directory::_new();
+    dir->open("user://");
+    dir->make_dir(path);
 }
 
 void FileManager::saveNavigationMesh(const char* path, const dtNavMesh* mesh)

@@ -36,8 +36,15 @@ DetourNavigationMeshCached::~DetourNavigationMeshCached() {
 	if (mesh_process != nullptr) {
 		delete mesh_process;
 	}
+
 	if (generator != nullptr) {
 		delete generator;
+		generator = nullptr;
+		DetourNavigationMesh::generator = nullptr;
+	}
+	
+	if (navmesh_parameters.is_valid()) {
+		navmesh_parameters.unref();
 	}
 }
 
@@ -75,6 +82,7 @@ void DetourNavigationMeshCached::_register_methods() {
 void DetourNavigationMeshCached::_init() {
 	// initialize any variables here
 	DetourNavigationMesh::navmesh_parameters = navmesh_parameters;
+	
 }
 
 void DetourNavigationMeshCached::_exit_tree() {
