@@ -32,9 +32,6 @@ namespace godot {
 	class DetourNavigationMesh : public Spatial {
 		GODOT_CLASS(DetourNavigationMesh, Spatial);
 	protected:
-		std::vector<Ref<Mesh>> *input_meshes = nullptr;
-		std::vector<Transform> *input_transforms = nullptr;
-		std::vector<AABB> *input_aabbs = nullptr;
 		int collision_mask;
 		Color debug_mesh_color;
 	public:
@@ -42,7 +39,6 @@ namespace godot {
 		SETGET(input_transforms_storage, Array);
 		SETGET(input_aabbs_storage, Array);
 		SETGET(collision_ids_storage, Array);
-		std::vector<int64_t>* collision_ids = nullptr;
 
 		DetourNavigationMesh();
 		~DetourNavigationMesh();
@@ -62,14 +58,17 @@ namespace godot {
 		void release_navmesh();
 		bool unsigned_int();
 
-		dtNavMesh* load_mesh();
+		bool load_mesh();
 		void save_mesh();
+
+		void store_inputs();
+		bool load_inputs();
 
 
 		void build_debug_mesh();
 		Dictionary find_path(Variant from, Variant to);
 		void _notification(int p_what);
-		void store_inputs();
+		DetourNavigationMeshGenerator* init_generator(Transform global_transform);
 
 		Ref<Material> get_debug_navigation_material();
 		virtual dtTileCache* get_tile_cache() { return nullptr; };

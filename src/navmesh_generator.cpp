@@ -1,16 +1,22 @@
 #include "navmesh_generator.h"
 
 using namespace godot;
-DetourNavigationMeshGenerator::DetourNavigationMeshGenerator() {
+DetourNavigationMeshGenerator::DetourNavigationMeshGenerator()
+{
 }
 
-DetourNavigationMeshGenerator::~DetourNavigationMeshGenerator() {
-	if (navmesh_parameters.is_valid()){
+DetourNavigationMeshGenerator::~DetourNavigationMeshGenerator()
+{
+	if (navmesh_parameters.is_valid())
+	{
 		navmesh_parameters.unref();
 	}
-	if (input_meshes != nullptr){
-		for (Ref<ArrayMesh> m : *input_meshes) {
-			if (m.is_valid()) {
+	if (input_meshes != nullptr)
+	{
+		for (Ref<ArrayMesh> m : *input_meshes)
+		{
+			if (m.is_valid())
+			{
 				m.unref();
 			}
 		}
@@ -20,25 +26,16 @@ DetourNavigationMeshGenerator::~DetourNavigationMeshGenerator() {
 	delete input_aabbs;
 }
 
-void DetourNavigationMeshGenerator::build() {
+void DetourNavigationMeshGenerator::build()
+{
 	joint_build();
 
 	unsigned int result = build_tiles(
-		0, 0, get_num_tiles_x() - 1, get_num_tiles_z() - 1
-	);
+		0, 0, get_num_tiles_x() - 1, get_num_tiles_z() - 1);
 }
 
-/**
- * Function that does mutual detour/recast logic for both
- * regular navmesh and cached navmesh
- */
-void DetourNavigationMeshGenerator::joint_build() {
-	for (int i = 0; i < input_meshes->size(); i++) {
-		bounding_box.merge_with(
-			input_transforms->at(i).xform(input_aabbs->at(i))
-		);
-	}
-	float tile_edge_length = navmesh_parameters->get_tile_edge_length();
+void DetourNavigationMeshGenerator::setup_generator()
+{
 	Vector3 bmin = bounding_box.position;
 	Vector3 bmax = bounding_box.position + bounding_box.size;
 
@@ -49,13 +46,28 @@ void DetourNavigationMeshGenerator::joint_build() {
 		&bmax.coord[0],
 		navmesh_parameters->get_cell_size(),
 		&gridW,
-		&gridH
-	);
+		&gridH);
 
 	set_tile_number(gridW, gridH);
+}
 
-	
-	if (OS::get_singleton()->is_stdout_verbose()) {
+/**
+ * Function that does mutual detour/recast logic for both
+ * regular navmesh and cached navmesh
+ */
+void DetourNavigationMeshGenerator::joint_build()
+{
+	for (int i = 0; i < input_meshes->size(); i++)
+	{
+		bounding_box.merge_with(
+			input_transforms->at(i).xform(input_aabbs->at(i)));
+	}
+	setup_generator();
+
+	float tile_edge_length = navmesh_parameters->get_tile_edge_length();
+
+	if (OS::get_singleton()->is_stdout_verbose())
+	{
 		std::string tile_message = "Tile number set to x:" + std::to_string(get_num_tiles_x());
 		tile_message += ", z:" + std::to_string(get_num_tiles_z());
 		Godot::print(tile_message.c_str());
@@ -77,25 +89,29 @@ void DetourNavigationMeshGenerator::joint_build() {
 	params.maxPolys = max_polys;
 	params.orig[0] = params.orig[1] = params.orig[2] = 0.f;
 
-
 	/* Initialize and allocate place for detour navmesh instance */
-	if (!alloc()) {
+	if (!alloc())
+	{
 		Godot::print("Failed to allocate detour navmesh.");
 		return;
 	}
-	if (!init(&params)) {
+	if (!init(&params))
+	{
 		Godot::print("Failed to initialize detour navmesh.");
 		return;
 	}
 }
 
 unsigned int DetourNavigationMeshGenerator::build_tiles(
-	int x1, int z1, int x2, int z2
-) {
+	int x1, int z1, int x2, int z2)
+{
 	unsigned ret = 0;
-	for (int z = z1; z <= z2; z++) {
-		for (int x = x1; x <= x2; x++) {
-			if (build_tile(x, z)) {
+	for (int z = z1; z <= z2; z++)
+	{
+		for (int x = x1; x <= x2; x++)
+		{
+			if (build_tile(x, z))
+			{
 				ret++;
 			}
 		}
@@ -106,7 +122,8 @@ unsigned int DetourNavigationMeshGenerator::build_tiles(
 /**
  * Inits recast config - internal logic
  */
-void DetourNavigationMeshGenerator::init_rc_config(rcConfig& config, Vector3& bmin, Vector3& bmax) {
+void DetourNavigationMeshGenerator::init_rc_config(rcConfig &config, Vector3 &bmin, Vector3 &bmax)
+{
 	config.cs = navmesh_parameters->get_cell_size();
 	config.ch = navmesh_parameters->get_cell_height();
 	config.walkableSlopeAngle = navmesh_parameters->get_agent_max_slope();
@@ -140,9 +157,9 @@ void DetourNavigationMeshGenerator::init_rc_config(rcConfig& config, Vector3& bm
  * triangle arrays (vertice + indices) from it
  */
 bool DetourNavigationMeshGenerator::init_tile_data(
-	rcConfig& config, Vector3& bmin, Vector3& bmax, std::vector<float>& points,
-	std::vector<int>& indices
-) {
+	rcConfig &config, Vector3 &bmin, Vector3 &bmax, std::vector<float> &points,
+	std::vector<int> &indices)
+{
 	/* Set the tile AABB */
 	AABB expbox(bmin, bmax - bmin);
 	expbox.position.x -= config.borderSize * config.cs;
@@ -150,23 +167,26 @@ bool DetourNavigationMeshGenerator::init_tile_data(
 	expbox.size.x += 2.0 * config.borderSize * config.cs;
 	expbox.size.z += 2.0 * config.borderSize * config.cs;
 
-
 	Transform base = global_transform.inverse();
 
-	for (int i = 0; i < input_meshes->size(); i++) {
-		if (!input_meshes->at(i).is_valid()) {
+	for (int i = 0; i < input_meshes->size(); i++)
+	{
+		if (!input_meshes->at(i).is_valid())
+		{
 			continue;
 		}
 		Transform mxform = base * input_transforms->at(i);
 		AABB mesh_aabb = mxform.xform(input_aabbs->at(i));
 		if (!mesh_aabb.intersects_inclusive(expbox) &&
-			!expbox.encloses(mesh_aabb)) {
+			!expbox.encloses(mesh_aabb))
+		{
 			continue;
 		}
 		add_meshdata(i, points, indices);
 	}
 
-	if (points.size() == 0 || indices.size() == 0) {
+	if (points.size() == 0 || indices.size() == 0)
+	{
 		// Godot::print("No mesh points and indices found...");
 		return true;
 	}
@@ -178,22 +198,23 @@ bool DetourNavigationMeshGenerator::init_tile_data(
  * heightfield context - internal detour logic.
  */
 bool DetourNavigationMeshGenerator::init_heightfield_context(
-	rcConfig& config, rcCompactHeightfield* compact_heightfield,
-	rcContext* ctx, std::vector<float>& points, std::vector<int>& indices
-) {
+	rcConfig &config, rcCompactHeightfield *compact_heightfield,
+	rcContext *ctx, std::vector<float> &points, std::vector<int> &indices)
+{
 	// returns success value
 
-	rcHeightfield* heightfield = rcAllocHeightfield();
+	rcHeightfield *heightfield = rcAllocHeightfield();
 
-	if (!heightfield) {
+	if (!heightfield)
+	{
 		ERR_PRINT("Failed to allocate height field");
 		return false;
 	}
 	if (!rcCreateHeightfield(
-		ctx, *heightfield,
-		config.width, config.height, config.bmin,
-		config.bmax, config.cs, config.ch)
-		) {
+			ctx, *heightfield,
+			config.width, config.height, config.bmin,
+			config.bmax, config.cs, config.ch))
+	{
 		ERR_PRINT("Failed to create height field");
 		return false;
 	}
@@ -205,51 +226,50 @@ bool DetourNavigationMeshGenerator::init_heightfield_context(
 
 	rcMarkWalkableTriangles(
 		ctx, config.walkableSlopeAngle, &points[0],
-		points.size() / 3, &indices[0], ntris, &tri_areas[0]
-	);
+		points.size() / 3, &indices[0], ntris, &tri_areas[0]);
 
 	rcRasterizeTriangles(
 		ctx, &points[0], points.size() / 3, &indices[0],
-		&tri_areas[0], ntris, *heightfield, config.walkableClimb
-	);
+		&tri_areas[0], ntris, *heightfield, config.walkableClimb);
 	rcFilterLowHangingWalkableObstacles(
-		ctx, config.walkableClimb, *heightfield
-	);
+		ctx, config.walkableClimb, *heightfield);
 
 	rcFilterLedgeSpans(
-		ctx, config.walkableHeight, config.walkableClimb, *heightfield
-	);
+		ctx, config.walkableHeight, config.walkableClimb, *heightfield);
 	rcFilterWalkableLowHeightSpans(
-		ctx, config.walkableHeight, *heightfield
-	);
+		ctx, config.walkableHeight, *heightfield);
 
-	if (!compact_heightfield) {
+	if (!compact_heightfield)
+	{
 		ERR_PRINT("Failed to allocate compact height field.");
 		return false;
 	}
 	if (!rcBuildCompactHeightfield(ctx, config.walkableHeight, config.walkableClimb,
-		*heightfield, *compact_heightfield)) {
+								   *heightfield, *compact_heightfield))
+	{
 		ERR_PRINT("Could not build compact height field.");
 		return false;
 	}
-	if (!rcErodeWalkableArea(ctx, config.walkableRadius, *compact_heightfield)) {
+	if (!rcErodeWalkableArea(ctx, config.walkableRadius, *compact_heightfield))
+	{
 		ERR_PRINT("Could not erode walkable area.");
 		return false;
 	}
-	if (navmesh_parameters->get_partition_type() == 0) { // TODO: Use enum
+	if (navmesh_parameters->get_partition_type() == 0)
+	{ // TODO: Use enum
 		if (!rcBuildDistanceField(ctx, *compact_heightfield))
 			return false;
 		if (!rcBuildRegions(
-			ctx, *compact_heightfield, config.borderSize,
-			config.minRegionArea, config.mergeRegionArea)
-			) {
+				ctx, *compact_heightfield, config.borderSize,
+				config.minRegionArea, config.mergeRegionArea))
+		{
 			return false;
 		}
 	}
 	else if (!rcBuildRegionsMonotone(
-		ctx, *compact_heightfield, config.borderSize,
-		config.minRegionArea, config.mergeRegionArea)
-		) {
+				 ctx, *compact_heightfield, config.borderSize,
+				 config.minRegionArea, config.mergeRegionArea))
+	{
 		return false;
 	}
 	return true;
@@ -263,10 +283,11 @@ bool DetourNavigationMeshGenerator::init_heightfield_context(
  * @return true if it was success, false if either it was a failure
  * or there were no triangles in the area to generate mesh from.
  */
-bool DetourNavigationMeshGenerator::build_tile(int x, int z) {
+bool DetourNavigationMeshGenerator::build_tile(int x, int z)
+{
 	Vector3 bmin, bmax;
 	get_tile_bounding_box(x, z, bmin, bmax);
-	dtNavMesh* nav = get_detour_navmesh();
+	dtNavMesh *nav = get_detour_navmesh();
 
 	nav->removeTile(nav->getTileRefAt(x, z, 0), NULL, NULL);
 
@@ -275,66 +296,73 @@ bool DetourNavigationMeshGenerator::build_tile(int x, int z) {
 
 	std::vector<float> points;
 	std::vector<int> indices;
-	if (init_tile_data(config, bmin, bmax, points, indices)) {
+	if (init_tile_data(config, bmin, bmax, points, indices))
+	{
 		return true;
 	}
 
-	rcContext* ctx = new rcContext(true);
-	rcCompactHeightfield* compact_heightfield = rcAllocCompactHeightfield();
+	rcContext *ctx = new rcContext(true);
+	rcCompactHeightfield *compact_heightfield = rcAllocCompactHeightfield();
 
-	if (!init_heightfield_context(config, compact_heightfield, ctx, points, indices)) {
+	if (!init_heightfield_context(config, compact_heightfield, ctx, points, indices))
+	{
 		return false;
 	}
 
-	// Create ContourSet 
-	rcContourSet* contour_set = rcAllocContourSet();
-	if (!contour_set) {
+	// Create ContourSet
+	rcContourSet *contour_set = rcAllocContourSet();
+	if (!contour_set)
+	{
 		ERR_PRINT("Could not allocate contour set.");
 		return false;
 	}
 
 	if (!rcBuildContours(
-		ctx, *compact_heightfield, config.maxSimplificationError,
-		config.maxEdgeLen, *contour_set)
-		) {
+			ctx, *compact_heightfield, config.maxSimplificationError,
+			config.maxEdgeLen, *contour_set))
+	{
 		ERR_PRINT("Could not build contour set.");
 		return false;
 	}
 
-	rcPolyMesh* poly_mesh = rcAllocPolyMesh();
-	if (!poly_mesh) {
+	rcPolyMesh *poly_mesh = rcAllocPolyMesh();
+	if (!poly_mesh)
+	{
 		ERR_PRINT("Could not allocate poli mesh.");
 		return false;
 	}
 
-	if (!rcBuildPolyMesh(ctx, *contour_set, config.maxVertsPerPoly, *poly_mesh)) {
+	if (!rcBuildPolyMesh(ctx, *contour_set, config.maxVertsPerPoly, *poly_mesh))
+	{
 		ERR_PRINT("Could not build poli mesh.");
 		return false;
 	}
 
-	rcPolyMeshDetail* poly_mesh_detail = rcAllocPolyMeshDetail();
-	if (!poly_mesh_detail) {
+	rcPolyMeshDetail *poly_mesh_detail = rcAllocPolyMeshDetail();
+	if (!poly_mesh_detail)
+	{
 		ERR_PRINT("Could not alloc polimesh detail.");
 		return false;
 	}
 
 	if (!rcBuildPolyMeshDetail(
-		ctx, *poly_mesh, *compact_heightfield,
-		config.detailSampleDist, config.detailSampleMaxError,
-		*poly_mesh_detail)
-		) {
+			ctx, *poly_mesh, *compact_heightfield,
+			config.detailSampleDist, config.detailSampleMaxError,
+			*poly_mesh_detail))
+	{
 		ERR_PRINT("Could not build polimesh detail.");
 		return false;
 	}
 
-	for (int i = 0; i < poly_mesh->npolys; i++) {
-		if (poly_mesh->areas[i] != RC_NULL_AREA) {
+	for (int i = 0; i < poly_mesh->npolys; i++)
+	{
+		if (poly_mesh->areas[i] != RC_NULL_AREA)
+		{
 			poly_mesh->flags[i] = 0x1;
 		}
-
 	}
 
-	unsigned char* nav_data = NULL;
+	unsigned char *nav_data = NULL;
 	int nav_data_size = 0;
 	dtNavMeshCreateParams params;
 	memset(&params, 0, sizeof params);
@@ -361,16 +389,18 @@ bool DetourNavigationMeshGenerator::build_tile(int x, int z) {
 	params.ch = config.ch;
 	params.buildBvTree = true;
 
-
-	if (!dtCreateNavMeshData(&params, &nav_data, &nav_data_size)) {
-		if (OS::get_singleton()->is_stdout_verbose()) {
+	if (!dtCreateNavMeshData(&params, &nav_data, &nav_data_size))
+	{
+		if (OS::get_singleton()->is_stdout_verbose())
+		{
 			ERR_PRINT("Could not create navmesh data.");
 		}
 		return false;
 	}
 
 	if (dtStatusFailed(get_detour_navmesh()->addTile(
-		nav_data, nav_data_size, DT_TILE_FREE_DATA, 0, NULL))) {
+			nav_data, nav_data_size, DT_TILE_FREE_DATA, 0, NULL)))
+	{
 		dtFree(nav_data);
 		ERR_PRINT("Failed to instantiate navdata");
 		return false;
@@ -380,8 +410,8 @@ bool DetourNavigationMeshGenerator::build_tile(int x, int z) {
 }
 
 void DetourNavigationMeshGenerator::get_tile_bounding_box(
-	int x, int z, Vector3& bmin, Vector3& bmax
-) {
+	int x, int z, Vector3 &bmin, Vector3 &bmax)
+{
 	const float tile_edge_length = (float)navmesh_parameters->get_tile_size() * navmesh_parameters->get_cell_size();
 	bmin = bounding_box.position + Vector3(tile_edge_length * (float)x, 0, tile_edge_length * (float)z);
 	bmax = bmin + Vector3(tile_edge_length, bounding_box.size.y, tile_edge_length);
@@ -391,26 +421,32 @@ void DetourNavigationMeshGenerator::get_tile_bounding_box(
  * Finds the collision shape by id, and it marks the tiles it streches
  * over as dirrty. And in the end it removes it from all the data arrays
  */
-void DetourNavigationMeshGenerator::remove_collision_shape(int64_t collision_id) {
-	Godot::print("Removing CS...");
+void DetourNavigationMeshGenerator::remove_collision_shape(int64_t collision_id)
+{
+	Godot::print(("Removing CS..." + std::to_string(collision_id)).c_str());
 	int start = -1;
 	int end = -1;
 
-	for (int i = 0; i < input_meshes->size(); i++) {
-		if (collision_ids->at(i) == collision_id) {
-			if (start == -1) {
+	for (int i = 0; i < input_meshes->size(); i++)
+	{
+		if (collision_ids->at(i) == collision_id)
+		{
+			if (start == -1)
+			{
 				start = i;
 				end = i;
 				mark_dirty(i, i + 1);
 			}
-			else {
+			else
+			{
 				end = i;
 				mark_dirty(i, i + 1);
 			}
 		}
 	}
 	end++;
-	if (start > -1 && end > -1) {
+	if (start > -1 && end > -1)
+	{
 		input_meshes->erase(input_meshes->begin() + start, input_meshes->begin() + end);
 		input_transforms->erase(input_transforms->begin() + start, input_transforms->begin() + end);
 		input_aabbs->erase(input_aabbs->begin() + start, input_aabbs->begin() + end);
@@ -421,11 +457,14 @@ void DetourNavigationMeshGenerator::remove_collision_shape(int64_t collision_id)
 /**
  * Inits the dirty tiles as not dirty
  */
-void DetourNavigationMeshGenerator::init_dirty_tiles() {
-	dirty_tiles = new int* [get_num_tiles_x()];
-	for (int i = 0; i < get_num_tiles_x(); ++i) {
+void DetourNavigationMeshGenerator::init_dirty_tiles()
+{
+	dirty_tiles = new int *[get_num_tiles_x()];
+	for (int i = 0; i < get_num_tiles_x(); ++i)
+	{
 		dirty_tiles[i] = new int[get_num_tiles_z()];
-		for (int j = 0; j < get_num_tiles_z(); ++j) {
+		for (int j = 0; j < get_num_tiles_z(); ++j)
+		{
 			dirty_tiles[i][j] = 0;
 		}
 	}
@@ -437,27 +476,32 @@ void DetourNavigationMeshGenerator::init_dirty_tiles() {
  * @param start_index and end_index tell us from (including) which to (excluding) which index
  * the aabbs are considered
  */
-void DetourNavigationMeshGenerator::mark_dirty(int start_index, int end_index) {
-
+void DetourNavigationMeshGenerator::mark_dirty(int start_index, int end_index)
+{
 	Godot::print("Marking dirty");
-	if (end_index == -1) {
+	if (end_index == -1)
+	{
 		end_index = input_aabbs->size();
 	}
-	
-	for (int aabb_index = start_index; aabb_index < end_index; aabb_index++) {
-		AABB changes_bounding_box = input_aabbs->at(aabb_index);
+
+	for (int aabb_index = start_index; aabb_index < end_index; aabb_index++)
+	{
+		AABB changes_bounding_box = input_transforms->at(aabb_index).xform(input_aabbs->at(aabb_index));
 		const float tile_edge_length = (float)navmesh_parameters->get_tile_size() * navmesh_parameters->get_cell_size();
 
-		Vector3 min = (changes_bounding_box.position + input_transforms->at(aabb_index).origin - bounding_box.position) / tile_edge_length;
-		Vector3 max = (
-			changes_bounding_box.position + changes_bounding_box.size + input_transforms->at(aabb_index).origin  -
-			(bounding_box.position)) / tile_edge_length;
+		Vector3 min = (changes_bounding_box.position - bounding_box.position) / tile_edge_length;
+		Vector3 max = (changes_bounding_box.position + changes_bounding_box.size -
+					   (bounding_box.position)) /
+					  tile_edge_length;
 
-		if (dirty_tiles == nullptr) {
+		if (dirty_tiles == nullptr)
+		{
 			init_dirty_tiles();
 		}
-		for (int i = std::max(0, int((min.x))); i < std::min(int(std::ceil(max.x)), get_num_tiles_x()); i++) {
-			for (int j = std::max(0, int(std::floor(min.z))); j < std::min( get_num_tiles_z(), int(std::ceil(max.z))); j++) {
+		for (int i = std::max(0, int(std::floor(min.x))); i < std::min(int(std::ceil(max.x)), get_num_tiles_x()); i++)
+		{
+			for (int j = std::max(0, int(std::floor(min.z))); j < std::min(get_num_tiles_z(), int(std::ceil(max.z))); j++)
+			{
 				dirty_tiles[i][j] = 1;
 			}
 		}
@@ -467,14 +511,19 @@ void DetourNavigationMeshGenerator::mark_dirty(int start_index, int end_index) {
 /**
  * Rebuilds all the tiles that were marked as dirty
  */
-void DetourNavigationMeshGenerator::recalculate_tiles() {
+void DetourNavigationMeshGenerator::recalculate_tiles()
+{
 	Godot::print("Rebuilding tiles");
-	if (dirty_tiles == nullptr) {
+	if (dirty_tiles == nullptr)
+	{
 		return;
 	}
-	for (int i = 0; i < get_num_tiles_x(); i++) {
-		for (int j = 0; j < get_num_tiles_z(); j++) {
-			if (dirty_tiles[i][j] == 1) {
+	for (int i = 0; i < get_num_tiles_x(); i++)
+	{
+		for (int j = 0; j < get_num_tiles_z(); j++)
+		{
+			if (dirty_tiles[i][j] == 1)
+			{
 				build_tile(i, j);
 				dirty_tiles[i][j] = 0;
 			}
@@ -489,24 +538,26 @@ void DetourNavigationMeshGenerator::recalculate_tiles() {
  * @param p_vertices and p_indices are outputs and get filled in with data
  */
 void DetourNavigationMeshGenerator::add_meshdata(
-	int mesh_index, std::vector<float>& p_verticies, std::vector<int>& p_indices
-) {
-	Transform* p_xform = &(input_transforms->at(mesh_index));
+	int mesh_index, std::vector<float> &p_verticies, std::vector<int> &p_indices)
+{
+	Transform p_xform = input_transforms->at(mesh_index);
 	Ref<ArrayMesh> p_mesh = input_meshes->at(mesh_index);
 	int current_vertex_count = 0;
 
-	for (int i = 0; i < p_mesh->get_surface_count(); i++) {
+	for (int i = 0; i < p_mesh->get_surface_count(); i++)
+	{
 		current_vertex_count = p_verticies.size() / 3;
-
 
 		if (p_mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES)
 			continue;
 
 		int index_count = 0;
-		if (p_mesh->surface_get_format(i) & Mesh::ARRAY_FORMAT_INDEX) {
+		if (p_mesh->surface_get_format(i) & Mesh::ARRAY_FORMAT_INDEX)
+		{
 			index_count = p_mesh->surface_get_array_index_len(i);
 		}
-		else {
+		else
+		{
 			index_count = p_mesh->surface_get_array_len(i);
 		}
 
@@ -514,35 +565,40 @@ void DetourNavigationMeshGenerator::add_meshdata(
 
 		int face_count = index_count / 3;
 		PoolVector3Array mesh_vertices = p_mesh->surface_get_arrays(i)[Mesh::ARRAY_VERTEX];
-		if (p_mesh->surface_get_format(i) & Mesh::ARRAY_FORMAT_INDEX) {
+		if (p_mesh->surface_get_format(i) & Mesh::ARRAY_FORMAT_INDEX)
+		{
 			PoolIntArray mesh_indices = p_mesh->surface_get_arrays(i)[Mesh::ARRAY_INDEX];
 			PoolIntArray::Read ir = mesh_indices.read();
 
-			for (int j = 0; j < mesh_vertices.size(); j++) {
-				Vector3 p_vec3 = p_xform->xform(mesh_vertices[j]);
+			for (int j = 0; j < mesh_vertices.size(); j++)
+			{
+				Vector3 p_vec3 = p_xform.xform(mesh_vertices[j]);
 				p_verticies.push_back(p_vec3.x);
 				p_verticies.push_back(p_vec3.y);
 				p_verticies.push_back(p_vec3.z);
 			}
 
-			for (int j = 0; j < face_count; j++) {
+			for (int j = 0; j < face_count; j++)
+			{
 				p_indices.push_back(current_vertex_count + (ir[j * 3 + 0]));
 				p_indices.push_back(current_vertex_count + (ir[j * 3 + 2]));
 				p_indices.push_back(current_vertex_count + (ir[j * 3 + 1]));
 			}
 		}
-		else {
+		else
+		{
 			face_count = mesh_vertices.size() / 3;
-			for (int j = 0; j < face_count; j++) {
-				Vector3 p_vec3 = p_xform->xform(mesh_vertices[j * 3 + 0]);
+			for (int j = 0; j < face_count; j++)
+			{
+				Vector3 p_vec3 = p_xform.xform(mesh_vertices[j * 3 + 0]);
 				p_verticies.push_back(p_vec3.x);
 				p_verticies.push_back(p_vec3.y);
 				p_verticies.push_back(p_vec3.z);
-				p_vec3 = p_xform->xform(mesh_vertices[j * 3 + 2]);
+				p_vec3 = p_xform.xform(mesh_vertices[j * 3 + 2]);
 				p_verticies.push_back(p_vec3.x);
 				p_verticies.push_back(p_vec3.y);
 				p_verticies.push_back(p_vec3.z);
-				p_vec3 = p_xform->xform(mesh_vertices[j * 3 + 1]);
+				p_vec3 = p_xform.xform(mesh_vertices[j * 3 + 1]);
 				p_verticies.push_back(p_vec3.x);
 				p_verticies.push_back(p_vec3.y);
 				p_verticies.push_back(p_vec3.z);
@@ -555,8 +611,10 @@ void DetourNavigationMeshGenerator::add_meshdata(
 	}
 }
 
-bool DetourNavigationMeshGenerator::init(dtNavMeshParams* params) {
-	if (dtStatusFailed((detour_navmesh)->init(params))) {
+bool DetourNavigationMeshGenerator::init(dtNavMeshParams *params)
+{
+	if (dtStatusFailed((detour_navmesh)->init(params)))
+	{
 		release_navmesh();
 		return false;
 	}
@@ -564,8 +622,9 @@ bool DetourNavigationMeshGenerator::init(dtNavMeshParams* params) {
 	return true;
 }
 
-void DetourNavigationMeshGenerator::release_navmesh() {
-	dtFreeNavMesh((dtNavMesh*)detour_navmesh);
+void DetourNavigationMeshGenerator::release_navmesh()
+{
+	dtFreeNavMesh((dtNavMesh *)detour_navmesh);
 	detour_navmesh = NULL;
 	num_tiles_x = 0;
 	num_tiles_z = 0;
@@ -576,7 +635,8 @@ void DetourNavigationMeshGenerator::release_navmesh() {
 /**
  * Allocates a detour navmesh object, returns bool for succsess status
  */
-bool DetourNavigationMeshGenerator::alloc() {
+bool DetourNavigationMeshGenerator::alloc()
+{
 	detour_navmesh = dtAllocNavMesh();
 	return detour_navmesh ? true : false;
 }

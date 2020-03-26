@@ -49,6 +49,14 @@ namespace godot {
 			DetourNavigationMeshGenerator::navmesh_parameters = np;
 		}
 
+		void set_tile_cache(dtTileCache* tc){
+			tile_cache = tc;
+		}
+
+		void set_mesh_process(NavMeshProcess* nmp){
+			mesh_process = nmp;
+		}
+
 		dtTileCache* get_tile_cache() {
 			return tile_cache;
 		}

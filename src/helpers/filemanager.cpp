@@ -117,19 +117,21 @@ void FileManager::moveFile(const char* path, const char* newPath) {
 }
 
 void FileManager::createDirectory(const char* path) {
-    Directory *dir = Directory::_new();
-    dir->open("user://");
-    dir->make_dir(path);
+    Ref<Directory> dir = Directory::_new();
+    dir->open("res://");
+    Error er = dir->make_dir(path);
+	Godot::print(std::to_string((int) er).c_str());
+	Godot::print("Making dir");
+	dir.unref();
 }
 
 void FileManager::saveNavigationMesh(const char* path, const dtNavMesh* mesh)
 {
 	if (!mesh) return;
-
+	
 	FILE* fp = fopen(path, "wb");
 	if (!fp)
 		return;
-
 	// Store header.
 	NavMeshSetHeader header;
 	header.magic = NAVMESHSET_MAGIC;
