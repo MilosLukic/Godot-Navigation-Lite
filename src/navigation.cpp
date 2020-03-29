@@ -157,9 +157,6 @@ void DetourNavigation::recalculate_masks()
 	}
 	set_collision_mask(collision_mask);
 	set_dynamic_collision_mask(dynamic_collision_mask);
-	//Godot::print(
-	//		(std::to_string(collision_mask) + "   ::   "
-	//				+ std::to_string(dynamic_collision_mask) + " = ").c_str());
 }
 
 /**
@@ -235,7 +232,6 @@ void DetourNavigation::save_collision_shapes(
 	{
 		for (int j = 0; j < static_body->get_child_count(); ++j)
 		{
-			Godot::print("Saving collision shapes...");
 			CollisionShape *collision_shape = Object::cast_to<CollisionShape>(
 				static_body->get_child(j));
 
@@ -253,7 +249,17 @@ void DetourNavigation::save_collision_shapes(
 
 void DetourNavigation::_process(float passed)
 {
-	if (static_bodies_to_add->size() > 0)
+	DetourNavigation::manage_changes();
+	if (aggregated_time_passed >= 0.1)
+	{
+		update_tilecache();
+		aggregated_time_passed = 0.f;
+	}
+	aggregated_time_passed += passed;
+}
+
+void DetourNavigation::manage_changes(){
+		if (static_bodies_to_add->size() > 0)
 	{
 		for (int i = 0; i < navmeshes->size(); ++i)
 		{
@@ -342,12 +348,6 @@ void DetourNavigation::_process(float passed)
 		update_tilecache();
 		dyn_bodies_to_add->clear();
 	}
-	if (aggregated_time_passed >= 0.1)
-	{
-		update_tilecache();
-		aggregated_time_passed = 0.f;
-	}
-	aggregated_time_passed += passed;
 }
 
 void DetourNavigation::_on_cache_object_added(Variant node)
@@ -423,6 +423,7 @@ DetourNavigationMeshCached *DetourNavigation::create_cached_navmesh(
 	add_child(cached_navmesh);
 	cached_navmesh->set_owner(get_tree()->get_edited_scene_root());
 	cached_navmesh->set_name("CachedDetourNavigationMesh");
+	cached_navmesh->set_uuid(String(generateUUID().c_str()));
 	return cached_navmesh;
 }
 
@@ -434,6 +435,7 @@ DetourNavigationMesh *DetourNavigation::create_navmesh(
 	add_child(navmesh);
 	navmesh->set_owner(get_tree()->get_edited_scene_root());
 	navmesh->set_name("DetourNavigationMesh");
+	navmesh->set_uuid(String(generateUUID().c_str()));
 	return navmesh;
 }
 
@@ -611,7 +613,6 @@ int DetourNavigation::process_large_mesh(MeshInstance *mesh_instance,
 		{
 			for (int j = 0; j < mesh_instance_array[i].size(); j++)
 			{
-				//Godot::print((std::to_string(i) + "   ::   " + std::to_string(j) + " = " + std::to_string(mesh_instance_array[i][j].size() / 3)).c_str());
 				PoolVector3Array faces;
 				faces.resize(mesh_instance_array[i][j].size());
 				PoolVector3Array::Write w = faces.write();
@@ -735,12 +736,12 @@ void DetourNavigation::convert_collision_shape(CollisionShape *collision_shape,
 			w[j].x = qh_mesh.vertices[qh_mesh.indices[j]].x;
 			w[j].y = qh_mesh.vertices[qh_mesh.indices[j]].y;
 			w[j].z = qh_mesh.vertices[qh_mesh.indices[j]].z;
-			w[j + 1].x = qh_mesh.vertices[qh_mesh.indices[j + 1]].x;
-			w[j + 1].y = qh_mesh.vertices[qh_mesh.indices[j + 1]].y;
-			w[j + 1].z = qh_mesh.vertices[qh_mesh.indices[j + 1]].z;
-			w[j + 2].x = qh_mesh.vertices[qh_mesh.indices[j + 2]].x;
-			w[j + 2].y = qh_mesh.vertices[qh_mesh.indices[j + 2]].y;
-			w[j + 2].z = qh_mesh.vertices[qh_mesh.indices[j + 2]].z;
+			w[j + 1].x = qh_mesh.vertices[qh_mesh.indices[j + 2]].x;
+			w[j + 1].y = qh_mesh.vertices[qh_mesh.indices[j + 2]].y;
+			w[j + 1].z = qh_mesh.vertices[qh_mesh.indices[j + 2]].z;
+			w[j + 2].x = qh_mesh.vertices[qh_mesh.indices[j + 1]].x;
+			w[j + 2].y = qh_mesh.vertices[qh_mesh.indices[j + 1]].y;
+			w[j + 2].z = qh_mesh.vertices[qh_mesh.indices[j + 1]].z;
 		}
 
 		qh_free_mesh(qh_mesh);
@@ -759,7 +760,6 @@ void DetourNavigation::convert_collision_shape(CollisionShape *collision_shape,
 		MeshInstance *mi = MeshInstance::_new();
 		mi->set_mesh(mesh);
 		mi->set_transform(transform);
-		Godot::print(std::to_string(collision_shape->get_instance_id()).c_str());
 		if (!process_large_mesh(mi, collision_shape->get_instance_id(), meshes,
 								transforms, aabbs, collision_ids))
 		{
@@ -834,9 +834,7 @@ void DetourNavigation::collect_geometry(Array geometries,
 void DetourNavigation::recognize_stored_collision_shapes()
 {
 	Dictionary mappings;
-	Godot::print("Recognizing...");
 	collect_mappings(mappings, get_children());
-	Godot::print("Collected dict...");
 
 	for (int i = 0; i < navmeshes->size(); ++i)
 	{
@@ -863,7 +861,6 @@ void DetourNavigation::collect_mappings(Dictionary &mappings, Array elements)
 			Transform gt = collision_shape->get_global_transform();
 			std::string key_string = (std::to_string(gt.origin.x) + "x" + std::to_string(gt.origin.y) + "x" + std::to_string(gt.origin.z));
 			mappings[key_string.c_str()] = collision_shape->get_instance_id();
-			Godot::print(key_string.c_str());
 		}
 		collect_mappings(mappings, ((Spatial *)elements[i])->get_children());
 	}
@@ -884,10 +881,8 @@ void DetourNavigation::map_collision_shapes(DetourNavigationMesh *nm, Dictionary
 	{
 		Transform it = nm->generator->input_transforms->at(j);
 		std::string key_string = (std::to_string(it.origin.x) + "x" + std::to_string(it.origin.y) + "x" + std::to_string(it.origin.z));
-		Godot::print(key_string.c_str());
 		if (mappings.has(key_string.c_str()))
 		{
-			Godot::print("hit");
 			nm->generator->collision_ids->at(j) = (int64_t)mappings[key_string.c_str()];
 		}
 	}

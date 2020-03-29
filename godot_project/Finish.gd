@@ -44,12 +44,12 @@ func draw_path():
 	var path_origins = cur_nav.find_path(start_point, end_point)["points"]
 	print(path_origins)
 	
-	if not path_origins:
+	if not path_origins or not path_origins.size() > 0:
 		return
 	geom.remove_lines()
 	line_id += 1
-	geom.draw_line3D(line_id, start_point, path_origins[0], colors[path % len(colors)], 3)
-	for i in range(1, path_origins.size()):
+	geom.draw_line3D(line_id, path_origins[0], path_origins[1], colors[path % len(colors)], 3)
+	for i in range(2, path_origins.size()):
 		line_id += 1
 		geom.draw_line3D(line_id, path_origins[i-1], path_origins[i], colors[path % len(colors)], 3)
 	path += 1

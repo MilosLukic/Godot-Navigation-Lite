@@ -1,5 +1,6 @@
 #ifndef HELPERS_H
 #define HELPERS_H
+#include <string>
 
 
 #define SETGET(x, t)             \
@@ -39,5 +40,10 @@ inline unsigned int nextPow2(unsigned int v) {
 	v++;
 	return v;
 }
+
+
+const std::string CHARS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+
+std::string generateUUID();
 
 #endif

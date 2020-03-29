@@ -5,15 +5,13 @@
 #include <string>
 #include <algorithm>
 #include <iostream>
+#include <thread>
 #include <Godot.hpp>
 #include <Engine.hpp>
-#include <Geometry.hpp>
 #include <Spatial.hpp>
-#include <Node.hpp>
 #include <SceneTree.hpp>
 #include <MeshInstance.hpp>
 #include <BoxShape.hpp>
-#include <OS.hpp>
 #include <CapsuleShape.hpp>
 #include <CylinderShape.hpp>
 #include <SphereShape.hpp>
@@ -87,7 +85,7 @@ public:
 	void _ready();
 
 	void recalculate_masks();
-
+	void manage_changes();
 	void update_tilecache();
 
 	void add_box_obstacle_to_all(int64_t instance_id, Vector3 position,

@@ -33,6 +33,7 @@ namespace godot {
 		SETGET(detail_sample_distance, float);
 		SETGET(detail_sample_max_error, float);
 		SETGET(padding, Vector3);
+		SETGET(max_layers, int);
 
 		inline real_t get_tile_edge_length() {
 			return (real_t)(get_tile_size() * get_cell_size());
@@ -58,7 +59,6 @@ namespace godot {
 		static void _register_methods();
 
 		SETGET(max_obstacles, int);
-		SETGET(max_layers, int);
 
 
 	};

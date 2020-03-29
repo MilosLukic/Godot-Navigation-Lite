@@ -120,8 +120,6 @@ void FileManager::createDirectory(const char* path) {
     Ref<Directory> dir = Directory::_new();
     dir->open("res://");
     Error er = dir->make_dir(path);
-	Godot::print(std::to_string((int) er).c_str());
-	Godot::print("Making dir");
 	dir.unref();
 }
 

@@ -5,7 +5,6 @@
 using namespace godot;
 
 DetourNavigationMeshCacheGenerator::DetourNavigationMeshCacheGenerator() {
-	Godot::print("Tile cache generator constructor");
 	tile_cache_alloc = new LinearAllocator(64000);
 	tile_cache_compressor = new FastLZCompressor();
 	mesh_process = new NavMeshProcess();
@@ -34,6 +33,7 @@ void DetourNavigationMeshCacheGenerator::build() {
 	tile_cache_params.walkableClimb = navmesh_parameters->get_agent_max_climb();
 	tile_cache_params.walkableHeight = navmesh_parameters->get_agent_height();
 	tile_cache_params.walkableRadius = navmesh_parameters->get_agent_radius();
+
 	if (!alloc_tile_cache())
 		return;
 	if (!init_tile_cache(&tile_cache_params))
@@ -123,6 +123,11 @@ bool DetourNavigationMeshCacheGenerator::build_tile(int x, int z) {
 			ERR_PRINT("Failed to build tile cache layers");
 			return false;
 		}
+
+		if (tile_data_size <= 0){
+			return false;
+		}
+
 		dtCompressedTileRef tileRef;
 		int status = tile_cache->addTile(tile_data, tile_data_size,
 			DT_COMPRESSEDTILE_FREE_DATA, &tileRef);
@@ -133,7 +138,11 @@ bool DetourNavigationMeshCacheGenerator::build_tile(int x, int z) {
 			ERR_PRINT("Failed to add tile cache tile.");
 			return false;
 		}
-		tile_cache->buildNavMeshTilesAt(x, z, nav);
+
+		int st = tile_cache->buildNavMeshTilesAt(x, z, nav);
+		if (dtStatusFailed(st)){
+			ERR_PRINT("Failed building navmesh tile.");
+		}
 	}
 	return true;
 }
@@ -164,14 +173,12 @@ bool DetourNavigationMeshCacheGenerator::init_tile_cache(dtTileCacheParams* para
  * Rebuilds all the tiles that were marked as dirty
  */
 void DetourNavigationMeshCacheGenerator::recalculate_tiles() {
-	Godot::print("Rebuilding tiles cached");
 	if (dirty_tiles == nullptr) {
 		return;
 	}
 	for (int i = 0; i < get_num_tiles_x(); i++) {
 		for (int j = 0; j < get_num_tiles_z(); j++) {
 			if (dirty_tiles[i][j] == 1) {
-				Godot::print((std::to_string(i) + std::to_string(j)).c_str());
 				build_tile(i, j);
 				dirty_tiles[i][j] = 0;
 			}

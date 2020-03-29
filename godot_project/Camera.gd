@@ -1,8 +1,8 @@
 extends Camera
 
 
-var staticObst = preload("res://StatObst.tscn")
-var dynamicObst = preload("res://DynObst.tscn")
+var staticObst = preload("res://StaticBoxPillar.tscn")
+var dynamicObst = preload("res://DynamicRoundPillar.tscn")
 
 func _process(_delta):
 	if Input.is_action_just_pressed("add_dynamic"):

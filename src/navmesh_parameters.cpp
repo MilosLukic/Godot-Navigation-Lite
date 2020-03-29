@@ -37,8 +37,8 @@ void NavmeshParameters::_register_methods() {
 
 	register_property<NavmeshParameters, real_t>("detail_sample_distance", &NavmeshParameters::set_detail_sample_distance, &NavmeshParameters::get_detail_sample_distance, DEFAULT_DETAIL_SAMPLE_DISTANCE);
 	register_property<NavmeshParameters, real_t>("detail_sample_max_error", &NavmeshParameters::set_detail_sample_max_error, &NavmeshParameters::get_detail_sample_max_error, DEFAULT_DETAIL_SAMPLE_MAX_ERROR);
-	register_property<NavmeshParameters, Vector3>("padding", &NavmeshParameters::set_padding, &NavmeshParameters::get_padding, Vector3(1.0f, 1.0f, 1.0f));
-
+	// register_property<NavmeshParameters, Vector3>("padding", &NavmeshParameters::set_padding, &NavmeshParameters::get_padding, Vector3(1.0f, 1.0f, 1.0f));
+	register_property<NavmeshParameters, int>("max_layers", &NavmeshParameters::set_max_layers, &NavmeshParameters::get_max_layers, DEFAULT_MAX_LAYERS);
 }
 void NavmeshParameters::_init() {
 	if (OS::get_singleton()->is_stdout_verbose()) {
@@ -71,6 +71,7 @@ NavmeshParameters::NavmeshParameters() {
 	detail_sample_distance = DEFAULT_DETAIL_SAMPLE_DISTANCE;
 	detail_sample_max_error = DEFAULT_DETAIL_SAMPLE_MAX_ERROR;
 	padding = Vector3(1.f, 1.f, 1.f);
+	max_layers = DEFAULT_MAX_LAYERS;
 }
 
 NavmeshParameters::~NavmeshParameters() {
@@ -79,7 +80,6 @@ NavmeshParameters::~NavmeshParameters() {
 
 CachedNavmeshParameters::CachedNavmeshParameters() {
 	max_obstacles = DEFAULT_MAX_OBSTACLES;
-	max_layers = DEFAULT_MAX_LAYERS;
 
 	if (OS::get_singleton()->is_stdout_verbose()) {
 		Godot::print("Navigation cached parameters constructor function called.");
@@ -113,7 +113,7 @@ void CachedNavmeshParameters::_register_methods() {
 
 	register_property<CachedNavmeshParameters, real_t>("detail_sample_distance", &NavmeshParameters::set_detail_sample_distance, &NavmeshParameters::get_detail_sample_distance, DEFAULT_DETAIL_SAMPLE_DISTANCE);
 	register_property<CachedNavmeshParameters, real_t>("detail_sample_max_error", &NavmeshParameters::set_detail_sample_max_error, &NavmeshParameters::get_detail_sample_max_error, DEFAULT_DETAIL_SAMPLE_MAX_ERROR);
-	register_property<CachedNavmeshParameters, Vector3>("padding", &NavmeshParameters::set_padding, &NavmeshParameters::get_padding, Vector3(1.0f, 1.0f, 1.0f));
+	// register_property<CachedNavmeshParameters, Vector3>("padding", &NavmeshParameters::set_padding, &NavmeshParameters::get_padding, Vector3(1.0f, 1.0f, 1.0f));
 
 	register_property<CachedNavmeshParameters, int>("max_obstacles", &CachedNavmeshParameters::set_max_obstacles, &CachedNavmeshParameters::get_max_obstacles, DEFAULT_MAX_OBSTACLES);
 	register_property<CachedNavmeshParameters, int>("max_layers", &CachedNavmeshParameters::set_max_layers, &CachedNavmeshParameters::get_max_layers, DEFAULT_MAX_LAYERS);

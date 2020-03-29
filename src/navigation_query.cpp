@@ -2,35 +2,38 @@
 
 using namespace godot;
 
-
-DetourNavigationQuery::DetourNavigationQuery(){
-	Godot::print("Navigation query constructor called");
+DetourNavigationQuery::DetourNavigationQuery()
+{
 	query_data = new QueryData();
 }
 
-DetourNavigationQuery::~DetourNavigationQuery() {
+DetourNavigationQuery::~DetourNavigationQuery()
+{
 	dtFreeNavMeshQuery(navmesh_query);
 }
 
-DetourNavigationQueryFilter::DetourNavigationQueryFilter(){
-	Godot::print("Navigation query filter constructor called");
+DetourNavigationQueryFilter::DetourNavigationQueryFilter()
+{
 	dt_query_filter = new dtQueryFilter();
 }
 
-DetourNavigationQueryFilter::~DetourNavigationQueryFilter() {
+DetourNavigationQueryFilter::~DetourNavigationQueryFilter()
+{
 	delete dt_query_filter;
 }
 
 void DetourNavigationQuery::init(
 	dtNavMesh *dtMesh,
-	const Transform& xform
-) {
+	const Transform &xform)
+{
 	navmesh_query = dtAllocNavMeshQuery();
-	if (!navmesh_query) {
+	if (!navmesh_query)
+	{
 		ERR_PRINT("Failed to create navigation query.");
 		return;
 	}
-	if (dtStatusFailed(navmesh_query->init(dtMesh, MAX_POLYS))) {
+	if (dtStatusFailed(navmesh_query->init(dtMesh, MAX_POLYS)))
+	{
 		ERR_PRINT("Failed to initialize navigation query.");
 		return;
 	}
@@ -39,38 +42,38 @@ void DetourNavigationQuery::init(
 }
 
 Dictionary DetourNavigationQuery::find_path(
-	const Vector3& start, 
-	const Vector3& end,
-	const Vector3& extents,
-	DetourNavigationQueryFilter *filter
-) {
+	const Vector3 &start,
+	const Vector3 &end,
+	const Vector3 &extents,
+	DetourNavigationQueryFilter *filter)
+{
 	/* Function called by addon's api */
 	Vector3 local_start = inverse.xform(start);
 	Vector3 local_end = inverse.xform(end);
 	Dictionary result = _find_path(local_start, local_end, extents, filter);
-	
-	PoolVector3Array points =  result["points"];
+
+	PoolVector3Array points = result["points"];
 	PoolVector3Array::Write w = points.write();
 
-	for (int i = 0; i < points.size(); i++) {
+	for (int i = 0; i < points.size(); i++)
+	{
 		w[i] = transform.xform(points[i]);
 	}
 	return result;
 }
 
-
 Dictionary DetourNavigationQuery::_find_path(
-	const Vector3& start,
-	const Vector3& end,
-	const Vector3& extents,
-	DetourNavigationQueryFilter* filter
-) {
+	const Vector3 &start,
+	const Vector3 &end,
+	const Vector3 &extents,
+	DetourNavigationQueryFilter *filter)
+{
 	/* Internal function for finding path */
 	Dictionary ret;
-	if (!navmesh_query) {
+	if (!navmesh_query)
+	{
 		return ret;
 	}
-
 
 	dtStatus status;
 	dtPolyRef StartPoly;
@@ -82,22 +85,27 @@ Dictionary DetourNavigationQuery::_find_path(
 	float StraightPath[MAX_POLYS * 2 * 3];
 	int nVertCount = 0;
 
-
 	// find the start polygon
 	status = navmesh_query->findNearestPoly(&start.coord[0], &extents.coord[0], filter->dt_query_filter, &StartPoly, StartNearest);
-	if ((status & DT_FAILURE) || (status & DT_STATUS_DETAIL_MASK)) return ret; // couldn't find a polygon
+	if ((status & DT_FAILURE) || (status & DT_STATUS_DETAIL_MASK))
+		return ret; // couldn't find a polygon
 
 	// find the end polygon
 	status = navmesh_query->findNearestPoly(&end.coord[0], &extents.coord[0], filter->dt_query_filter, &EndPoly, EndNearest);
-	if ((status & DT_FAILURE) || (status & DT_STATUS_DETAIL_MASK)) return ret; // couldn't find a polygon
+	if ((status & DT_FAILURE) || (status & DT_STATUS_DETAIL_MASK))
+		return ret; // couldn't find a polygon
 
 	status = navmesh_query->findPath(StartPoly, EndPoly, StartNearest, EndNearest, filter->dt_query_filter, PolyPath, &nPathCount, MAX_POLYS);
-	if ((status & DT_FAILURE) || (status & DT_STATUS_DETAIL_MASK)) return ret; // couldn't create a path
-	if (nPathCount == 0) return ret; // couldn't find a path
+	if ((status & DT_FAILURE) || (status & DT_STATUS_DETAIL_MASK))
+		return ret; // couldn't create a path
+	if (nPathCount == 0)
+		return ret; // couldn't find a path
 
 	status = navmesh_query->findStraightPath(StartNearest, EndNearest, PolyPath, nPathCount, StraightPath, NULL, NULL, &nVertCount, MAX_POLYS * 2 * 3);
-	if ((status & DT_FAILURE) || (status & DT_STATUS_DETAIL_MASK)) return ret; // couldn't create a path
-	if (nVertCount == 0) return ret; // couldn't find a path
+	if ((status & DT_FAILURE) || (status & DT_STATUS_DETAIL_MASK))
+		return ret; // couldn't create a path
+	if (nVertCount == 0)
+		return ret; // couldn't find a path
 
 	PoolVector3Array points;
 	PoolIntArray flags;
@@ -117,5 +125,4 @@ Dictionary DetourNavigationQuery::_find_path(
 	ret["points"] = points;
 	ret["flags"] = flags;
 	return ret;
-
 }

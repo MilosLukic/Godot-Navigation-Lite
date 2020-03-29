@@ -63,7 +63,7 @@ elif env['platform'] in ('x11', 'linux'):
         env.Append(CCFLAGS=['-fPIC', '-g3', '-Og'])
         env.Append(CXXFLAGS=['-std=c++17'])
     else:
-        env.Append(CCFLAGS=['-fPIC', '-g', '-O3'])
+        env.Append(CCFLAGS=['-fPIC', '-O3'])
         env.Append(CXXFLAGS=['-std=c++17'])
 
 elif env['platform'] == "windows":
@@ -89,7 +89,7 @@ else:
     cpp_library += '.release'
 
 
-cpp_library += '.' + str(bits)
+cpp_library += '.' + str(bits) 
 
 # make sure our binding library is properly includes
 env.Append(CPPPATH=['.', godot_headers_path, cpp_bindings_path + 'include/', cpp_bindings_path + 'include/core/', cpp_bindings_path + 'include/gen/'])

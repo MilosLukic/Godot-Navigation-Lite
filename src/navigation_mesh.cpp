@@ -25,6 +25,8 @@ void DetourNavigationMesh::_register_methods()
 												   GODOT_METHOD_RPC_MODE_DISABLED, GODOT_PROPERTY_USAGE_STORAGE, GODOT_PROPERTY_HINT_NONE);
 	register_property<DetourNavigationMesh, Array>("collision_ids_storage", &DetourNavigationMesh::set_collision_ids_storage, &DetourNavigationMesh::get_collision_ids_storage, Array(),
 												   GODOT_METHOD_RPC_MODE_DISABLED, GODOT_PROPERTY_USAGE_STORAGE, GODOT_PROPERTY_HINT_NONE);
+	register_property<DetourNavigationMesh, String>("uuid", &DetourNavigationMesh::set_uuid, &DetourNavigationMesh::get_uuid, "",
+													GODOT_METHOD_RPC_MODE_DISABLED, GODOT_PROPERTY_USAGE_STORAGE, GODOT_PROPERTY_HINT_NONE);
 
 	register_property<DetourNavigationMesh, Color>(
 		"debug_mesh_color", &DetourNavigationMesh::set_debug_mesh_color, &DetourNavigationMesh::get_debug_mesh_color, Color(0.1f, 1.0f, 0.7f, 0.4f));
@@ -67,7 +69,6 @@ DetourNavigationMesh::DetourNavigationMesh()
 
 DetourNavigationMesh::~DetourNavigationMesh()
 {
-	clear_debug_mesh();
 	release_navmesh();
 
 	if (navmesh_parameters.is_valid())
@@ -77,6 +78,7 @@ DetourNavigationMesh::~DetourNavigationMesh()
 	if (generator != nullptr)
 	{
 		delete generator;
+		generator = nullptr;
 	}
 }
 
@@ -150,7 +152,6 @@ void DetourNavigationMesh::build_navmesh()
 		return;
 	}
 	clear_navmesh();
-
 	dtmi->build_navmesh(this);
 	save_mesh();
 	store_inputs();
@@ -161,6 +162,7 @@ void DetourNavigationMesh::clear_navmesh()
 	if (generator != nullptr)
 	{
 		delete generator;
+		generator = nullptr;
 	}
 
 	input_aabbs_storage.clear();
@@ -250,7 +252,6 @@ Ref<ArrayMesh> DetourNavigationMesh::get_debug_mesh()
  */
 bool DetourNavigationMesh::load_mesh()
 {
-	Godot::print("Loading mesh");
 	dtNavMesh *dt_navmesh = FileManager::loadNavigationMesh(get_cache_file_path());
 	if (dt_navmesh == 0)
 	{
@@ -363,9 +364,6 @@ void DetourNavigationMesh::store_inputs()
 		}
 	}
 
-	Godot::print(("Generator input length " + std::to_string(generator->input_meshes->size())).c_str());
-	Godot::print(("Storage input length " + std::to_string(input_meshes_storage.size())).c_str());
-
 	input_meshes_storage.resize(generator->input_meshes->size());
 	input_transforms_storage.resize(generator->input_meshes->size());
 	input_aabbs_storage.resize(generator->input_meshes->size());
@@ -373,13 +371,11 @@ void DetourNavigationMesh::store_inputs()
 
 	for (int i = 0; i < generator->input_meshes->size(); i++)
 	{
-		Godot::print(std::to_string(generator->collision_ids->at(i)).c_str());
 		input_meshes_storage[i] = (Variant(generator->input_meshes->at(i)));
 		input_transforms_storage[i] = (Variant(generator->input_transforms->at(i)));
 		input_aabbs_storage[i] = (Variant(generator->input_aabbs->at(i)));
 		collision_ids_storage[i] = (Variant(generator->collision_ids->at(i)));
 	}
-	Godot::print(("New Storage input length " + std::to_string(input_meshes_storage.size())).c_str());
 }
 
 /**
@@ -398,7 +394,6 @@ bool DetourNavigationMesh::load_inputs()
 	generator->input_aabbs->resize(input_meshes_storage.size());
 	generator->collision_ids->resize(input_meshes_storage.size());
 
-	Godot::print("Printing cshapes");
 	for (int i = 0; i < input_meshes_storage.size(); i++)
 	{
 		generator->input_meshes->at(i) = input_meshes_storage[i];
@@ -408,7 +403,6 @@ bool DetourNavigationMesh::load_inputs()
 		bounding_box.merge_with(
 			generator->input_transforms->at(i).xform(generator->input_aabbs->at(i)));
 		generator->bounding_box = bounding_box;
-		Godot::print(std::to_string(generator->collision_ids->at(i)).c_str());
 	}
 
 	generator->setup_generator();

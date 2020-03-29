@@ -7,7 +7,7 @@ DetourNavigationMeshGenerator::DetourNavigationMeshGenerator()
 
 DetourNavigationMeshGenerator::~DetourNavigationMeshGenerator()
 {
-	if (navmesh_parameters.is_valid())
+	if (navmesh_parameters != nullptr && navmesh_parameters.is_valid())
 	{
 		navmesh_parameters.unref();
 	}
@@ -20,10 +20,21 @@ DetourNavigationMeshGenerator::~DetourNavigationMeshGenerator()
 				m.unref();
 			}
 		}
+		delete input_meshes;
+		input_meshes = nullptr;
 	}
-	delete input_meshes;
-	delete input_transforms;
-	delete input_aabbs;
+	if (input_transforms != nullptr){
+		delete input_transforms;
+		input_transforms = nullptr;
+	}
+	if (input_aabbs != nullptr){
+		delete input_aabbs;
+		input_aabbs = nullptr;
+	}
+	if (collision_ids != nullptr){
+		delete collision_ids;
+		collision_ids = nullptr;
+	}
 }
 
 void DetourNavigationMeshGenerator::build()
@@ -74,7 +85,7 @@ void DetourNavigationMeshGenerator::joint_build()
 	}
 
 	/* Calculate how many bits are required to uniquely identify all tiles */
-	unsigned int tile_bits = (unsigned int)ilog2(nextPow2(get_num_tiles_x() * get_num_tiles_z()));
+	unsigned int tile_bits = (unsigned int)ilog2(nextPow2(get_num_tiles_x() * get_num_tiles_z() * navmesh_parameters->get_max_layers()));
 	tile_bits = std::min((int)tile_bits, 14);
 
 	/* Set dt navmesh parameters*/
@@ -187,7 +198,6 @@ bool DetourNavigationMeshGenerator::init_tile_data(
 
 	if (points.size() == 0 || indices.size() == 0)
 	{
-		// Godot::print("No mesh points and indices found...");
 		return true;
 	}
 	return false;
@@ -423,7 +433,6 @@ void DetourNavigationMeshGenerator::get_tile_bounding_box(
  */
 void DetourNavigationMeshGenerator::remove_collision_shape(int64_t collision_id)
 {
-	Godot::print(("Removing CS..." + std::to_string(collision_id)).c_str());
 	int start = -1;
 	int end = -1;
 
@@ -478,7 +487,6 @@ void DetourNavigationMeshGenerator::init_dirty_tiles()
  */
 void DetourNavigationMeshGenerator::mark_dirty(int start_index, int end_index)
 {
-	Godot::print("Marking dirty");
 	if (end_index == -1)
 	{
 		end_index = input_aabbs->size();
@@ -513,7 +521,6 @@ void DetourNavigationMeshGenerator::mark_dirty(int start_index, int end_index)
  */
 void DetourNavigationMeshGenerator::recalculate_tiles()
 {
-	Godot::print("Rebuilding tiles");
 	if (dirty_tiles == nullptr)
 	{
 		return;
@@ -529,7 +536,6 @@ void DetourNavigationMeshGenerator::recalculate_tiles()
 			}
 		}
 	}
-	Godot::print("Done rebuilding.");
 }
 
 /**
@@ -629,7 +635,6 @@ void DetourNavigationMeshGenerator::release_navmesh()
 	num_tiles_x = 0;
 	num_tiles_z = 0;
 	bounding_box = AABB();
-	Godot::print("Released navmesh");
 }
 
 /**

@@ -61,12 +61,12 @@ void DetourNavigationMeshCached::_register_methods()
 	register_method("_notification", &DetourNavigationMeshCached::_notification);
 	register_method("_exit_tree", &DetourNavigationMeshCached::_exit_tree);
 	register_method("bake_navmesh", &DetourNavigationMeshCached::build_navmesh);
-	register_method("_on_renamed", &DetourNavigationMeshCached::_on_renamed);
 	register_method("clear_navmesh", &DetourNavigationMeshCached::clear_navmesh);
 	register_method("find_path", &DetourNavigationMeshCached::find_path);
 	register_method("add_box_obstacle", &DetourNavigationMeshCached::add_box_obstacle);
 	register_method("add_cylinder_obstacle", &DetourNavigationMeshCached::add_cylinder_obstacle);
 	register_method("remove_obstacle", &DetourNavigationMeshCached::remove_obstacle);
+	register_method("_on_renamed", &DetourNavigationMeshCached::_on_renamed);
 
 	register_property<DetourNavigationMeshCached, int>("collision_mask", &DetourNavigationMeshCached::set_collision_mask, &DetourNavigationMeshCached::get_collision_mask, 1,
 													   GODOT_METHOD_RPC_MODE_DISABLED, GODOT_PROPERTY_USAGE_DEFAULT, GODOT_PROPERTY_HINT_LAYERS_3D_PHYSICS);
@@ -82,6 +82,8 @@ void DetourNavigationMeshCached::_register_methods()
 														 GODOT_METHOD_RPC_MODE_DISABLED, GODOT_PROPERTY_USAGE_STORAGE, GODOT_PROPERTY_HINT_NONE);
 	register_property<DetourNavigationMeshCached, Array>("collision_ids_storage", &DetourNavigationMesh::set_collision_ids_storage, &DetourNavigationMesh::get_collision_ids_storage, Array(),
 														 GODOT_METHOD_RPC_MODE_DISABLED, GODOT_PROPERTY_USAGE_STORAGE, GODOT_PROPERTY_HINT_NONE);
+	register_property<DetourNavigationMeshCached, String>("uuid", &DetourNavigationMeshCached::set_uuid, &DetourNavigationMeshCached::get_uuid, "",
+													GODOT_METHOD_RPC_MODE_DISABLED, GODOT_PROPERTY_USAGE_STORAGE, GODOT_PROPERTY_HINT_NONE);
 
 	register_property<DetourNavigationMeshCached, Color>(
 		"debug_mesh_color", &DetourNavigationMeshCached::set_debug_mesh_color, &DetourNavigationMeshCached::get_debug_mesh_color, Color(0.1f, 1.0f, 0.7f, 0.4f));
@@ -132,36 +134,31 @@ void DetourNavigationMeshCached::clear_navmesh()
 {
 	if (generator != nullptr)
 	{
-		Godot::print("Deleting generator...");
 		delete generator;
 		generator = nullptr;
-		Godot::print("Deleting generator... 2");
 		DetourNavigationMesh::generator = nullptr;
 	}
 
+	DetourNavigationMesh::clear_navmesh();
 	release_navmesh();
 }
 
 void DetourNavigationMeshCached::release_navmesh()
 {
-	Godot::print("releasing...");
 	DetourNavigationMesh::release_navmesh();
 
-	Godot::print("releasing... 1");
 	if (tile_cache != nullptr)
 	{
 		dtFreeTileCache(tile_cache);
 		tile_cache = nullptr;
 	}
 
-	Godot::print("releasing... 2");
 	if (tile_cache_compressor != nullptr)
 	{
 		delete tile_cache_compressor;
 		tile_cache_compressor = nullptr;
 	}
 
-	Godot::print("releasing... 3");
 	if (mesh_process != nullptr)
 	{
 		delete mesh_process;
@@ -194,7 +191,6 @@ bool DetourNavigationMeshCached::load_mesh()
 	}
 	else
 	{
-		Godot::print("Loading inputs");
 		if (!load_inputs())
 		{
 			return false;
@@ -212,14 +208,6 @@ void DetourNavigationMeshCached::save_mesh()
 {
 	FileManager::createDirectory(".navcache");
 	FileManager::saveNavigationMeshCached(get_cache_file_path(), tile_cache, get_detour_navmesh());
-}
-
-void DetourNavigationMeshCached::_on_renamed(Variant v)
-{
-	char *previous_path = get_cache_file_path();
-	navmesh_name = get_name().utf8().get_data();
-	char *current_path = get_cache_file_path();
-	FileManager::moveFile(previous_path, current_path);
 }
 
 unsigned int DetourNavigationMeshCached::add_box_obstacle(
@@ -285,4 +273,12 @@ DetourNavigationMeshCacheGenerator *DetourNavigationMeshCached::init_generator(T
 	dtnavmesh_gen->set_navmesh_parameters(navmesh_parameters);
 	set_generator(dtnavmesh_gen);
 	return dtnavmesh_gen;
+}
+
+void DetourNavigationMeshCached::_on_renamed(Variant v)
+{
+	char *previous_path = get_cache_file_path();
+	navmesh_name = get_name().utf8().get_data();
+	char *current_path = get_cache_file_path();
+	FileManager::moveFile(previous_path, current_path);
 }
