@@ -186,5 +186,4 @@ void DetourNavigationMeshCacheGenerator::recalculate_tiles() {
 	}
 
 	// get_tile_cache()->update(0, get_detour_navmesh());
-	Godot::print("Done rebuilding cached.");
 }

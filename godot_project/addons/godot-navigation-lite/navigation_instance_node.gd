@@ -24,7 +24,6 @@ func _enter_tree():
 	cached_navmesh_parameters = preload("res://addons/godot-navigation-lite/bin/cached_navmesh_parameters.gdns")
 	navigation_script = preload("res://addons/godot-navigation-lite/bin/detour_navigation.gdns")
 
-	# When this plugin node enters tree, add the custom type
 	add_custom_type(
 		"DetourNavigation", 
 		"Spatial", 
@@ -70,9 +69,6 @@ func handles(object):
 
 
 func _exit_tree():
-	# When the plugin node exits the tree, remove the custom type
-	#remove_control_from_container(CONTAINER_SPATIAL_EDITOR_MENU, _navigation_menu_button)
-	#remove_control_from_container(CONTAINER_SPATIAL_EDITOR_MENU, _navmesh_menu_button)
 	_navmesh_menu_button.queue_free()
 	_navmesh_menu_button = null
 	
@@ -80,7 +76,6 @@ func _exit_tree():
 	_navigation_menu_button = null
 	
 	remove_custom_type("DetourNavigation")
-	
 
 
 func _on_navigation_menu_id_pressed(id):

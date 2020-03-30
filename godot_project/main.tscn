@@ -149,7 +149,7 @@ detail_sample_max_error = 1.0
 max_obstacles = 1000
 max_layers = 8
 
-[sub_resource type="NativeScript" id=22]
+[sub_resource type="NativeScript" id=18]
 class_name = "DetourNavigationMesh"
 library = ExtResource( 4 )
 
@@ -268,7 +268,7 @@ surfaces/0 = {
 "vertex_count": 12672
 }
 
-[sub_resource type="Resource" id=38]
+[sub_resource type="Resource" id=34]
 script = ExtResource( 1 )
 cell_size = 0.3
 tile_size = 32
@@ -285,16 +285,16 @@ detail_sample_distance = 6.0
 detail_sample_max_error = 1.0
 max_layers = 1
 
-[sub_resource type="QuadMesh" id=18]
+[sub_resource type="QuadMesh" id=35]
 size = Vector2( 32, 32 )
 
-[sub_resource type="SpatialMaterial" id=19]
+[sub_resource type="SpatialMaterial" id=36]
 albedo_color = Color( 0.623529, 0.396078, 0.396078, 1 )
 
-[sub_resource type="ConcavePolygonShape" id=20]
+[sub_resource type="ConcavePolygonShape" id=37]
 data = PoolVector3Array( -16, -16, 0, -16, 16, 0, 16, 16, 0, -16, -16, 0, 16, 16, 0, 16, -16, 0 )
 
-[sub_resource type="CapsuleMesh" id=21]
+[sub_resource type="CapsuleMesh" id=38]
 radius = 0.2
 mid_height = 5.167
 
@@ -310,91 +310,81 @@ script = SubResource( 1 )
 collision_mask = 3
 dynamic_objects_collision_mask = 4
 input_meshes_storage = [ SubResource( 2 ), SubResource( 3 ), SubResource( 4 ), SubResource( 5 ), SubResource( 6 ), SubResource( 7 ), SubResource( 8 ), SubResource( 9 ), SubResource( 10 ), SubResource( 11 ), SubResource( 12 ), SubResource( 13 ), SubResource( 14 ), SubResource( 15 ), SubResource( 16 ) ]
-input_transforms_storage = [ Transform( 1, 0, 0, 0, -1.62921e-07, 1, 0, -1, -1.62921e-07, 0.341867, -0.0555032, 0.228902 ), Transform( -0.373886, 0, 0, 0, -0.0631954, 0.985612, 0, 0.368507, 0.169023, 11.3587, 1.11038, -21.4809 ), Transform( -0.373886, 0, 0, 0, -0.0631954, 0.985612, 0, 0.368507, 0.169023, 0.0368013, 2.99193, -30.3408 ), Transform( 0.096, 2.6739e-07, 1.26311e-07, 1.21258e-08, -0.165524, 0.921809, 6.01157e-08, -0.393613, -0.387644, 8.499, 3.243, -19.472 ), Transform( 0.075, -1.74229e-07, 7.50926e-08, 5.63195e-09, 0.062454, 0.973082, -4.82184e-08, -0.263705, 0.230458, 8.42, 4.903, -7.479 ), Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.00468254, 3.41668, -7.45258 ), Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 8.36497, 2.10987, -12.2513 ), Transform( 1, 0, 0, 0, 0.744, 0, 0, 0, 1, 8.40046, 1.00946, -2.54447 ), Transform( 1, 0, 0, 0, 0.744, 0, 0, 0, 1, 8.40046, 0.197384, -0.615419 ), Transform( 1, 0, 0, 0, 0.744, 0, 0, 0, 1, 8.40046, -0.514739, 1.33163 ), Transform( 1, 0, 0, 0, 0.744, 0, 0, 0, 1, 6.52673, -1.10933, 1.33163 ), Transform( 1, 0, 0, 0, 0.744, 0, 0, 0, 1, 6.52673, -1.898, 3.30901 ), Transform( 1, 0, 0, 0, 0.744, 0, 0, 0, 1, 6.52673, -2.41641, 5.26917 ), Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -5.67021, 0.927075, 0.168766 ), Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -1.35884, -1.10834, 9.14008 ) ]
+input_transforms_storage = [ Transform( 1, 0, 0, 0, -1.62921e-07, 1, 0, -1, -1.62921e-07, 0.341867, -0.0555032, 0.228902 ), Transform( -0.373886, 0, 0, 0, -0.0631954, 0.985612, 0, 0.368507, 0.169023, 11.3587, 1.11038, -21.4809 ), Transform( -0.373886, 0, 0, 0, -0.0631954, 0.985612, 0, 0.368507, 0.169023, 0.0368013, 2.99193, -30.3408 ), Transform( 0.096, 2.6739e-07, 1.26311e-07, 1.21258e-08, -0.165524, 0.921809, 6.01157e-08, -0.393613, -0.387644, 8.499, 3.243, -19.472 ), Transform( 0.075, -1.74229e-07, 7.50926e-08, 5.63195e-09, 0.062454, 0.973082, -4.82184e-08, -0.263705, 0.230458, 8.42, 4.903, -7.479 ), Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.00468254, 3.41668, -7.45258 ), Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 8.36497, 2.10987, -12.2513 ), Transform( 1, 0, 0, 0, 0.744, 0, 0, 0, 1, 8.40046, 1.00946, -2.54447 ), Transform( 1, 0, 0, 0, 0.744, 0, 0, 0, 1, 8.40046, 0.197384, -0.615419 ), Transform( 1, 0, 0, 0, 0.744, 0, 0, 0, 1, 8.36811, -0.553119, 1.34174 ), Transform( 1, 0, 0, 0, 0.744, 0, 0, 0, 1, 6.52673, -1.06541, 1.33163 ), Transform( 1, 0, 0, 0, 0.744, 0, 0, 0, 1, 6.52673, -1.67485, 3.30901 ), Transform( 1, 0, 0, 0, 0.744, 0, 0, 0, 1, 6.52673, -2.27813, 5.26917 ), Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -5.67021, 0.927075, 0.168766 ), Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -1.35884, -1.10834, 9.14008 ) ]
 input_aabbs_storage = [ AABB( -16, -16, 0, 32, 32, 0 ), AABB( -16, -16, 0, 32, 32, 0 ), AABB( -16, -16, 0, 32, 32, 0 ), AABB( -16, -16, 0, 32, 32, 0 ), AABB( -16, -16, 0, 32, 32, 0 ), AABB( -1, -4, -1, 2, 8, 2 ), AABB( -1, -4, -1, 2, 8, 2 ), AABB( -1, -4, -1, 2, 8, 2 ), AABB( -1, -4, -1, 2, 8, 2 ), AABB( -1, -4, -1, 2, 8, 2 ), AABB( -1, -4, -1, 2, 8, 2 ), AABB( -1, -4, -1, 2, 8, 2 ), AABB( -1, -4, -1, 2, 8, 2 ), AABB( -2.9966, -3, -2.9966, 5.9932, 6, 5.9932 ), AABB( -2.9966, -3, -2.9966, 5.9932, 6, 5.9932 ) ]
-collision_ids_storage = [ 20059, 20062, 20065, 20068, 20071, 20076, 20079, 20082, 20085, 20088, 20091, 20094, 20097, 20100, 20115 ]
+collision_ids_storage = [ 20080, 20083, 20086, 20089, 20092, 20097, 20100, 20103, 20106, 20109, 20112, 20115, 20118, 20121, 20136 ]
 uuid = "00000960-0000-400B-A000-000570000003"
 debug_mesh_color = Color( 0.956863, 0.0705882, 0.027451, 0.4 )
 parameters = SubResource( 17 )
 
 [node name="DetourNavigationMesh" type="Spatial" parent="DetourNavigation"]
-script = SubResource( 22 )
+script = SubResource( 18 )
 collision_mask = 3
 input_meshes_storage = [ SubResource( 39 ), SubResource( 40 ), SubResource( 41 ), SubResource( 42 ), SubResource( 43 ), SubResource( 44 ), SubResource( 45 ), SubResource( 46 ), SubResource( 47 ), SubResource( 48 ), SubResource( 49 ), SubResource( 50 ), SubResource( 51 ), SubResource( 52 ), SubResource( 53 ) ]
-input_transforms_storage = [ Transform( 1, 0, 0, 0, -1.62921e-07, 1, 0, -1, -1.62921e-07, 0.341867, -0.0555032, 0.228902 ), Transform( -0.373886, 0, 0, 0, -0.0631954, 0.985612, 0, 0.368507, 0.169023, 11.3587, 1.11038, -21.4809 ), Transform( -0.373886, 0, 0, 0, -0.0631954, 0.985612, 0, 0.368507, 0.169023, 0.0368013, 2.99193, -30.3408 ), Transform( 0.096, 2.6739e-07, 1.26311e-07, 1.21258e-08, -0.165524, 0.921809, 6.01157e-08, -0.393613, -0.387644, 8.499, 3.243, -19.472 ), Transform( 0.075, -1.74229e-07, 7.50926e-08, 5.63195e-09, 0.062454, 0.973082, -4.82184e-08, -0.263705, 0.230458, 8.42, 4.903, -7.479 ), Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.00468254, 3.41668, -7.45258 ), Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 8.36497, 2.10987, -12.2513 ), Transform( 1, 0, 0, 0, 0.744, 0, 0, 0, 1, 8.40046, 1.00946, -2.54447 ), Transform( 1, 0, 0, 0, 0.744, 0, 0, 0, 1, 8.40046, 0.197384, -0.615419 ), Transform( 1, 0, 0, 0, 0.744, 0, 0, 0, 1, 8.40046, -0.514739, 1.33163 ), Transform( 1, 0, 0, 0, 0.744, 0, 0, 0, 1, 6.52673, -1.10933, 1.33163 ), Transform( 1, 0, 0, 0, 0.744, 0, 0, 0, 1, 6.52673, -1.898, 3.30901 ), Transform( 1, 0, 0, 0, 0.744, 0, 0, 0, 1, 6.52673, -2.41641, 5.26917 ), Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -5.67021, 0.927075, 0.168766 ), Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -1.35884, -1.10834, 9.14008 ) ]
+input_transforms_storage = [ Transform( 1, 0, 0, 0, -1.62921e-07, 1, 0, -1, -1.62921e-07, 0.341867, -0.0555032, 0.228902 ), Transform( -0.373886, 0, 0, 0, -0.0631954, 0.985612, 0, 0.368507, 0.169023, 11.3587, 1.11038, -21.4809 ), Transform( -0.373886, 0, 0, 0, -0.0631954, 0.985612, 0, 0.368507, 0.169023, 0.0368013, 2.99193, -30.3408 ), Transform( 0.096, 2.6739e-07, 1.26311e-07, 1.21258e-08, -0.165524, 0.921809, 6.01157e-08, -0.393613, -0.387644, 8.499, 3.243, -19.472 ), Transform( 0.075, -1.74229e-07, 7.50926e-08, 5.63195e-09, 0.062454, 0.973082, -4.82184e-08, -0.263705, 0.230458, 8.42, 4.903, -7.479 ), Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.00468254, 3.41668, -7.45258 ), Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 8.36497, 2.10987, -12.2513 ), Transform( 1, 0, 0, 0, 0.744, 0, 0, 0, 1, 8.40046, 1.00946, -2.54447 ), Transform( 1, 0, 0, 0, 0.744, 0, 0, 0, 1, 8.40046, 0.197384, -0.615419 ), Transform( 1, 0, 0, 0, 0.744, 0, 0, 0, 1, 8.36811, -0.553119, 1.34174 ), Transform( 1, 0, 0, 0, 0.744, 0, 0, 0, 1, 6.52673, -1.06541, 1.33163 ), Transform( 1, 0, 0, 0, 0.744, 0, 0, 0, 1, 6.52673, -1.67485, 3.30901 ), Transform( 1, 0, 0, 0, 0.744, 0, 0, 0, 1, 6.52673, -2.27813, 5.26917 ), Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -5.67021, 0.927075, 0.168766 ), Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -1.35884, -0.388249, 9.14008 ) ]
 input_aabbs_storage = [ AABB( -16, -16, 0, 32, 32, 0 ), AABB( -16, -16, 0, 32, 32, 0 ), AABB( -16, -16, 0, 32, 32, 0 ), AABB( -16, -16, 0, 32, 32, 0 ), AABB( -16, -16, 0, 32, 32, 0 ), AABB( -1, -4, -1, 2, 8, 2 ), AABB( -1, -4, -1, 2, 8, 2 ), AABB( -1, -4, -1, 2, 8, 2 ), AABB( -1, -4, -1, 2, 8, 2 ), AABB( -1, -4, -1, 2, 8, 2 ), AABB( -1, -4, -1, 2, 8, 2 ), AABB( -1, -4, -1, 2, 8, 2 ), AABB( -1, -4, -1, 2, 8, 2 ), AABB( -2.9966, -3, -2.9966, 5.9932, 6, 5.9932 ), AABB( -2.9966, -3, -2.9966, 5.9932, 6, 5.9932 ) ]
-collision_ids_storage = [ 20059, 20062, 20065, 20068, 20071, 20076, 20079, 20082, 20085, 20088, 20091, 20094, 20097, 20100, 20115 ]
+collision_ids_storage = [ 20079, 20082, 20085, 20088, 20091, 20096, 20099, 20102, 20105, 20108, 20111, 20114, 20117, 20120, 20135 ]
 uuid = "00000960-0000-400B-A000-000570000003"
-parameters = SubResource( 38 )
-
-[node name="DetourNavigationMesh2" type="Spatial" parent="DetourNavigation"]
-script = SubResource( 22 )
-collision_mask = 3
-input_meshes_storage = [ SubResource( 39 ), SubResource( 40 ), SubResource( 41 ), SubResource( 42 ), SubResource( 43 ), SubResource( 44 ), SubResource( 45 ), SubResource( 46 ), SubResource( 47 ), SubResource( 48 ), SubResource( 49 ), SubResource( 50 ), SubResource( 51 ), SubResource( 52 ), SubResource( 53 ) ]
-input_transforms_storage = [ Transform( 1, 0, 0, 0, -1.62921e-07, 1, 0, -1, -1.62921e-07, 0.341867, -0.0555032, 0.228902 ), Transform( -0.373886, 0, 0, 0, -0.0631954, 0.985612, 0, 0.368507, 0.169023, 11.3587, 1.11038, -21.4809 ), Transform( -0.373886, 0, 0, 0, -0.0631954, 0.985612, 0, 0.368507, 0.169023, 0.0368013, 2.99193, -30.3408 ), Transform( 0.096, 2.6739e-07, 1.26311e-07, 1.21258e-08, -0.165524, 0.921809, 6.01157e-08, -0.393613, -0.387644, 8.499, 3.243, -19.472 ), Transform( 0.075, -1.74229e-07, 7.50926e-08, 5.63195e-09, 0.062454, 0.973082, -4.82184e-08, -0.263705, 0.230458, 8.42, 4.903, -7.479 ), Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0.00468254, 3.41668, -7.45258 ), Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 8.36497, 2.10987, -12.2513 ), Transform( 1, 0, 0, 0, 0.744, 0, 0, 0, 1, 8.40046, 1.00946, -2.54447 ), Transform( 1, 0, 0, 0, 0.744, 0, 0, 0, 1, 8.40046, 0.197384, -0.615419 ), Transform( 1, 0, 0, 0, 0.744, 0, 0, 0, 1, 8.40046, -0.514739, 1.33163 ), Transform( 1, 0, 0, 0, 0.744, 0, 0, 0, 1, 6.52673, -1.10933, 1.33163 ), Transform( 1, 0, 0, 0, 0.744, 0, 0, 0, 1, 6.52673, -1.898, 3.30901 ), Transform( 1, 0, 0, 0, 0.744, 0, 0, 0, 1, 6.52673, -2.41641, 5.26917 ), Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -5.67021, 0.927075, 0.168766 ), Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -1.35884, -1.10834, 9.14008 ) ]
-input_aabbs_storage = [ AABB( -16, -16, 0, 32, 32, 0 ), AABB( -16, -16, 0, 32, 32, 0 ), AABB( -16, -16, 0, 32, 32, 0 ), AABB( -16, -16, 0, 32, 32, 0 ), AABB( -16, -16, 0, 32, 32, 0 ), AABB( -1, -4, -1, 2, 8, 2 ), AABB( -1, -4, -1, 2, 8, 2 ), AABB( -1, -4, -1, 2, 8, 2 ), AABB( -1, -4, -1, 2, 8, 2 ), AABB( -1, -4, -1, 2, 8, 2 ), AABB( -1, -4, -1, 2, 8, 2 ), AABB( -1, -4, -1, 2, 8, 2 ), AABB( -1, -4, -1, 2, 8, 2 ), AABB( -2.9966, -3, -2.9966, 5.9932, 6, 5.9932 ), AABB( -2.9966, -3, -2.9966, 5.9932, 6, 5.9932 ) ]
-collision_ids_storage = [ 20059, 20062, 20065, 20068, 20071, 20076, 20079, 20082, 20085, 20088, 20091, 20094, 20097, 20100, 20115 ]
-uuid = "00000960-0000-400B-A000-000570000003"
-parameters = SubResource( 38 )
+parameters = SubResource( 34 )
 
 [node name="Floor" type="MeshInstance" parent="DetourNavigation"]
 transform = Transform( 1, 0, 0, 0, -1.62921e-07, 1, 0, -1, -1.62921e-07, 0.341867, -0.0555032, 0.228902 )
-mesh = SubResource( 18 )
-material/0 = SubResource( 19 )
+mesh = SubResource( 35 )
+material/0 = SubResource( 36 )
 
 [node name="StaticBody" type="StaticBody" parent="DetourNavigation/Floor"]
 
 [node name="CollisionShape" type="CollisionShape" parent="DetourNavigation/Floor/StaticBody"]
-shape = SubResource( 20 )
+shape = SubResource( 37 )
 
 [node name="Floor2" type="MeshInstance" parent="DetourNavigation"]
 transform = Transform( -0.373886, 0, 0, 0, -0.0631954, 0.985612, 0, 0.368507, 0.169023, 11.3587, 1.11038, -21.4809 )
-mesh = SubResource( 18 )
-material/0 = SubResource( 19 )
+mesh = SubResource( 35 )
+material/0 = SubResource( 36 )
 
 [node name="StaticBody" type="StaticBody" parent="DetourNavigation/Floor2"]
 
 [node name="CollisionShape" type="CollisionShape" parent="DetourNavigation/Floor2/StaticBody"]
-shape = SubResource( 20 )
+shape = SubResource( 37 )
 
 [node name="Floor5" type="MeshInstance" parent="DetourNavigation"]
 transform = Transform( -0.373886, 0, 0, 0, -0.0631954, 0.985612, 0, 0.368507, 0.169023, 0.0368013, 2.99193, -30.3408 )
-mesh = SubResource( 18 )
-material/0 = SubResource( 19 )
+mesh = SubResource( 35 )
+material/0 = SubResource( 36 )
 
 [node name="StaticBody" type="StaticBody" parent="DetourNavigation/Floor5"]
 
 [node name="CollisionShape" type="CollisionShape" parent="DetourNavigation/Floor5/StaticBody"]
-shape = SubResource( 20 )
+shape = SubResource( 37 )
 
 [node name="Floor6" type="MeshInstance" parent="DetourNavigation"]
 transform = Transform( 0.096, 2.6739e-07, 1.26311e-07, 1.21258e-08, -0.165524, 0.921809, 6.01157e-08, -0.393613, -0.387644, 8.499, 3.243, -19.472 )
-mesh = SubResource( 18 )
-material/0 = SubResource( 19 )
+mesh = SubResource( 35 )
+material/0 = SubResource( 36 )
 
 [node name="StaticBody" type="StaticBody" parent="DetourNavigation/Floor6"]
 
 [node name="CollisionShape" type="CollisionShape" parent="DetourNavigation/Floor6/StaticBody"]
-shape = SubResource( 20 )
+shape = SubResource( 37 )
 
 [node name="Floor7" type="MeshInstance" parent="DetourNavigation"]
 transform = Transform( 0.075, -1.74229e-07, 7.50926e-08, 5.63195e-09, 0.062454, 0.973082, -4.82184e-08, -0.263705, 0.230458, 8.42, 4.903, -7.479 )
-mesh = SubResource( 18 )
-material/0 = SubResource( 19 )
+mesh = SubResource( 35 )
+material/0 = SubResource( 36 )
 
 [node name="StaticBody" type="StaticBody" parent="DetourNavigation/Floor7"]
 
 [node name="CollisionShape" type="CollisionShape" parent="DetourNavigation/Floor7/StaticBody"]
-shape = SubResource( 20 )
+shape = SubResource( 37 )
 
 [node name="Start" type="MeshInstance" parent="DetourNavigation"]
 transform = Transform( 1, 0, 0, 0, -1.62921e-07, 1, 0, -1, -1.62921e-07, -9.176, 0, 8.90109 )
-mesh = SubResource( 21 )
+mesh = SubResource( 38 )
 material/0 = null
 
 [node name="Finish" type="MeshInstance" parent="DetourNavigation"]
 transform = Transform( 1, 0, 0, 0, -1.62921e-07, 1, 0, -1, -1.62921e-07, 6.52072, 0, -3.79273 )
-mesh = SubResource( 21 )
+mesh = SubResource( 38 )
 material/0 = null
 script = ExtResource( 6 )
 
@@ -411,22 +401,22 @@ transform = Transform( 1, 0, 0, 0, 0.744, 0, 0, 0, 1, 8.40046, 1.00946, -2.54447
 transform = Transform( 1, 0, 0, 0, 0.744, 0, 0, 0, 1, 8.40046, 0.197384, -0.615419 )
 
 [node name="StatObst8" parent="DetourNavigation" instance=ExtResource( 9 )]
-transform = Transform( 1, 0, 0, 0, 0.744, 0, 0, 0, 1, 8.40046, -0.514739, 1.33163 )
+transform = Transform( 1, 0, 0, 0, 0.744, 0, 0, 0, 1, 8.36811, -0.553119, 1.34174 )
 
 [node name="StatObst9" parent="DetourNavigation" instance=ExtResource( 9 )]
-transform = Transform( 1, 0, 0, 0, 0.744, 0, 0, 0, 1, 6.52673, -1.10933, 1.33163 )
+transform = Transform( 1, 0, 0, 0, 0.744, 0, 0, 0, 1, 6.52673, -1.06541, 1.33163 )
 
 [node name="StatObst10" parent="DetourNavigation" instance=ExtResource( 9 )]
-transform = Transform( 1, 0, 0, 0, 0.744, 0, 0, 0, 1, 6.52673, -1.898, 3.30901 )
+transform = Transform( 1, 0, 0, 0, 0.744, 0, 0, 0, 1, 6.52673, -1.67485, 3.30901 )
 
 [node name="StatObst11" parent="DetourNavigation" instance=ExtResource( 9 )]
-transform = Transform( 1, 0, 0, 0, 0.744, 0, 0, 0, 1, 6.52673, -2.41641, 5.26917 )
+transform = Transform( 1, 0, 0, 0, 0.744, 0, 0, 0, 1, 6.52673, -2.27813, 5.26917 )
 
 [node name="StatSphere" parent="DetourNavigation" instance=ExtResource( 10 )]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -5.67021, 0.927075, 0.168766 )
 
 [node name="DynObst" parent="DetourNavigation" instance=ExtResource( 11 )]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 9.46757, 3.64546, 13.7843 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.705944, 3.64546, 13.7843 )
 
 [node name="DynObst2" parent="DetourNavigation" instance=ExtResource( 11 )]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -6.37129, 3.64546, 13.7843 )
@@ -438,7 +428,7 @@ transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -6.37129, 3.64546, 5.11651 )
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -10.804, 3.64546, -6.85877 )
 
 [node name="StatSphere2" parent="DetourNavigation" instance=ExtResource( 10 )]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -1.35884, -1.10834, 9.14008 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -1.35884, -0.388249, 9.14008 )
 
 [node name="Camera" type="Camera" parent="."]
 transform = Transform( 0.810389, 0.509218, -0.28977, 0, 0.494579, 0.869133, 0.585892, -0.704336, 0.400802, -16.005, 26.098, 10.744 )
