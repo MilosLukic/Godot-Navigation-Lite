@@ -55,6 +55,7 @@ private:
 	SETGET(dynamic_objects, bool);
 	SETGET(dynamic_collision_mask, int);
 	SETGET(collision_mask, int);
+	SETGET(auto_object_management, bool)
 
 	void collect_geometry(Array geometries,
 								std::vector<Ref<Mesh>> *meshes, std::vector<Transform> *transforms,
@@ -65,7 +66,7 @@ private:
 								 std::vector<Ref<Mesh>> *meshes, std::vector<Transform> *transforms,
 								 std::vector<AABB> *aabbs, std::vector<int64_t> *collision_ids);
 
-	std::vector<StaticBody *> *dyn_bodies_to_add = nullptr;
+	std::vector<PhysicsBody *> *dyn_bodies_to_add = nullptr;
 	std::vector<StaticBody *> *static_bodies_to_add = nullptr;
 	std::vector<int64_t> *collisions_to_remove = nullptr;
 
@@ -116,11 +117,11 @@ public:
 						   std::vector<Ref<Mesh>> *meshes, std::vector<Transform> *transforms,
 						   std::vector<AABB> *aabbs, std::vector<int64_t> *collision_ids);
 
-	void _on_cache_object_added(Variant node);
-	void _on_cache_object_removed(Variant node);
+	void _on_cache_collision_shape_added(Variant node);
+	void _on_cache_collision_shape_removed(Variant node);
 
-	void _on_static_object_added(Variant node);
-	void _on_static_object_removed(Variant node);
+	void _on_collision_shape_added(Variant node);
+	void _on_collision_shape_removed(Variant node);
 	void recognize_stored_collision_shapes();
 	void collect_mappings(Dictionary &mappings, Array element);
 	void map_collision_shapes(DetourNavigationMesh *nm, Dictionary &mappings);
