@@ -6,3 +6,6 @@
 .vs/*
 .navcache
 *.os
+!.gitignore
+api.json
+.vscode/*

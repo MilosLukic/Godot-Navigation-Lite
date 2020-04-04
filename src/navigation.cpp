@@ -62,13 +62,11 @@ void DetourNavigation::_on_tree_exiting()
 void DetourNavigation::_enter_tree()
 {
 	recalculate_masks();
-	Godot::print("haa");
 	if (!Engine::get_singleton()->is_editor_hint())
 	{
 		get_tree()->connect("node_added", this, "add_cached_collision_shape");
 		get_tree()->connect("node_removed", this, "remove_cached_collision_shape");
 	}
-	Godot::print("hee");
 }
 
 void DetourNavigation::_init()
@@ -125,10 +123,8 @@ void DetourNavigation::_ready()
 	}
 	else
 	{
-		Godot::print("hoo");
 		get_tree()->connect("node_added", this, "add_collision_shape");
 		get_tree()->connect("node_removed", this, "remove_collision_shape");
-		Godot::print("hii");
 	}
 }
 
