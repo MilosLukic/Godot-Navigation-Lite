@@ -2,7 +2,7 @@
 Current version: 0.9 Beta
 
 
-![alt text][main]
+![Image not found][main]
 
 Godot plug&amp;play implementation of [detour library](https://github.com/recastnavigation/recastnavigation). It allows user to build multiple navmeshes from static objects (physics objects) for different agent sizes, it also features fast cached obstacles, and realtime updates on the navigation meshes.
 
@@ -32,20 +32,20 @@ Download the addon and copy it to addons folder. Go to project settings, click o
 
 Usage is very similar to the one in vanilla Godot. After setting up the addon, add a new node named `DetourNavigation`. This is the root navigation node, and it should be the parent of all the nodes (like with regular Godot node), that you want to include in your navigation. Then click on that node, and on the top menu, you will see Navigation manager button.
  
-![alt text][ss1]
+![Image not found][ss1]
 
 Choose create navigation mesh or cached navigation mesh, if you require fast dynamic obstacles, besides the static ones.
 
-![alt text][ss3]
+![Image not found][ss3]
 
 Once you select the wanted navigation mesh, a new node will be added. Like with default godot navigation mesh, you have to select it and bake it. Once you do this, be sure to save the project (otherwise you will have to bake it again).
 
-![alt text][ss4]
+![Image not found][ss4]
 
 When it's baked, you can start your scene and call find_path function on the navigation mesh node (see documentation below). It will return an array of flags and vertices (same as Godot navigation mesh).
 
 
-![alt text][ss6]
+![Image not found][ss6]
 
 If you want to see the navigation mesh in game, just enable the Godot's "debug navigation" option in the debug menu (note - navigation will run slower as it has to create debug mesh every time).
 
@@ -62,7 +62,7 @@ If you want to see the navigation mesh in game, just enable the Godot's "debug n
 Documentation
 ===============
 
-![alt text][ss5]
+![Image not found][ss5]
 
 ### Class `DetourNavigation`
 - `auto_add_remove_objects`   
@@ -125,10 +125,14 @@ Special thanks to [@slapin](https://github.com/slapin), I based the navigation m
 And also thanks to [@sheepandshepherd](https://github.com/sheepandshepherd) for helping with numerous Godot and C++ issues and bugs.
 
 
-[ss1]: https://github.com/MilosLukic/Godot-Navigation-Lite/blob/master/documentation_assets/ss1.png "Logo Title Text 2"
+[ss1]: https://github.com/MilosLukic/Godot-Navigation-Lite/blob/master/documentation_assets/ss1.png ""
 
-[ss3]: https://github.com/MilosLukic/Godot-Navigation-Lite/blob/master/documentation_assets/ss3.png "Logo Title Text 2"
+[ss3]: https://github.com/MilosLukic/Godot-Navigation-Lite/blob/master/documentation_assets/ss3.png ""
 
-[ss4]: https://github.com/MilosLukic/Godot-Navigation-Lite/blob/master/documentation_assets/ss4.png "Logo Title Text 2"
+[ss4]: https://github.com/MilosLukic/Godot-Navigation-Lite/blob/master/documentation_assets/ss4.png ""
 
-[main]: https://imgflip.com/gif/3vcsox.gif
+[ss5]: https://github.com/MilosLukic/Godot-Navigation-Lite/blob/master/documentation_assets/ss5.png ""
+
+[ss6]: https://github.com/MilosLukic/Godot-Navigation-Lite/blob/master/documentation_assets/ss6.png ""
+
+[main]: https://i.imgflip.com/3vcsox.gif ""
