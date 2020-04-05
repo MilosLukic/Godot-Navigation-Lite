@@ -46,7 +46,6 @@ public:
 
 	void save_mesh();
 	void release_navmesh();
-	void _on_renamed(Variant v);
 
 	unsigned int add_box_obstacle(Vector3 pos, Vector3 extents, float rotationY);
 

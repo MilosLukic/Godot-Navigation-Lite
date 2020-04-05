@@ -86,8 +86,10 @@ public:
 	void _ready();
 
 	void recalculate_masks();
+	void fill_pointer_arrays();
 	void manage_changes();
 	void update_tilecache();
+	void rebuild_dirty_debug_meshes();
 
 	void add_box_obstacle_to_all(int64_t instance_id, Vector3 position,
 								 Vector3 extents, float rotationY, int collision_layer);
@@ -112,6 +114,7 @@ public:
 	void build_navmesh(DetourNavigationMesh *navigation);
 	void build_navmesh_cached(DetourNavigationMeshCached *navmesh);
 	void _notification(int p_what);
+	void _on_node_renamed(Variant v);
 
 	int process_large_mesh(MeshInstance *mesh_instance, int64_t collision_id,
 						   std::vector<Ref<Mesh>> *meshes, std::vector<Transform> *transforms,

@@ -66,7 +66,6 @@ void DetourNavigationMeshCached::_register_methods()
 	register_method("add_box_obstacle", &DetourNavigationMeshCached::add_box_obstacle);
 	register_method("add_cylinder_obstacle", &DetourNavigationMeshCached::add_cylinder_obstacle);
 	register_method("remove_obstacle", &DetourNavigationMeshCached::remove_obstacle);
-	register_method("_on_renamed", &DetourNavigationMeshCached::_on_renamed);
 
 	register_property<DetourNavigationMeshCached, int>("collision_mask", &DetourNavigationMeshCached::set_collision_mask, &DetourNavigationMeshCached::get_collision_mask, 1,
 													   GODOT_METHOD_RPC_MODE_DISABLED, GODOT_PROPERTY_USAGE_DEFAULT, GODOT_PROPERTY_HINT_LAYERS_3D_PHYSICS);
@@ -83,11 +82,13 @@ void DetourNavigationMeshCached::_register_methods()
 	register_property<DetourNavigationMeshCached, Array>("collision_ids_storage", &DetourNavigationMesh::set_collision_ids_storage, &DetourNavigationMesh::get_collision_ids_storage, Array(),
 														 GODOT_METHOD_RPC_MODE_DISABLED, GODOT_PROPERTY_USAGE_STORAGE, GODOT_PROPERTY_HINT_NONE);
 	register_property<DetourNavigationMeshCached, String>("uuid", &DetourNavigationMeshCached::set_uuid, &DetourNavigationMeshCached::get_uuid, "",
-													GODOT_METHOD_RPC_MODE_DISABLED, GODOT_PROPERTY_USAGE_STORAGE, GODOT_PROPERTY_HINT_NONE);
+														  GODOT_METHOD_RPC_MODE_DISABLED, GODOT_PROPERTY_USAGE_STORAGE, GODOT_PROPERTY_HINT_NONE);
 
 	register_property<DetourNavigationMeshCached, Color>(
 		"debug_mesh_color", &DetourNavigationMeshCached::set_debug_mesh_color, &DetourNavigationMeshCached::get_debug_mesh_color, Color(0.1f, 1.0f, 0.7f, 0.4f));
 
+	register_property<DetourNavigationMeshCached, Ref<ArrayMesh>>("debug_mesh", &DetourNavigationMeshCached::debug_mesh, nullptr,
+																  GODOT_METHOD_RPC_MODE_DISABLED, GODOT_PROPERTY_USAGE_STORAGE, GODOT_PROPERTY_HINT_NONE);
 	register_property<DetourNavigationMeshCached, Ref<CachedNavmeshParameters>>("parameters", &DetourNavigationMeshCached::set_navmesh_parameters, &DetourNavigationMeshCached::get_navmesh_parameters, Ref<CachedNavmeshParameters>(),
 																				GODOT_METHOD_RPC_MODE_DISABLED, GODOT_PROPERTY_USAGE_DEFAULT, GODOT_PROPERTY_HINT_RESOURCE_TYPE, "Resource");
 }
@@ -102,7 +103,6 @@ void DetourNavigationMeshCached::_exit_tree()
 
 void DetourNavigationMeshCached::_ready()
 {
-	get_tree()->connect("node_renamed", this, "_on_renamed");
 	navmesh_name = get_name().utf8().get_data();
 }
 
@@ -184,9 +184,10 @@ bool DetourNavigationMeshCached::load_mesh()
 	generator->set_mesh_process(mesh_process);
 	generator->set_tile_cache(tile_cache);
 
-	FileManager::loadNavigationMeshCached(get_cache_file_path(), tile_cache, detour_navmesh, mesh_process);
-	if (detour_navmesh == 0)
+	bool success = FileManager::loadNavigationMeshCached(get_cache_file_path(), tile_cache, detour_navmesh, mesh_process);
+	if (!success)
 	{
+		Godot::print("No baked navmesh found for " + get_name());
 		return false;
 	}
 	else
@@ -198,7 +199,7 @@ bool DetourNavigationMeshCached::load_mesh()
 
 		if (get_tree()->is_debugging_navigation_hint() || Engine::get_singleton()->is_editor_hint())
 		{
-			build_debug_mesh();
+			build_debug_mesh(false);
 		}
 		return true;
 	}
@@ -273,12 +274,4 @@ DetourNavigationMeshCacheGenerator *DetourNavigationMeshCached::init_generator(T
 	dtnavmesh_gen->set_navmesh_parameters(navmesh_parameters);
 	set_generator(dtnavmesh_gen);
 	return dtnavmesh_gen;
-}
-
-void DetourNavigationMeshCached::_on_renamed(Variant v)
-{
-	char *previous_path = get_cache_file_path();
-	navmesh_name = get_name().utf8().get_data();
-	char *current_path = get_cache_file_path();
-	FileManager::moveFile(previous_path, current_path);
 }

@@ -10,7 +10,6 @@ void DetourNavigationMesh::_register_methods()
 	register_method("_notification", &DetourNavigationMesh::_notification);
 	register_method("_exit_tree", &DetourNavigationMesh::_exit_tree);
 	register_method("bake_navmesh", &DetourNavigationMesh::build_navmesh);
-	register_method("_on_renamed", &DetourNavigationMesh::_on_renamed);
 	register_method("clear_navmesh", &DetourNavigationMesh::clear_navmesh);
 	register_method("find_path", &DetourNavigationMesh::find_path);
 
@@ -33,6 +32,8 @@ void DetourNavigationMesh::_register_methods()
 
 	register_property<DetourNavigationMesh, Ref<NavmeshParameters>>("parameters", &DetourNavigationMesh::navmesh_parameters, Ref<NavmeshParameters>(),
 																	GODOT_METHOD_RPC_MODE_DISABLED, GODOT_PROPERTY_USAGE_DEFAULT, GODOT_PROPERTY_HINT_RESOURCE_TYPE, "Resource");
+	register_property<DetourNavigationMesh, Ref<ArrayMesh>>("debug_mesh", &DetourNavigationMesh::debug_mesh, nullptr,
+	GODOT_METHOD_RPC_MODE_DISABLED, GODOT_PROPERTY_USAGE_STORAGE, GODOT_PROPERTY_HINT_NONE);
 }
 
 void DetourNavigationMesh::_init()
@@ -53,7 +54,6 @@ void DetourNavigationMesh::_ready()
 	{
 		Godot::print("Navigation mesh ready function called.");
 	}
-	get_tree()->connect("node_renamed", this, "_on_renamed");
 	navmesh_name = get_name().utf8().get_data();
 }
 
@@ -95,7 +95,7 @@ void DetourNavigationMesh::set_collision_mask(int cm)
 	}
 }
 
-void DetourNavigationMesh::_on_renamed(Variant v)
+void DetourNavigationMesh::_on_renamed()
 {
 	char *previous_path = get_cache_file_path();
 	navmesh_name = get_name().utf8().get_data();
@@ -107,7 +107,7 @@ char *DetourNavigationMesh::get_cache_file_path()
 {
 	std::string postfix = ".bin";
 	std::string prefix = ".navcache/";
-	std::string main = get_name().utf8().get_data();
+	std::string main = navmesh_name;
 	return strdup((prefix + main + postfix).c_str());
 }
 
@@ -255,7 +255,7 @@ bool DetourNavigationMesh::load_mesh()
 	dtNavMesh *dt_navmesh = FileManager::loadNavigationMesh(get_cache_file_path());
 	if (dt_navmesh == 0)
 	{
-		Godot::print("Failed to load dtnavmesh");
+		Godot::print("No baked navmesh found for " + get_name());
 		return false;
 	}
 	else
@@ -269,7 +269,7 @@ bool DetourNavigationMesh::load_mesh()
 		}
 		if (get_tree()->is_debugging_navigation_hint() || Engine::get_singleton()->is_editor_hint())
 		{
-			build_debug_mesh();
+			build_debug_mesh(false);
 		}
 		return true;
 	}
@@ -287,12 +287,12 @@ void DetourNavigationMesh::save_mesh()
 /**
  * Builds a debug mesh and adds it as a child to navigation mesh object
  */
-void DetourNavigationMesh::build_debug_mesh()
+void DetourNavigationMesh::build_debug_mesh(bool force_build)
 {
 	if (get_tree()->is_debugging_navigation_hint() || Engine::get_singleton()->is_editor_hint())
 	{
 		Ref<Material> material = nullptr;
-		if (debug_mesh_instance != nullptr)
+		if (force_build && debug_mesh_instance != nullptr)
 		{
 			material = debug_mesh_instance->get_material_override();
 			debug_mesh_instance->set_mesh(NULL);
@@ -300,16 +300,25 @@ void DetourNavigationMesh::build_debug_mesh()
 			{
 				debug_mesh.unref();
 			}
+			debug_mesh = get_debug_mesh();
 		}
-		else
+		else if(force_build || !debug_mesh.is_valid() || debug_mesh == nullptr)
 		{
 			clear_debug_mesh();
 			material = get_debug_navigation_material();
 			debug_mesh_instance = MeshInstance::_new();
+
+			add_child(debug_mesh_instance);
+			debug_mesh = get_debug_mesh();
+		} else if (debug_mesh_instance == nullptr) {
+			material = get_debug_navigation_material();
+			debug_mesh_instance = MeshInstance::_new();
 			add_child(debug_mesh_instance);
 		}
-		debug_mesh_instance->set_mesh(get_debug_mesh());
+
+		debug_mesh_instance->set_mesh(debug_mesh);
 		debug_mesh_instance->set_material_override(material);
+		debug_navmesh_dirty = false;
 	}
 }
 

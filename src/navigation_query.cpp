@@ -70,6 +70,9 @@ Dictionary DetourNavigationQuery::_find_path(
 {
 	/* Internal function for finding path */
 	Dictionary ret;
+	ret["points"] = Array();
+	ret["flags"] = Array();
+
 	if (!navmesh_query)
 	{
 		return ret;

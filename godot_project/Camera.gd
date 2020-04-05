@@ -5,9 +5,9 @@ var staticObst = preload("res://StaticBoxPillar.tscn")
 var dynamicObst = preload("res://DynamicRoundPillar.tscn")
 
 func _process(_delta):
-	if Input.is_action_just_pressed("add_dynamic"):
-		manage_click(staticObst)
 	if Input.is_action_just_pressed("add_static"):
+		manage_click(staticObst)
+	if Input.is_action_just_pressed("add_dynamic"):
 		manage_click(dynamicObst)
 	
 

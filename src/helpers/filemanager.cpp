@@ -218,10 +218,10 @@ void FileManager::saveNavigationMeshCached(const char* path, const dtTileCache* 
 	fclose(fp);
 }
 
-void FileManager::loadNavigationMeshCached(const char* path, dtTileCache* m_tileCache, dtNavMesh* m_navMesh, dtTileCacheMeshProcess *m_tmproc)
+bool FileManager::loadNavigationMeshCached(const char* path, dtTileCache* m_tileCache, dtNavMesh* m_navMesh, dtTileCacheMeshProcess *m_tmproc)
 {
 	FILE* fp = fopen(path, "rb");
-	if (!fp) return;
+	if (!fp) return false;;
 
 	// Read header.
 	TileCacheSetHeader header;
@@ -230,36 +230,36 @@ void FileManager::loadNavigationMeshCached(const char* path, dtTileCache* m_tile
 	{
 		// Error or early EOF
 		fclose(fp);
-		return;
+		return false;
 	}
 
 	if (header.magic != TILECACHESET_MAGIC)
 	{
 		fclose(fp);
-		return;
+		return false;
 	}
 	if (header.version != TILECACHESET_VERSION)
 	{
 		fclose(fp);
-		return;
+		return false;
 	}
 
 	if (!m_navMesh)
 	{
 		fclose(fp);
-		return;
+		return false;
 	}
 	dtStatus status = m_navMesh->init(&header.meshParams);
 	if (dtStatusFailed(status))
 	{
 		fclose(fp);
-		return;
+		return false;
 	}
 
 	if (!m_tileCache)
 	{
 		fclose(fp);
-		return;
+		return false;
 	}
 	LinearAllocator *m_talloc = new LinearAllocator(32000);
 	FastLZCompressor *m_tcomp = new FastLZCompressor;
@@ -267,7 +267,7 @@ void FileManager::loadNavigationMeshCached(const char* path, dtTileCache* m_tile
 	if (dtStatusFailed(status))
 	{
 		fclose(fp);
-		return;
+		return false;
 	}
 
 	// Read tiles.
@@ -279,7 +279,7 @@ void FileManager::loadNavigationMeshCached(const char* path, dtTileCache* m_tile
 		{
 			// Error or early EOF
 			fclose(fp);
-			return;
+			return false;
 		}
 		if (!tileHeader.tileRef || !tileHeader.dataSize)
 			break;
@@ -293,7 +293,7 @@ void FileManager::loadNavigationMeshCached(const char* path, dtTileCache* m_tile
 			// Error or early EOF
 			dtFree(data);
 			fclose(fp);
-			return;
+			return false;
 		}
 
 		dtCompressedTileRef tile = 0;
@@ -309,4 +309,5 @@ void FileManager::loadNavigationMeshCached(const char* path, dtTileCache* m_tile
 	}
 
 	fclose(fp);
+	return true;
 }

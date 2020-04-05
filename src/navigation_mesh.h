@@ -43,7 +43,7 @@ public:
 	SETGET(input_aabbs_storage, Array);
 	SETGET(collision_ids_storage, Array);
 	SETGET(uuid, String);
-
+	bool debug_navmesh_dirty = true;
 	DetourNavigationMesh();
 	~DetourNavigationMesh();
 
@@ -54,7 +54,7 @@ public:
 
 	void build_navmesh();
 
-	void _on_renamed(Variant v);
+	void _on_renamed();
 	char *get_cache_file_path();
 
 	bool alloc();
@@ -66,8 +66,9 @@ public:
 
 	void store_inputs();
 	bool load_inputs();
+	
 
-	void build_debug_mesh();
+	void build_debug_mesh(bool force_build);
 	Dictionary find_path(Variant from, Variant to);
 	void _notification(int p_what);
 	DetourNavigationMeshGenerator *init_generator(Transform global_transform);
