@@ -17,16 +17,15 @@ This addon does not implement all the features of Detour/Recast library (yet), b
 
 Currently it's suited for fixed size levels. It was tested on a RTS game, but should be more than capable of being used by any genre as long as the size of the level does not change.
 
-Usage
-===============
 
 ## Installation
 Currently supports Linux and Windows platforms (If anyone is willing to build for OSx please contact me).
 
-[Download GodotNavigationLite](enterlinkhere)
+[Download GodotNavigationLite](https://github.com/MilosLukic/Godot-Navigation-Lite/archive/master.zip)
 
-Installation is the same as any other Godot addon.
-Download the addon and copy it to addons folder. Go to project settings, click on Plugins tab and change the status of GodotNavigationLite to active.
+- Create ```addons``` folder in the root of your Godot project (if you don't have it yet)
+- Download the addon, and copy the folder ```godot_project/addons/godot-navigation-lite``` from the zip to your ```addons``` folder, so you have ```addons/godot-navigation-lite``` in your project.
+-  Go to project settings, click on Plugins tab and change the status of GodotNavigationLite to active.
 
 ## Setup
 
@@ -59,8 +58,7 @@ If you want to see the navigation mesh in game, just enable the Godot's "debug n
 * You can delete the cached files by clearing the navigation mesh in menu, or by manually deleting those files.
 * Dynamic objects will work when you start the scene, in editor they're asleep.
 
-Documentation
-===============
+## Documentation
 
 ![Image not found][ss5]
 
@@ -109,7 +107,7 @@ cd godot-cpp
 scons platform=<platform> generate_bindings=yes use_custom_api_file=yes custom_api_file=../api.json bits=64 target="debug"
 
 cd ..
-scons platform=<platform> # Add target="release" oncer you want to release it
+scons platform=<platform> # Add target="release" once you want to release it
 ```
 Build also for release once you're ready by replacing the target="debug" for "release". I had to remove -g from scons file in godot-cpp (when using linux) to reduce the .so file size in linux for the release version (from 78MB to cca 4.5MB).
 
@@ -125,14 +123,10 @@ Special thanks to [@slapin](https://github.com/slapin), I based the navigation m
 And also thanks to [@sheepandshepherd](https://github.com/sheepandshepherd) for helping with numerous Godot and C++ issues and bugs.
 
 
-[ss1]: https://github.com/MilosLukic/Godot-Navigation-Lite/blob/master/documentation_assets/ss1.png ""
+[ss1]: https://github.com/MilosLukic/Godot-Navigation-Lite/blob/master/documentation_assets/ss1.png "Logo Title Text 2"
 
-[ss3]: https://github.com/MilosLukic/Godot-Navigation-Lite/blob/master/documentation_assets/ss3.png ""
+[ss3]: https://github.com/MilosLukic/Godot-Navigation-Lite/blob/master/documentation_assets/ss3.png "Logo Title Text 2"
 
-[ss4]: https://github.com/MilosLukic/Godot-Navigation-Lite/blob/master/documentation_assets/ss4.png ""
+[ss4]: https://github.com/MilosLukic/Godot-Navigation-Lite/blob/master/documentation_assets/ss4.png "Logo Title Text 2"
 
-[ss5]: https://github.com/MilosLukic/Godot-Navigation-Lite/blob/master/documentation_assets/ss5.png ""
-
-[ss6]: https://github.com/MilosLukic/Godot-Navigation-Lite/blob/master/documentation_assets/ss6.png ""
-
-[main]: https://i.imgflip.com/3vcsox.gif ""
+[main]: https://imgflip.com/gif/3vcsox.gif
