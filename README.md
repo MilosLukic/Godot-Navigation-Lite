@@ -129,4 +129,4 @@ And also thanks to [@sheepandshepherd](https://github.com/sheepandshepherd) for 
 
 [ss4]: https://github.com/MilosLukic/Godot-Navigation-Lite/blob/master/documentation_assets/ss4.png "Logo Title Text 2"
 
-[main]: https://imgflip.com/gif/3vcsox.gif
+[main]: https://i.imgflip.com/3vcsox.gif
