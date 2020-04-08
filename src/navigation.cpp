@@ -45,6 +45,7 @@ DetourNavigation::~DetourNavigation()
 
 void DetourNavigation::_exit_tree()
 {
+	get_tree()->disconnect("node_renamed", this, "_on_node_renamed");
 }
 
 void DetourNavigation::_on_tree_exiting()

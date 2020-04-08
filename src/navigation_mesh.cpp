@@ -38,6 +38,7 @@ void DetourNavigationMesh::_register_methods()
 
 void DetourNavigationMesh::_init()
 {
+	navmesh_name = get_name().utf8().get_data();
 	if (OS::get_singleton()->is_stdout_verbose())
 	{
 		Godot::print("Navigation mesh init function called.");
@@ -54,7 +55,6 @@ void DetourNavigationMesh::_ready()
 	{
 		Godot::print("Navigation mesh ready function called.");
 	}
-	navmesh_name = get_name().utf8().get_data();
 }
 
 DetourNavigationMesh::DetourNavigationMesh()
@@ -252,10 +252,11 @@ Ref<ArrayMesh> DetourNavigationMesh::get_debug_mesh()
  */
 bool DetourNavigationMesh::load_mesh()
 {
+	navmesh_name = get_name().utf8().get_data();
 	dtNavMesh *dt_navmesh = FileManager::loadNavigationMesh(get_cache_file_path());
 	if (dt_navmesh == 0)
 	{
-		Godot::print("No baked navmesh found for " + get_name());
+		ERR_PRINT("No baked navmesh found for " + get_name());
 		return false;
 	}
 	else
@@ -280,6 +281,7 @@ bool DetourNavigationMesh::load_mesh()
  */
 void DetourNavigationMesh::save_mesh()
 {
+	navmesh_name = get_name().utf8().get_data();
 	FileManager::createDirectory(".navcache");
 	FileManager::saveNavigationMesh(get_cache_file_path(), get_detour_navmesh());
 }

@@ -95,6 +95,7 @@ void DetourNavigationMeshCached::_register_methods()
 
 void DetourNavigationMeshCached::_init()
 {
+	navmesh_name = get_name().utf8().get_data();
 }
 
 void DetourNavigationMeshCached::_exit_tree()
@@ -103,7 +104,6 @@ void DetourNavigationMeshCached::_exit_tree()
 
 void DetourNavigationMeshCached::_ready()
 {
-	navmesh_name = get_name().utf8().get_data();
 }
 
 void DetourNavigationMeshCached::set_dynamic_collision_mask(int cm)
@@ -175,6 +175,7 @@ void DetourNavigationMeshCached::release_navmesh()
  */
 bool DetourNavigationMeshCached::load_mesh()
 {
+	navmesh_name = get_name().utf8().get_data();
 	detour_navmesh = dtAllocNavMesh();
 	tile_cache = dtAllocTileCache();
 	mesh_process = new NavMeshProcess();
@@ -187,7 +188,7 @@ bool DetourNavigationMeshCached::load_mesh()
 	bool success = FileManager::loadNavigationMeshCached(get_cache_file_path(), tile_cache, detour_navmesh, mesh_process);
 	if (!success)
 	{
-		Godot::print("No baked navmesh found for " + get_name());
+		ERR_PRINT("No baked navmesh found for " + get_name());
 		return false;
 	}
 	else
@@ -207,6 +208,7 @@ bool DetourNavigationMeshCached::load_mesh()
 
 void DetourNavigationMeshCached::save_mesh()
 {
+	navmesh_name = get_name().utf8().get_data();
 	FileManager::createDirectory(".navcache");
 	FileManager::saveNavigationMeshCached(get_cache_file_path(), tile_cache, get_detour_navmesh());
 }
