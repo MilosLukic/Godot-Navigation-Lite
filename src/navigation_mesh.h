@@ -8,6 +8,7 @@
 #include <Godot.hpp>
 #include <Spatial.hpp>
 #include <Geometry.hpp>
+#include <WeakRef.hpp>
 #include <Node.hpp>
 #include <Ref.hpp>
 #include <SpatialMaterial.hpp>
@@ -25,13 +26,16 @@
 #include "DetourTileCache.h"
 #include "navigation_query.h"
 #include "Recast.h"
-#include "filemanager.h"
+#include "serializer.h"
 
 namespace godot
 {
 class DetourNavigationMesh : public Spatial
 {
 	GODOT_CLASS(DetourNavigationMesh, Spatial);
+
+private:
+	bool _is_being_deleted = false;
 
 protected:
 	int collision_mask;
@@ -42,8 +46,10 @@ public:
 	SETGET(input_transforms_storage, Array);
 	SETGET(input_aabbs_storage, Array);
 	SETGET(collision_ids_storage, Array);
+	SETGET(serialized_navmesh_data, PoolByteArray);
 	SETGET(uuid, String);
 	bool debug_navmesh_dirty = true;
+
 	DetourNavigationMesh();
 	~DetourNavigationMesh();
 
@@ -54,9 +60,6 @@ public:
 
 	void build_navmesh();
 
-	void _on_renamed();
-	char *get_cache_file_path();
-
 	bool alloc();
 	void release_navmesh();
 	bool unsigned_int();
@@ -66,7 +69,6 @@ public:
 
 	void store_inputs();
 	bool load_inputs();
-	
 
 	void build_debug_mesh(bool force_build);
 	Dictionary find_path(Variant from, Variant to);

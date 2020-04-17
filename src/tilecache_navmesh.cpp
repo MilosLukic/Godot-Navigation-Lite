@@ -1,9 +1,6 @@
 #include "tilecache_navmesh.h"
 #include "navigation.h"
 
-static const int DEFAULT_MAX_OBSTACLES = 1024;
-static const int DEFAULT_MAX_LAYERS = 16;
-
 using namespace godot;
 
 void NavMeshProcess::process(struct dtNavMeshCreateParams *params,
@@ -20,9 +17,6 @@ void NavMeshProcess::process(struct dtNavMeshCreateParams *params,
 
 DetourNavigationMeshCached::DetourNavigationMeshCached()
 {
-	max_obstacles = DEFAULT_MAX_OBSTACLES;
-	max_layers = DEFAULT_MAX_LAYERS;
-	dynamic_collision_mask = 2;
 }
 
 DetourNavigationMeshCached::~DetourNavigationMeshCached()
@@ -57,6 +51,7 @@ DetourNavigationMeshCached::~DetourNavigationMeshCached()
 
 void DetourNavigationMeshCached::_register_methods()
 {
+	Godot::print("start");
 	register_method("_ready", &DetourNavigationMeshCached::_ready);
 	register_method("_notification", &DetourNavigationMeshCached::_notification);
 	register_method("_exit_tree", &DetourNavigationMeshCached::_exit_tree);
@@ -73,16 +68,17 @@ void DetourNavigationMeshCached::_register_methods()
 	register_property<DetourNavigationMeshCached, int>("dynamic_objects_collision_mask", &DetourNavigationMeshCached::set_dynamic_collision_mask, &DetourNavigationMeshCached::get_dynamic_collision_mask, 1,
 													   GODOT_METHOD_RPC_MODE_DISABLED, GODOT_PROPERTY_USAGE_DEFAULT, GODOT_PROPERTY_HINT_LAYERS_3D_PHYSICS);
 
-	register_property<DetourNavigationMeshCached, Array>("input_meshes_storage", &DetourNavigationMesh::set_input_meshes_storage, &DetourNavigationMesh::get_input_meshes_storage, Array(),
+	register_property<DetourNavigationMeshCached, Array>("input_meshes_storage", &DetourNavigationMeshCached::set_input_meshes_storage, &DetourNavigationMeshCached::get_input_meshes_storage, Array(),
 														 GODOT_METHOD_RPC_MODE_DISABLED, GODOT_PROPERTY_USAGE_STORAGE, GODOT_PROPERTY_HINT_NONE);
-	register_property<DetourNavigationMeshCached, Array>("input_transforms_storage", &DetourNavigationMesh::set_input_transforms_storage, &DetourNavigationMesh::get_input_transforms_storage, Array(),
+	register_property<DetourNavigationMeshCached, Array>("input_transforms_storage", &DetourNavigationMeshCached::set_input_transforms_storage, &DetourNavigationMeshCached::get_input_transforms_storage, Array(),
 														 GODOT_METHOD_RPC_MODE_DISABLED, GODOT_PROPERTY_USAGE_STORAGE, GODOT_PROPERTY_HINT_NONE);
-	register_property<DetourNavigationMeshCached, Array>("input_aabbs_storage", &DetourNavigationMesh::set_input_aabbs_storage, &DetourNavigationMesh::get_input_aabbs_storage, Array(),
+	register_property<DetourNavigationMeshCached, Array>("input_aabbs_storage", &DetourNavigationMeshCached::set_input_aabbs_storage, &DetourNavigationMeshCached::get_input_aabbs_storage, Array(),
 														 GODOT_METHOD_RPC_MODE_DISABLED, GODOT_PROPERTY_USAGE_STORAGE, GODOT_PROPERTY_HINT_NONE);
-	register_property<DetourNavigationMeshCached, Array>("collision_ids_storage", &DetourNavigationMesh::set_collision_ids_storage, &DetourNavigationMesh::get_collision_ids_storage, Array(),
+	register_property<DetourNavigationMeshCached, Array>("collision_ids_storage", &DetourNavigationMeshCached::set_collision_ids_storage, &DetourNavigationMeshCached::get_collision_ids_storage, Array(),
 														 GODOT_METHOD_RPC_MODE_DISABLED, GODOT_PROPERTY_USAGE_STORAGE, GODOT_PROPERTY_HINT_NONE);
-	register_property<DetourNavigationMeshCached, String>("uuid", &DetourNavigationMeshCached::set_uuid, &DetourNavigationMeshCached::get_uuid, "",
-														  GODOT_METHOD_RPC_MODE_DISABLED, GODOT_PROPERTY_USAGE_STORAGE, GODOT_PROPERTY_HINT_NONE);
+
+	register_property<DetourNavigationMeshCached, PoolByteArray>("serialized_navmesh_data", &DetourNavigationMeshCached::set_serialized_navmesh_data, &DetourNavigationMeshCached::get_serialized_navmesh_data, PoolByteArray(),
+																 GODOT_METHOD_RPC_MODE_DISABLED, GODOT_PROPERTY_USAGE_STORAGE, GODOT_PROPERTY_HINT_NONE);
 
 	register_property<DetourNavigationMeshCached, Color>(
 		"debug_mesh_color", &DetourNavigationMeshCached::set_debug_mesh_color, &DetourNavigationMeshCached::get_debug_mesh_color, Color(0.1f, 1.0f, 0.7f, 0.4f));
@@ -91,11 +87,13 @@ void DetourNavigationMeshCached::_register_methods()
 																  GODOT_METHOD_RPC_MODE_DISABLED, GODOT_PROPERTY_USAGE_STORAGE, GODOT_PROPERTY_HINT_NONE);
 	register_property<DetourNavigationMeshCached, Ref<CachedNavmeshParameters>>("parameters", &DetourNavigationMeshCached::set_navmesh_parameters, &DetourNavigationMeshCached::get_navmesh_parameters, Ref<CachedNavmeshParameters>(),
 																				GODOT_METHOD_RPC_MODE_DISABLED, GODOT_PROPERTY_USAGE_DEFAULT, GODOT_PROPERTY_HINT_RESOURCE_TYPE, "Resource");
+	Godot::print("stop");
 }
 
 void DetourNavigationMeshCached::_init()
 {
-	navmesh_name = get_name().utf8().get_data();
+	DetourNavigationMesh::_init();
+	dynamic_collision_mask = 2;
 }
 
 void DetourNavigationMeshCached::_exit_tree()
@@ -175,7 +173,6 @@ void DetourNavigationMeshCached::release_navmesh()
  */
 bool DetourNavigationMeshCached::load_mesh()
 {
-	navmesh_name = get_name().utf8().get_data();
 	detour_navmesh = dtAllocNavMesh();
 	tile_cache = dtAllocTileCache();
 	mesh_process = new NavMeshProcess();
@@ -184,8 +181,8 @@ bool DetourNavigationMeshCached::load_mesh()
 	generator->detour_navmesh = detour_navmesh;
 	generator->set_mesh_process(mesh_process);
 	generator->set_tile_cache(tile_cache);
+	bool success = Serializer::deserializeNavigationMeshCached(serialized_navmesh_data, tile_cache, detour_navmesh, mesh_process);
 
-	bool success = FileManager::loadNavigationMeshCached(get_cache_file_path(), tile_cache, detour_navmesh, mesh_process);
 	if (!success)
 	{
 		ERR_PRINT("No baked navmesh found for " + get_name());
@@ -208,9 +205,7 @@ bool DetourNavigationMeshCached::load_mesh()
 
 void DetourNavigationMeshCached::save_mesh()
 {
-	navmesh_name = get_name().utf8().get_data();
-	FileManager::createDirectory(".navcache");
-	FileManager::saveNavigationMeshCached(get_cache_file_path(), tile_cache, get_detour_navmesh());
+	serialized_navmesh_data = Serializer::serializeNavigationMeshCached(tile_cache, get_detour_navmesh());
 }
 
 unsigned int DetourNavigationMeshCached::add_box_obstacle(

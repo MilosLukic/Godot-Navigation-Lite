@@ -13,7 +13,7 @@ DetourNavigationMeshGenerator::~DetourNavigationMeshGenerator()
 	}
 	if (input_meshes != nullptr)
 	{
-		for (Ref<ArrayMesh> m : *input_meshes)
+		for (Ref<Mesh> m : *input_meshes)
 		{
 			if (m.is_valid())
 			{
@@ -23,15 +23,18 @@ DetourNavigationMeshGenerator::~DetourNavigationMeshGenerator()
 		delete input_meshes;
 		input_meshes = nullptr;
 	}
-	if (input_transforms != nullptr){
+	if (input_transforms != nullptr)
+	{
 		delete input_transforms;
 		input_transforms = nullptr;
 	}
-	if (input_aabbs != nullptr){
+	if (input_aabbs != nullptr)
+	{
 		delete input_aabbs;
 		input_aabbs = nullptr;
 	}
-	if (collision_ids != nullptr){
+	if (collision_ids != nullptr)
+	{
 		delete collision_ids;
 		collision_ids = nullptr;
 	}
@@ -179,7 +182,6 @@ bool DetourNavigationMeshGenerator::init_tile_data(
 	expbox.size.z += 2.0 * config.borderSize * config.cs;
 
 	Transform base = global_transform.inverse();
-
 	for (int i = 0; i < input_meshes->size(); i++)
 	{
 		if (!input_meshes->at(i).is_valid())
@@ -303,7 +305,6 @@ bool DetourNavigationMeshGenerator::build_tile(int x, int z)
 
 	rcConfig config;
 	init_rc_config(config, bmin, bmax);
-
 	std::vector<float> points;
 	std::vector<int> indices;
 	if (init_tile_data(config, bmin, bmax, points, indices))
@@ -547,31 +548,58 @@ void DetourNavigationMeshGenerator::add_meshdata(
 	int mesh_index, std::vector<float> &p_verticies, std::vector<int> &p_indices)
 {
 	Transform p_xform = input_transforms->at(mesh_index);
-	Ref<ArrayMesh> p_mesh = input_meshes->at(mesh_index);
+	Ref<ArrayMesh> p_mesh;
+	Ref<Mesh> prim_mesh;
+	int surface_num = 0;
+
+	if (input_meshes->at(mesh_index)->get_class() == "ArrayMesh")
+	{
+		p_mesh = input_meshes->at(mesh_index);
+		surface_num = p_mesh->get_surface_count();
+	}
+	else
+	{
+		prim_mesh = input_meshes->at(mesh_index);
+		surface_num = prim_mesh->get_surface_count();
+	}
 	int current_vertex_count = 0;
 
-	for (int i = 0; i < p_mesh->get_surface_count(); i++)
+	for (int i = 0; i < surface_num; i++)
 	{
 		current_vertex_count = p_verticies.size() / 3;
 
-		if (p_mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES)
-			continue;
-
-		int index_count = 0;
-		if (p_mesh->surface_get_format(i) & Mesh::ARRAY_FORMAT_INDEX)
+		int face_count = 0;
+		if (p_mesh.is_valid())
 		{
-			index_count = p_mesh->surface_get_array_index_len(i);
+			int index_count = 0;
+
+			face_count = index_count / 3;
+			if (p_mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES)
+				continue;
+
+			if (p_mesh->surface_get_format(i) & Mesh::ARRAY_FORMAT_INDEX)
+			{
+				index_count = p_mesh->surface_get_array_index_len(i);
+			}
+			else
+			{
+				index_count = p_mesh->surface_get_array_len(i);
+			}
+			ERR_CONTINUE((index_count == 0 || (index_count % 3) != 0));
+		}
+
+		PoolVector3Array mesh_vertices;
+		if (p_mesh.is_valid())
+		{
+			mesh_vertices = p_mesh->surface_get_arrays(i)[Mesh::ARRAY_VERTEX];
 		}
 		else
 		{
-			index_count = p_mesh->surface_get_array_len(i);
+			mesh_vertices = prim_mesh->surface_get_arrays(i)[Mesh::ARRAY_VERTEX];
+			face_count = mesh_vertices.size() / 3;
 		}
 
-		ERR_CONTINUE((index_count == 0 || (index_count % 3) != 0));
-
-		int face_count = index_count / 3;
-		PoolVector3Array mesh_vertices = p_mesh->surface_get_arrays(i)[Mesh::ARRAY_VERTEX];
-		if (p_mesh->surface_get_format(i) & Mesh::ARRAY_FORMAT_INDEX)
+		if (p_mesh.is_valid() && p_mesh->surface_get_format(i) & Mesh::ARRAY_FORMAT_INDEX)
 		{
 			PoolIntArray mesh_indices = p_mesh->surface_get_arrays(i)[Mesh::ARRAY_INDEX];
 			PoolIntArray::Read ir = mesh_indices.read();

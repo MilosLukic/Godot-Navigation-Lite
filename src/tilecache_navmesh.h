@@ -8,7 +8,8 @@ namespace godot
 {
 class DetourNavigationMeshCached : public DetourNavigationMesh
 {
-	GODOT_CLASS(DetourNavigationMeshCached, Spatial);
+
+	GODOT_CLASS(DetourNavigationMeshCached, DetourNavigationMesh);
 
 protected:
 	int dynamic_collision_mask;
@@ -79,9 +80,6 @@ public:
 	{
 		return tile_cache;
 	}
-
-	int max_obstacles = 0;
-	int max_layers = 0;
 
 	Ref<CachedNavmeshParameters> navmesh_parameters = nullptr;
 

@@ -58,9 +58,9 @@ private:
 	SETGET(auto_object_management, bool)
 
 	void collect_geometry(Array geometries,
-								std::vector<Ref<Mesh>> *meshes, std::vector<Transform> *transforms,
-								std::vector<AABB> *aabbs, std::vector<int64_t> *collision_ids,
-								DetourNavigationMesh *navmesh);
+						  std::vector<Ref<Mesh>> *meshes, std::vector<Transform> *transforms,
+						  std::vector<AABB> *aabbs, std::vector<int64_t> *collision_ids,
+						  DetourNavigationMesh *navmesh);
 
 	void convert_collision_shape(CollisionShape *collision_shape,
 								 std::vector<Ref<Mesh>> *meshes, std::vector<Transform> *transforms,

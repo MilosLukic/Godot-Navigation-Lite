@@ -27,22 +27,26 @@ void DetourNavigationMesh::_register_methods()
 	register_property<DetourNavigationMesh, String>("uuid", &DetourNavigationMesh::set_uuid, &DetourNavigationMesh::get_uuid, "",
 													GODOT_METHOD_RPC_MODE_DISABLED, GODOT_PROPERTY_USAGE_STORAGE, GODOT_PROPERTY_HINT_NONE);
 
+	register_property<DetourNavigationMesh, PoolByteArray>("serialized_navmesh_data", &DetourNavigationMesh::set_serialized_navmesh_data, &DetourNavigationMesh::get_serialized_navmesh_data, PoolByteArray(),
+														   GODOT_METHOD_RPC_MODE_DISABLED, GODOT_PROPERTY_USAGE_STORAGE, GODOT_PROPERTY_HINT_NONE);
+
 	register_property<DetourNavigationMesh, Color>(
 		"debug_mesh_color", &DetourNavigationMesh::set_debug_mesh_color, &DetourNavigationMesh::get_debug_mesh_color, Color(0.1f, 1.0f, 0.7f, 0.4f));
 
 	register_property<DetourNavigationMesh, Ref<NavmeshParameters>>("parameters", &DetourNavigationMesh::navmesh_parameters, Ref<NavmeshParameters>(),
 																	GODOT_METHOD_RPC_MODE_DISABLED, GODOT_PROPERTY_USAGE_DEFAULT, GODOT_PROPERTY_HINT_RESOURCE_TYPE, "Resource");
 	register_property<DetourNavigationMesh, Ref<ArrayMesh>>("debug_mesh", &DetourNavigationMesh::debug_mesh, nullptr,
-	GODOT_METHOD_RPC_MODE_DISABLED, GODOT_PROPERTY_USAGE_STORAGE, GODOT_PROPERTY_HINT_NONE);
+															GODOT_METHOD_RPC_MODE_DISABLED, GODOT_PROPERTY_USAGE_STORAGE, GODOT_PROPERTY_HINT_NONE);
 }
 
 void DetourNavigationMesh::_init()
 {
-	navmesh_name = get_name().utf8().get_data();
 	if (OS::get_singleton()->is_stdout_verbose())
 	{
 		Godot::print("Navigation mesh init function called.");
 	}
+	collision_mask = 1;
+	debug_mesh_color = Color(0.1f, 1.0f, 0.7f, 0.4f);
 }
 
 void DetourNavigationMesh::_exit_tree()
@@ -59,16 +63,11 @@ void DetourNavigationMesh::_ready()
 
 DetourNavigationMesh::DetourNavigationMesh()
 {
-	if (OS::get_singleton()->is_stdout_verbose())
-	{
-		Godot::print("Navigation mesh constructor function called.");
-	}
-	collision_mask = 1;
-	debug_mesh_color = Color(0.1f, 1.0f, 0.7f, 0.4f);
 }
 
 DetourNavigationMesh::~DetourNavigationMesh()
 {
+	_is_being_deleted = true;
 	release_navmesh();
 
 	if (navmesh_parameters.is_valid())
@@ -93,22 +92,6 @@ void DetourNavigationMesh::set_collision_mask(int cm)
 	{
 		navigation->recalculate_masks();
 	}
-}
-
-void DetourNavigationMesh::_on_renamed()
-{
-	char *previous_path = get_cache_file_path();
-	navmesh_name = get_name().utf8().get_data();
-	char *current_path = get_cache_file_path();
-	FileManager::moveFile(previous_path, current_path);
-}
-
-char *DetourNavigationMesh::get_cache_file_path()
-{
-	std::string postfix = ".bin";
-	std::string prefix = ".navcache/";
-	std::string main = navmesh_name;
-	return strdup((prefix + main + postfix).c_str());
 }
 
 void DetourNavigationMesh::release_navmesh()
@@ -137,9 +120,14 @@ void DetourNavigationMesh::clear_debug_mesh()
 	{
 		debug_mesh.unref();
 	}
+
 	if (debug_mesh_instance != nullptr)
 	{
-		debug_mesh_instance->queue_free();
+
+		if (!_is_being_deleted)
+		{
+			debug_mesh_instance->queue_free();
+		}
 		debug_mesh_instance = nullptr;
 	}
 }
@@ -169,8 +157,7 @@ void DetourNavigationMesh::clear_navmesh()
 	input_transforms_storage.clear();
 	input_meshes_storage.clear();
 	collision_ids_storage.clear();
-	FileManager::deleteFile(get_cache_file_path());
-
+	serialized_navmesh_data.resize(0);
 	release_navmesh();
 }
 
@@ -252,8 +239,7 @@ Ref<ArrayMesh> DetourNavigationMesh::get_debug_mesh()
  */
 bool DetourNavigationMesh::load_mesh()
 {
-	navmesh_name = get_name().utf8().get_data();
-	dtNavMesh *dt_navmesh = FileManager::loadNavigationMesh(get_cache_file_path());
+	dtNavMesh *dt_navmesh = Serializer::deserializeNavigationMesh(serialized_navmesh_data);
 	if (dt_navmesh == 0)
 	{
 		ERR_PRINT("No baked navmesh found for " + get_name());
@@ -281,9 +267,7 @@ bool DetourNavigationMesh::load_mesh()
  */
 void DetourNavigationMesh::save_mesh()
 {
-	navmesh_name = get_name().utf8().get_data();
-	FileManager::createDirectory(".navcache");
-	FileManager::saveNavigationMesh(get_cache_file_path(), get_detour_navmesh());
+	serialized_navmesh_data = Serializer::serializeNavigationMesh(get_detour_navmesh());
 }
 
 /**
@@ -304,7 +288,7 @@ void DetourNavigationMesh::build_debug_mesh(bool force_build)
 			}
 			debug_mesh = get_debug_mesh();
 		}
-		else if(force_build || !debug_mesh.is_valid() || debug_mesh == nullptr)
+		else if (force_build || !debug_mesh.is_valid() || debug_mesh == nullptr)
 		{
 			clear_debug_mesh();
 			material = get_debug_navigation_material();
@@ -312,12 +296,14 @@ void DetourNavigationMesh::build_debug_mesh(bool force_build)
 
 			add_child(debug_mesh_instance);
 			debug_mesh = get_debug_mesh();
-		} else if (debug_mesh_instance == nullptr) {
+		}
+		else if (debug_mesh_instance == nullptr)
+		{
 			material = get_debug_navigation_material();
 			debug_mesh_instance = MeshInstance::_new();
 			add_child(debug_mesh_instance);
 		}
-
+		debug_mesh_instance->set_name("DebugMeshInstance");
 		debug_mesh_instance->set_mesh(debug_mesh);
 		debug_mesh_instance->set_material_override(material);
 		debug_navmesh_dirty = false;
