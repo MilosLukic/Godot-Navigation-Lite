@@ -26,11 +26,14 @@ public:
 	dtTileCacheAlloc *tile_cache_alloc = nullptr;
 	dtTileCacheCompressor *tile_cache_compressor = nullptr;
 	NavMeshProcess *mesh_process = nullptr;
+	bool tilecache_up_to_date = true;
 
 	DetourNavigationMeshCached();
 	~DetourNavigationMeshCached();
 
 	Dictionary dynamic_obstacles;
+	std::vector<CollisionShape *> collision_shapes_to_refresh;
+
 	void _init();
 	void _exit_tree();
 	void _ready();
@@ -90,6 +93,10 @@ public:
 	std::vector<unsigned char> offmesh_areas;
 	std::vector<unsigned char> offmesh_dir;
 
+	void update_tilecache();
+	void recalculate_tiles();
+	void refresh_obstacles();
+	void refresh_obstacle(CollisionShape *collision_shape);
 	unsigned int add_cylinder_obstacle(Vector3 pos, float radius, float height);
 	void remove_obstacle(int id);
 };

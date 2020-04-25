@@ -52,7 +52,7 @@ public:
 
 class CachedNavmeshParameters : public NavmeshParameters
 {
-	GODOT_CLASS(CachedNavmeshParameters, Resource);
+	GODOT_CLASS(CachedNavmeshParameters, NavmeshParameters);
 
 public:
 	CachedNavmeshParameters();

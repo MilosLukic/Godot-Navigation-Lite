@@ -40,7 +40,7 @@ public:
 
 	Ref<NavmeshParameters> navmesh_parameters;
 	Transform global_transform;
-	dtNavMesh *detour_navmesh;
+	dtNavMesh *detour_navmesh = nullptr;
 
 	int **dirty_tiles = nullptr;
 

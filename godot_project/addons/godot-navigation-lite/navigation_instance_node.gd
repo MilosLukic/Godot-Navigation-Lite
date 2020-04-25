@@ -21,7 +21,7 @@ var navmesh = null
 
 
 func _enter_tree():
-	# navmesh_parameters = preload("res://addons/godot-navigation-lite/bin/navmesh_parameters.gdns")
+	navmesh_parameters = preload("res://addons/godot-navigation-lite/bin/navmesh_parameters.gdns")
 	cached_navmesh_parameters = preload("res://addons/godot-navigation-lite/bin/cached_navmesh_parameters.gdns")
 	navigation_script = preload("res://addons/godot-navigation-lite/bin/detour_navigation.gdns")
 
@@ -31,7 +31,7 @@ func _enter_tree():
 		preload("res://addons/godot-navigation-lite/detour_navigation_bootstrap.gd"), 
 		preload("res://addons/godot-navigation-lite/icons/navigation_icon.svg")
 	)
-	# navmesh = preload("res://addons/godot-navigation-lite/bin/detour_navigation_mesh_cached.gdns")
+	navmesh = preload("res://addons/godot-navigation-lite/bin/detour_navigation_mesh_cached.gdns")
 
 	var editor_interface = get_editor_interface()
 	var base_control = editor_interface.get_base_control()
@@ -81,8 +81,8 @@ func _exit_tree():
 func _on_navigation_menu_id_pressed(id):
 	if id == CREATE_CACHED_NAVMESH:
 		currently_selected.create_cached_navmesh(cached_navmesh_parameters.new())
-	# elif id == CREATE_NAVMESH:
-	# 	currently_selected.create_navmesh(navmesh_parameters.new())
+	elif id == CREATE_NAVMESH:
+		currently_selected.create_navmesh(navmesh_parameters.new())
 
 func _on_navmesh_menu_id_pressed(id):
 	if id == BAKE_NAVMESH:

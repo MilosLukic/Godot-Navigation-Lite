@@ -49,13 +49,11 @@ When it's baked, you can start your scene and call find_path function on the nav
 If you want to see the navigation mesh in game, just enable the Godot's "debug navigation" option in the debug menu (note - navigation will run slower as it has to create debug mesh every time).
 
 ## Important notes
-* Keep the names of navigation meshes unique throughout the project to avoid cache file ambiguities.
+* Make sure no two physics bodies (that are used to generate navmesh) share the same location.
 * Addon nodes like DetourNavigation, DetourNavigationMesh and CachedDetourNavigationMesh have automatically gdnative scripts added. Do not change them or you will lose functionality. Add child nodes with extra logic instead.
 * Detour navigation always has to be direct parent to navigation mesh nodes and indirect parent to any of the geometries you want to use for building meshes. Navigation meshes do not have to be parents.
 * Do not remove navigation mesh parameters from navigation mesh nodes
 * When baking, you have to save the scene, otherwise you'll have to bake it again next time.
-* Baked resources stay in .navcache folder in the root of the project
-* You can delete the cached files by clearing the navigation mesh in menu, or by manually deleting those files.
 * Dynamic objects will work when you start the scene, in editor they're asleep.
 
 ## Documentation
@@ -82,10 +80,9 @@ Removes the collision shapes under the same conditions as add function.
 Returns a dictionary with two arrays, first is a vector of Vector3 values that are points from start to end, second is an Array of flags which is currently not usable. If there is no possible path it returns null. If end or start is out of bounds it will return the path to the nearest point on the navmesh.
 
 - `bake_navmesh()`   
-Creates navigation mesh and saves it to a file, so the next time it's loaded fast from the file.
+Creates navigation mesh and saves it with all helper meshes to a scene, so the next time it's loaded fast from the scene file.
 
 - `clear_navmesh()`   
-Clears the navmesh and deletes the cache files (from .navcache folder)
 
 
 ### Class `DetourNavigationMeshCached`

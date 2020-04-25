@@ -434,6 +434,11 @@ void DetourNavigationMeshGenerator::get_tile_bounding_box(
  */
 void DetourNavigationMeshGenerator::remove_collision_shape(int64_t collision_id)
 {
+	if (detour_navmesh == nullptr)
+	{
+		return;
+	}
+
 	int start = -1;
 	int end = -1;
 
@@ -469,6 +474,11 @@ void DetourNavigationMeshGenerator::remove_collision_shape(int64_t collision_id)
  */
 void DetourNavigationMeshGenerator::init_dirty_tiles()
 {
+	if (detour_navmesh == nullptr)
+	{
+		return;
+	}
+
 	dirty_tiles = new int *[get_num_tiles_x()];
 	for (int i = 0; i < get_num_tiles_x(); ++i)
 	{
@@ -488,6 +498,11 @@ void DetourNavigationMeshGenerator::init_dirty_tiles()
  */
 void DetourNavigationMeshGenerator::mark_dirty(int start_index, int end_index)
 {
+	if (detour_navmesh == nullptr)
+	{
+		return;
+	}
+
 	if (end_index == -1)
 	{
 		end_index = input_aabbs->size();
@@ -550,18 +565,15 @@ void DetourNavigationMeshGenerator::add_meshdata(
 	Transform p_xform = input_transforms->at(mesh_index);
 	Ref<ArrayMesh> p_mesh;
 	Ref<Mesh> prim_mesh;
+	prim_mesh = input_meshes->at(mesh_index);
 	int surface_num = 0;
 
+	surface_num = prim_mesh->get_surface_count();
 	if (input_meshes->at(mesh_index)->get_class() == "ArrayMesh")
 	{
 		p_mesh = input_meshes->at(mesh_index);
-		surface_num = p_mesh->get_surface_count();
 	}
-	else
-	{
-		prim_mesh = input_meshes->at(mesh_index);
-		surface_num = prim_mesh->get_surface_count();
-	}
+
 	int current_vertex_count = 0;
 
 	for (int i = 0; i < surface_num; i++)
@@ -572,8 +584,6 @@ void DetourNavigationMeshGenerator::add_meshdata(
 		if (p_mesh.is_valid())
 		{
 			int index_count = 0;
-
-			face_count = index_count / 3;
 			if (p_mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES)
 				continue;
 
@@ -585,19 +595,12 @@ void DetourNavigationMeshGenerator::add_meshdata(
 			{
 				index_count = p_mesh->surface_get_array_len(i);
 			}
+			face_count = index_count / 3;
 			ERR_CONTINUE((index_count == 0 || (index_count % 3) != 0));
 		}
 
 		PoolVector3Array mesh_vertices;
-		if (p_mesh.is_valid())
-		{
-			mesh_vertices = p_mesh->surface_get_arrays(i)[Mesh::ARRAY_VERTEX];
-		}
-		else
-		{
-			mesh_vertices = prim_mesh->surface_get_arrays(i)[Mesh::ARRAY_VERTEX];
-			face_count = mesh_vertices.size() / 3;
-		}
+		mesh_vertices = prim_mesh->surface_get_arrays(i)[Mesh::ARRAY_VERTEX];
 
 		if (p_mesh.is_valid() && p_mesh->surface_get_format(i) & Mesh::ARRAY_FORMAT_INDEX)
 		{
@@ -650,6 +653,7 @@ bool DetourNavigationMeshGenerator::init(dtNavMeshParams *params)
 	if (dtStatusFailed((detour_navmesh)->init(params)))
 	{
 		release_navmesh();
+		detour_navmesh = nullptr;
 		return false;
 	}
 	set_initialized(true);
@@ -659,7 +663,7 @@ bool DetourNavigationMeshGenerator::init(dtNavMeshParams *params)
 void DetourNavigationMeshGenerator::release_navmesh()
 {
 	dtFreeNavMesh((dtNavMesh *)detour_navmesh);
-	detour_navmesh = NULL;
+	detour_navmesh = nullptr;
 	num_tiles_x = 0;
 	num_tiles_z = 0;
 	bounding_box = AABB();

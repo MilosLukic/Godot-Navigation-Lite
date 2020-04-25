@@ -70,7 +70,6 @@ void NavmeshParameters::_init()
 	detail_sample_max_error = DEFAULT_DETAIL_SAMPLE_MAX_ERROR;
 	padding = Vector3(1.f, 1.f, 1.f);
 	max_layers = DEFAULT_MAX_LAYERS;
-	Godot::print("haalt navi");
 }
 
 void NavmeshParameters::_ready()
@@ -122,5 +121,4 @@ void CachedNavmeshParameters::_register_methods()
 
 	register_property<CachedNavmeshParameters, int>("max_obstacles", &CachedNavmeshParameters::set_max_obstacles, &CachedNavmeshParameters::get_max_obstacles, DEFAULT_MAX_OBSTACLES);
 	register_property<CachedNavmeshParameters, int>("max_layers", &CachedNavmeshParameters::set_max_layers, &CachedNavmeshParameters::get_max_layers, DEFAULT_MAX_LAYERS);
-	Godot::print("cached stop");
 }

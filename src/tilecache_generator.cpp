@@ -48,6 +48,7 @@ void DetourNavigationMeshCacheGenerator::build()
 unsigned int DetourNavigationMeshCacheGenerator::build_tiles(
 	int x1, int z1, int x2, int z2)
 {
+
 	unsigned ret = 0;
 	for (int z = z1; z <= z2; z++)
 	{
@@ -59,8 +60,6 @@ unsigned int DetourNavigationMeshCacheGenerator::build_tiles(
 			}
 		}
 	}
-
-	get_tile_cache()->update(0, get_detour_navmesh());
 	return ret;
 }
 
@@ -104,15 +103,6 @@ bool DetourNavigationMeshCacheGenerator::build_tile(int x, int z)
 		return false;
 	}
 
-	/*dtCompressedTileRef tiles[10];
-	int ntiles = tile_cache->getTilesAt(x, z, tiles, navmesh_parameters->get_max_layers());
-
-	for (int i = 0; i < ntiles; ++i)
-	{
-		dtStatus status = tile_cache->removeTile(tiles[i], NULL, NULL);
-	}*/
-	bool found = false;
-
 	for (int i = 0; i < navmesh_parameters->get_max_layers(); i++)
 	{
 		dtCompressedTileRef cTileRef = tile_cache->getTileRef(tile_cache->getTileAt(x, z, i));
@@ -121,14 +111,11 @@ bool DetourNavigationMeshCacheGenerator::build_tile(int x, int z)
 			dtStatus status = tile_cache->removeTile(cTileRef, NULL, NULL);
 			dtTileRef ref = detour_navmesh->getTileRefAt(x, z, i);
 			detour_navmesh->removeTile(ref, 0, 0);
-			found = true;
 		}
 	}
-	tile_cache->buildNavMeshTilesAt(x, z, nav);
 
 	for (int i = 0; i < heightfield_layer_set->nlayers; i++)
 	{
-		// Tu dodaj preverjanje ali je gettileat ok
 		dtTileCacheLayerHeader header;
 		header.magic = DT_TILECACHE_MAGIC;
 		header.version = DT_TILECACHE_VERSION;
@@ -169,6 +156,7 @@ bool DetourNavigationMeshCacheGenerator::build_tile(int x, int z)
 			return false;
 		}
 	}
+
 	int st = tile_cache->buildNavMeshTilesAt(x, z, nav);
 	if (dtStatusFailed(st))
 	{
@@ -200,28 +188,4 @@ bool DetourNavigationMeshCacheGenerator::init_tile_cache(dtTileCacheParams *para
 		return false;
 	}
 	return true;
-}
-
-/**
- * Rebuilds all the tiles that were marked as dirty
- */
-void DetourNavigationMeshCacheGenerator::recalculate_tiles()
-{
-	if (dirty_tiles == nullptr)
-	{
-		return;
-	}
-	for (int i = 0; i < get_num_tiles_x(); i++)
-	{
-		for (int j = 0; j < get_num_tiles_z(); j++)
-		{
-			if (dirty_tiles[i][j] == 1)
-			{
-				build_tile(i, j);
-				dirty_tiles[i][j] = 0;
-			}
-		}
-	}
-
-	get_tile_cache()->update(0, get_detour_navmesh());
 }

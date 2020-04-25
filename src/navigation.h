@@ -7,6 +7,9 @@
 #include <iostream>
 #include <thread>
 #include <Godot.hpp>
+#include <World.hpp>
+#include <PhysicsShapeQueryParameters.hpp>
+#include <PhysicsDirectSpaceState.hpp>
 #include <Engine.hpp>
 #include <Spatial.hpp>
 #include <SceneTree.hpp>
@@ -66,9 +69,9 @@ private:
 								 std::vector<Ref<Mesh>> *meshes, std::vector<Transform> *transforms,
 								 std::vector<AABB> *aabbs, std::vector<int64_t> *collision_ids);
 
-	std::vector<PhysicsBody *> *dyn_bodies_to_add = nullptr;
-	std::vector<StaticBody *> *static_bodies_to_add = nullptr;
-	std::vector<int64_t> *collisions_to_remove = nullptr;
+	std::vector<PhysicsBody *> dyn_bodies_to_add;
+	std::vector<StaticBody *> static_bodies_to_add;
+	std::vector<int64_t> collisions_to_remove;
 
 public:
 	static void _register_methods();
@@ -108,8 +111,8 @@ public:
 
 	DetourNavigationMesh *create_navmesh(Ref<NavmeshParameters> np);
 
-	std::vector<DetourNavigationMesh *> *navmeshes = nullptr;
-	std::vector<DetourNavigationMeshCached *> *cached_navmeshes = nullptr;
+	std::vector<DetourNavigationMesh *> navmeshes;
+	std::vector<DetourNavigationMeshCached *> cached_navmeshes;
 
 	void build_navmesh(DetourNavigationMesh *navigation);
 	void build_navmesh_cached(DetourNavigationMeshCached *navmesh);

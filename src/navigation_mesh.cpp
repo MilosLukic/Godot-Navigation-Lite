@@ -163,7 +163,7 @@ void DetourNavigationMesh::clear_navmesh()
 
 Ref<ArrayMesh> DetourNavigationMesh::get_debug_mesh()
 {
-	if (debug_mesh.is_valid())
+	if (debug_mesh.is_valid() || detour_navmesh == nullptr)
 	{
 		return debug_mesh;
 	}
@@ -250,8 +250,11 @@ bool DetourNavigationMesh::load_mesh()
 		detour_navmesh = dt_navmesh;
 		init_generator(((Spatial *)get_parent())->get_global_transform());
 		generator->detour_navmesh = dt_navmesh;
+
 		if (!load_inputs())
 		{
+			detour_navmesh = nullptr;
+			generator->detour_navmesh = nullptr;
 			return false;
 		}
 		if (get_tree()->is_debugging_navigation_hint() || Engine::get_singleton()->is_editor_hint())

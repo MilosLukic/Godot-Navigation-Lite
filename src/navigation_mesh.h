@@ -16,6 +16,7 @@
 #include <MeshInstance.hpp>
 #include <Mesh.hpp>
 #include <ArrayMesh.hpp>
+#include <CollisionShape.hpp>
 
 #include "helpers.h"
 #include "navmesh_parameters.h"

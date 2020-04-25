@@ -32,6 +32,7 @@ void DetourNavigationQuery::init(
 		ERR_PRINT("Failed to create navigation query.");
 		return;
 	}
+	detour_navmesh = dtMesh;
 	if (dtStatusFailed(navmesh_query->init(dtMesh, MAX_POLYS)))
 	{
 		ERR_PRINT("Failed to initialize navigation query.");
@@ -73,7 +74,7 @@ Dictionary DetourNavigationQuery::_find_path(
 	ret["points"] = Array();
 	ret["flags"] = Array();
 
-	if (!navmesh_query)
+	if (!navmesh_query || detour_navmesh == nullptr)
 	{
 		return ret;
 	}

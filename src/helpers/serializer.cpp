@@ -80,29 +80,29 @@ dtNavMesh *Serializer::deserializeNavigationMesh(PoolByteArray byte_data)
 	NavMeshSetHeader header;
 	if (byte_data.size() < sizeof(NavMeshSetHeader))
 	{
-		return 0;
+		return nullptr;
 	}
 	memcpy(&header, read_data.ptr(), sizeof(NavMeshSetHeader));
 	int seek = sizeof(NavMeshSetHeader);
 
 	if (header.magic != NAVMESHSET_MAGIC)
 	{
-		return 0;
+		return nullptr;
 	}
 	if (header.version != NAVMESHSET_VERSION)
 	{
-		return 0;
+		return nullptr;
 	}
 
 	dtNavMesh *mesh = dtAllocNavMesh();
 	if (!mesh)
 	{
-		return 0;
+		return nullptr;
 	}
 	dtStatus status = mesh->init(&header.params);
 	if (dtStatusFailed(status))
 	{
-		return 0;
+		return nullptr;
 	}
 
 	// Read tiles.
@@ -111,7 +111,7 @@ dtNavMesh *Serializer::deserializeNavigationMesh(PoolByteArray byte_data)
 		NavMeshTileHeader tileHeader;
 		if (byte_data.size() < seek + sizeof(tileHeader))
 		{
-			return 0;
+			return nullptr;
 		}
 		memcpy(&tileHeader, read_data.ptr() + seek, sizeof(NavMeshTileHeader));
 		seek += sizeof(NavMeshTileHeader);

@@ -72,11 +72,6 @@ void DetourNavigation::_init()
 
 	set_parsed_geometry_type(PARSED_GEOMETRY_STATIC_COLLIDERS);
 	set_auto_object_management(true);
-	navmeshes = new std::vector<DetourNavigationMesh *>();
-	cached_navmeshes = new std::vector<DetourNavigationMeshCached *>();
-	dyn_bodies_to_add = new std::vector<PhysicsBody *>();
-	static_bodies_to_add = new std::vector<StaticBody *>();
-	collisions_to_remove = new std::vector<int64_t>();
 }
 
 /**
@@ -90,13 +85,13 @@ void DetourNavigation::_ready()
 		Godot::print("Navigation ready function called.");
 	}
 
-	for (int i = 0; i < navmeshes->size(); ++i)
+	for (int i = 0; i < navmeshes.size(); ++i)
 	{
-		navmeshes->at(i)->load_mesh();
+		navmeshes[i]->load_mesh();
 	}
-	for (int i = 0; i < cached_navmeshes->size(); ++i)
+	for (int i = 0; i < cached_navmeshes.size(); ++i)
 	{
-		cached_navmeshes->at(i)->load_mesh();
+		cached_navmeshes[i]->load_mesh();
 	}
 
 	recognize_stored_collision_shapes();
@@ -121,7 +116,7 @@ void DetourNavigation::fill_pointer_arrays()
 			DetourNavigationMeshCached>(get_child(i));
 		if (navmesh_pc != nullptr)
 		{
-			cached_navmeshes->push_back(navmesh_pc);
+			cached_navmeshes.push_back(navmesh_pc);
 			continue;
 		}
 
@@ -129,7 +124,7 @@ void DetourNavigation::fill_pointer_arrays()
 			get_child(i));
 		if (navmesh_p != nullptr)
 		{
-			navmeshes->push_back(navmesh_p);
+			navmeshes.push_back(navmesh_p);
 		}
 	}
 }
@@ -143,20 +138,16 @@ void DetourNavigation::recalculate_masks()
 {
 	int collision_mask = 0;
 	int dynamic_collision_mask = 0;
-	if (cached_navmeshes == nullptr || navmeshes == nullptr)
-	{
-		return;
-	}
 
-	for (int i = 0; i < cached_navmeshes->size(); ++i)
+	for (int i = 0; i < cached_navmeshes.size(); ++i)
 	{
-		collision_mask |= cached_navmeshes->at(i)->get_collision_mask();
+		collision_mask |= cached_navmeshes[i]->get_collision_mask();
 		dynamic_collision_mask |=
-			cached_navmeshes->at(i)->get_dynamic_collision_mask();
+			cached_navmeshes[i]->get_dynamic_collision_mask();
 	}
-	for (int i = 0; i < navmeshes->size(); ++i)
+	for (int i = 0; i < navmeshes.size(); ++i)
 	{
-		collision_mask |= navmeshes->at(i)->get_collision_mask();
+		collision_mask |= navmeshes[i]->get_collision_mask();
 	}
 	set_collision_mask(collision_mask);
 	set_dynamic_collision_mask(dynamic_collision_mask);
@@ -169,13 +160,11 @@ void DetourNavigation::recalculate_masks()
  */
 void DetourNavigation::update_tilecache()
 {
-	for (int i = 0; i < cached_navmeshes->size(); ++i)
+	for (int i = 0; i < cached_navmeshes.size(); ++i)
 	{
-		if (cached_navmeshes->at(i) != nullptr)
+		if (cached_navmeshes[i] != nullptr && cached_navmeshes[i]->detour_navmesh != nullptr)
 		{
-
-			cached_navmeshes->at(i)->get_tile_cache()->update(0.1f,
-															  cached_navmeshes->at(i)->get_detour_navmesh());
+			cached_navmeshes[i]->update_tilecache();
 		}
 	}
 }
@@ -184,14 +173,14 @@ void DetourNavigation::add_box_obstacle_to_all(int64_t instance_id,
 											   Vector3 position, Vector3 extents, float rotationY,
 											   int collision_layer)
 {
-	for (int i = 0; i < cached_navmeshes->size(); ++i)
+	for (int i = 0; i < cached_navmeshes.size(); ++i)
 	{
-		if (cached_navmeshes->at(i) != nullptr && cached_navmeshes->at(i)->get_dynamic_collision_mask() & collision_layer)
+		if (cached_navmeshes[i] != nullptr && cached_navmeshes[i]->get_dynamic_collision_mask() & collision_layer)
 		{
-			unsigned int ref_id = cached_navmeshes->at(i)->add_box_obstacle(position,
-																			extents, rotationY);
-			cached_navmeshes->at(i)->dynamic_obstacles[instance_id] = (Variant)ref_id;
-			cached_navmeshes->at(i)->debug_navmesh_dirty = true;
+			unsigned int ref_id = cached_navmeshes[i]->add_box_obstacle(position,
+																		extents, rotationY);
+			cached_navmeshes[i]->dynamic_obstacles[instance_id] = (Variant)ref_id;
+			cached_navmeshes[i]->debug_navmesh_dirty = true;
 		}
 	}
 }
@@ -199,14 +188,14 @@ void DetourNavigation::add_box_obstacle_to_all(int64_t instance_id,
 void DetourNavigation::add_cylinder_obstacle_to_all(int64_t instance_id,
 													Vector3 position, float radius, float height, int collision_layer)
 {
-	for (int i = 0; i < cached_navmeshes->size(); ++i)
+	for (int i = 0; i < cached_navmeshes.size(); ++i)
 	{
-		if (cached_navmeshes->at(i) != nullptr && cached_navmeshes->at(i)->get_dynamic_collision_mask() & collision_layer)
+		if (cached_navmeshes[i] != nullptr && cached_navmeshes[i]->get_dynamic_collision_mask() & collision_layer)
 		{
-			unsigned int ref_id = cached_navmeshes->at(i)->add_cylinder_obstacle(position,
-																				 radius, height);
-			cached_navmeshes->at(i)->dynamic_obstacles[instance_id] = (Variant)ref_id;
-			cached_navmeshes->at(i)->debug_navmesh_dirty = true;
+			unsigned int ref_id = cached_navmeshes[i]->add_cylinder_obstacle(position,
+																			 radius, height);
+			cached_navmeshes[i]->dynamic_obstacles[instance_id] = (Variant)ref_id;
+			cached_navmeshes[i]->debug_navmesh_dirty = true;
 		}
 	}
 }
@@ -214,13 +203,13 @@ void DetourNavigation::add_cylinder_obstacle_to_all(int64_t instance_id,
 void DetourNavigation::remove_obstacle(CollisionShape *collision_shape)
 {
 	Ref<Shape> s = collision_shape->get_shape();
-	for (int i = 0; i < cached_navmeshes->size(); ++i)
+	for (int i = 0; i < cached_navmeshes.size(); ++i)
 	{
-		if (cached_navmeshes->at(i) != nullptr)
+		if (cached_navmeshes[i] != nullptr && cached_navmeshes[i]->detour_navmesh != nullptr)
 		{
-			cached_navmeshes->at(i)->remove_obstacle(
-				cached_navmeshes->at(i)->dynamic_obstacles[collision_shape->get_instance_id()]);
-			cached_navmeshes->at(i)->debug_navmesh_dirty = true;
+			cached_navmeshes[i]->remove_obstacle(
+				cached_navmeshes[i]->dynamic_obstacles[collision_shape->get_instance_id()]);
+			cached_navmeshes[i]->debug_navmesh_dirty = true;
 		}
 	}
 }
@@ -228,8 +217,13 @@ void DetourNavigation::remove_obstacle(CollisionShape *collision_shape)
 void DetourNavigation::save_collision_shapes(
 	DetourNavigationMeshGenerator *generator)
 {
+	if (generator->detour_navmesh == nullptr)
+	{
+		return;
+	}
+
 	int recalculating_start = generator->input_aabbs->size();
-	for (StaticBody *static_body : *static_bodies_to_add)
+	for (StaticBody *static_body : static_bodies_to_add)
 	{
 		for (int j = 0; j < static_body->get_child_count(); ++j)
 		{
@@ -253,63 +247,64 @@ void DetourNavigation::_process(float passed)
 	DetourNavigation::manage_changes();
 	if (aggregated_time_passed >= 0.1)
 	{
-		update_tilecache();
 		aggregated_time_passed = 0.f;
 		if (get_tree()->is_debugging_navigation_hint())
 		{
+
 			rebuild_dirty_debug_meshes();
 		}
+		update_tilecache();
 	}
 	aggregated_time_passed += passed;
 }
 
 void DetourNavigation::manage_changes()
 {
-	if (static_bodies_to_add->size() > 0)
+	if (static_bodies_to_add.size() > 0)
 	{
-		for (int i = 0; i < navmeshes->size(); ++i)
+		for (int i = 0; i < navmeshes.size(); ++i)
 		{
-			save_collision_shapes(navmeshes->at(i)->generator);
-			navmeshes->at(i)->generator->recalculate_tiles();
-			navmeshes->at(i)->debug_navmesh_dirty = true;
+			save_collision_shapes(navmeshes[i]->generator);
+			navmeshes[i]->generator->recalculate_tiles();
+			navmeshes[i]->debug_navmesh_dirty = true;
 		}
-		for (int i = 0; i < cached_navmeshes->size(); ++i)
+		for (int i = 0; i < cached_navmeshes.size(); ++i)
 		{
-			save_collision_shapes(cached_navmeshes->at(i)->generator);
-			cached_navmeshes->at(i)->generator->recalculate_tiles();
-			cached_navmeshes->at(i)->debug_navmesh_dirty = true;
+			save_collision_shapes(cached_navmeshes[i]->generator);
+			cached_navmeshes[i]->recalculate_tiles();
+			cached_navmeshes[i]->debug_navmesh_dirty = true;
 		}
-		static_bodies_to_add->clear();
+		static_bodies_to_add.clear();
 	}
 
-	if (collisions_to_remove->size() > 0)
+	if (collisions_to_remove.size() > 0)
 	{
-		for (int i = 0; i < navmeshes->size(); ++i)
+		for (int i = 0; i < navmeshes.size(); ++i)
 		{
-			for (int64_t collision_shape_id : *collisions_to_remove)
+			for (int64_t collision_shape_id : collisions_to_remove)
 			{
-				navmeshes->at(i)->generator->remove_collision_shape(
+				navmeshes[i]->generator->remove_collision_shape(
 					collision_shape_id);
 			}
-			navmeshes->at(i)->generator->recalculate_tiles();
-			navmeshes->at(i)->debug_navmesh_dirty = true;
+			navmeshes[i]->generator->recalculate_tiles();
+			navmeshes[i]->debug_navmesh_dirty = true;
 		}
-		for (int i = 0; i < cached_navmeshes->size(); ++i)
+		for (int i = 0; i < cached_navmeshes.size(); ++i)
 		{
-			for (int64_t collision_shape_id : *collisions_to_remove)
+			for (int64_t collision_shape_id : collisions_to_remove)
 			{
-				cached_navmeshes->at(i)->generator->remove_collision_shape(
+				cached_navmeshes[i]->generator->remove_collision_shape(
 					collision_shape_id);
 			}
-			cached_navmeshes->at(i)->generator->recalculate_tiles();
-			cached_navmeshes->at(i)->debug_navmesh_dirty = true;
+			cached_navmeshes[i]->recalculate_tiles();
+			cached_navmeshes[i]->debug_navmesh_dirty = true;
 		}
-		collisions_to_remove->clear();
+		collisions_to_remove.clear();
 	}
 
-	if (dyn_bodies_to_add->size() > 0)
+	if (dyn_bodies_to_add.size() > 0)
 	{
-		for (PhysicsBody *physics_body : *dyn_bodies_to_add)
+		for (PhysicsBody *physics_body : dyn_bodies_to_add)
 		{
 			for (int i = 0; i < physics_body->get_child_count(); ++i)
 			{
@@ -323,21 +318,19 @@ void DetourNavigation::manage_changes()
 				Transform transform = collision_shape->get_global_transform();
 
 				Ref<Shape> s = collision_shape->get_shape();
-
-				BoxShape *box = Object::cast_to<BoxShape>(*s);
-				if (box)
+				if (s->get_class() == "BoxShape")
 				{
+					Ref<BoxShape> box = Object::cast_to<BoxShape>(*s);
 					add_box_obstacle_to_all(collision_shape->get_instance_id(),
 											transform.get_origin(),
 											box->get_extents() * transform.get_basis().get_scale(),
 											transform.basis.orthonormalized().get_euler().y,
 											physics_body->get_collision_layer());
-					continue;
+					box.unref();
 				}
-
-				CylinderShape *cylinder = Object::cast_to<CylinderShape>(*s);
-				if (cylinder)
+				else if (s->get_class() == "CylinderShape")
 				{
+					Ref<CylinderShape> cylinder = Object::cast_to<CylinderShape>(*s);
 					add_cylinder_obstacle_to_all(
 						collision_shape->get_instance_id(),
 						transform.get_origin() - Vector3(0.f,
@@ -347,29 +340,31 @@ void DetourNavigation::manage_changes()
 													 transform.get_basis().get_scale().z),
 						cylinder->get_height() * transform.get_basis().get_scale().y,
 						physics_body->get_collision_layer());
+					cylinder.unref();
 				}
+				cached_navmeshes[i]->debug_navmesh_dirty = true;
 			}
 		}
 
 		update_tilecache();
-		dyn_bodies_to_add->clear();
+		dyn_bodies_to_add.clear();
 	}
 }
 
 void DetourNavigation::rebuild_dirty_debug_meshes()
 {
-	for (int i = 0; i < navmeshes->size(); ++i)
+	for (int i = 0; i < navmeshes.size(); ++i)
 	{
-		if (navmeshes->at(i)->debug_navmesh_dirty)
+		if (navmeshes[i]->debug_navmesh_dirty)
 		{
-			navmeshes->at(i)->build_debug_mesh(true);
+			navmeshes[i]->build_debug_mesh(true);
 		}
 	}
-	for (int i = 0; i < cached_navmeshes->size(); ++i)
+	for (int i = 0; i < cached_navmeshes.size(); ++i)
 	{
-		if (cached_navmeshes->at(i)->debug_navmesh_dirty)
+		if (cached_navmeshes[i]->debug_navmesh_dirty)
 		{
-			cached_navmeshes->at(i)->build_debug_mesh(true);
+			cached_navmeshes[i]->build_debug_mesh(true);
 		}
 	}
 }
@@ -385,7 +380,7 @@ void DetourNavigation::_on_cache_collision_shape_added(Variant node)
 
 		if (physics_body && physics_body->get_collision_layer() & get_dynamic_collision_mask())
 		{
-			dyn_bodies_to_add->push_back(physics_body);
+			dyn_bodies_to_add.push_back(physics_body);
 			set_process(true);
 		}
 	}
@@ -417,7 +412,7 @@ void DetourNavigation::_on_collision_shape_added(Variant node)
 			collision_shape->get_parent());
 		if (static_body && (static_body->get_collision_layer() & collision_mask))
 		{
-			static_bodies_to_add->push_back(static_body);
+			static_bodies_to_add.push_back(static_body);
 			set_process(true);
 		}
 	}
@@ -433,7 +428,7 @@ void DetourNavigation::_on_collision_shape_removed(Variant node)
 			collision_shape->get_parent());
 		if (static_body && (static_body->get_collision_layer() & collision_mask))
 		{
-			collisions_to_remove->push_back(collision_shape->get_instance_id());
+			collisions_to_remove.push_back(collision_shape->get_instance_id());
 			set_process(true);
 		}
 	}
@@ -448,7 +443,7 @@ DetourNavigationMeshCached *DetourNavigation::create_cached_navmesh(
 	add_child(cached_navmesh);
 	cached_navmesh->set_owner(get_tree()->get_edited_scene_root());
 	cached_navmesh->set_name("CachedDetourNavigationMesh");
-	cached_navmeshes->push_back(cached_navmesh);
+	cached_navmeshes.push_back(cached_navmesh);
 	return cached_navmesh;
 }
 
@@ -460,7 +455,7 @@ DetourNavigationMesh *DetourNavigation::create_navmesh(
 	add_child(navmesh);
 	navmesh->set_owner(get_tree()->get_edited_scene_root());
 	navmesh->set_name("DetourNavigationMesh");
-	navmeshes->push_back(navmesh);
+	navmeshes.push_back(navmesh);
 	return navmesh;
 }
 
@@ -535,15 +530,15 @@ int DetourNavigation::process_large_mesh(MeshInstance *mesh_instance,
 	}
 	Ref<ArrayMesh> array_mesh = mesh_instance->get_mesh();
 	float tile_edge_length = 0;
-	if (cached_navmeshes->size() > 0)
+	if (cached_navmeshes.size() > 0)
 	{
 		tile_edge_length =
-			cached_navmeshes->at(0)->navmesh_parameters->get_tile_edge_length();
+			cached_navmeshes[0]->navmesh_parameters->get_tile_edge_length();
 	}
 	else
 	{
 		tile_edge_length =
-			navmeshes->at(0)->navmesh_parameters->get_tile_edge_length();
+			navmeshes[0]->navmesh_parameters->get_tile_edge_length();
 	}
 
 	int current_vertex_count, face_count = 0;
@@ -683,50 +678,66 @@ void DetourNavigation::convert_collision_shape(CollisionShape *collision_shape,
 	Ref<Mesh> mesh;
 	Ref<Shape> s = collision_shape->get_shape();
 
-	BoxShape *box = Object::cast_to<BoxShape>(*s);
-	if (box)
+	if (s->get_class() == "BoxShape")
 	{
+		BoxShape *box = Object::cast_to<BoxShape>(*s);
 		Ref<CubeMesh> cube_mesh;
 		cube_mesh.instance();
 		cube_mesh->set_size(box->get_extents() * 2.0);
-		mesh = cube_mesh;
+		Ref<ArrayMesh> array_mesh;
+		array_mesh.instance();
+		array_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, cube_mesh->get_mesh_arrays());
+		cube_mesh.unref();
+		mesh = array_mesh;
 	}
 
-	CapsuleShape *capsule = Object::cast_to<CapsuleShape>(*s);
-	if (capsule)
+	else if (s->get_class() == "CapsuleShape")
 	{
+		CapsuleShape *capsule = Object::cast_to<CapsuleShape>(*s);
 		Ref<CapsuleMesh> capsule_mesh;
 		capsule_mesh.instance();
 		capsule_mesh->set_radius(capsule->get_radius());
 		capsule_mesh->set_mid_height(capsule->get_height() / 2.0);
-		mesh = capsule_mesh;
+		Ref<ArrayMesh> array_mesh;
+		array_mesh.instance();
+		array_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, capsule_mesh->get_mesh_arrays());
+		capsule_mesh.unref();
+		mesh = array_mesh;
 	}
 
-	CylinderShape *cylinder = Object::cast_to<CylinderShape>(*s);
-	if (cylinder)
+	else if (s->get_class() == "CylinderShape")
 	{
+		CylinderShape *cylinder = Object::cast_to<CylinderShape>(*s);
 		Ref<CylinderMesh> cylinder_mesh;
 		cylinder_mesh.instance();
 		cylinder_mesh->set_height(cylinder->get_height());
 		cylinder_mesh->set_bottom_radius(cylinder->get_radius());
 		cylinder_mesh->set_top_radius(cylinder->get_radius());
-		mesh = cylinder_mesh;
+		Ref<ArrayMesh> array_mesh;
+		array_mesh.instance();
+		array_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, cylinder_mesh->get_mesh_arrays());
+		cylinder_mesh.unref();
+		mesh = array_mesh;
 	}
 
-	SphereShape *sphere = Object::cast_to<SphereShape>(*s);
-	if (sphere)
+	else if (s->get_class() == "SphereShape")
 	{
+		SphereShape *sphere = Object::cast_to<SphereShape>(*s);
 		Ref<SphereMesh> sphere_mesh;
 		sphere_mesh.instance();
 		sphere_mesh->set_radius(sphere->get_radius());
 		sphere_mesh->set_height(sphere->get_radius() * 2.0);
-		mesh = sphere_mesh;
+		Ref<ArrayMesh> array_mesh;
+		array_mesh.instance();
+		array_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, sphere_mesh->get_mesh_arrays());
+		sphere_mesh.unref();
+		mesh = array_mesh;
 	}
 
-	ConcavePolygonShape *concave_polygon = Object::cast_to<ConcavePolygonShape>(
-		*s);
-	if (concave_polygon)
+	else if (s->get_class() == "ConcavePolygonShape")
 	{
+		ConcavePolygonShape *concave_polygon = Object::cast_to<ConcavePolygonShape>(
+			*s);
 		PoolVector3Array p_faces = concave_polygon->get_faces();
 		Ref<ArrayMesh> array_mesh;
 		array_mesh.instance();
@@ -737,10 +748,10 @@ void DetourNavigation::convert_collision_shape(CollisionShape *collision_shape,
 		array_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, arrays);
 		mesh = array_mesh;
 	}
-	ConvexPolygonShape *convex_polygon = Object::cast_to<ConvexPolygonShape>(
-		*s);
-	if (convex_polygon)
+
+	else if (s->get_class() == "ConvexPolygonShape")
 	{
+		Ref<ConvexPolygonShape> convex_polygon = Object::cast_to<ConvexPolygonShape>(*s);
 		PoolVector3Array varr = convex_polygon->get_points();
 		/* Build a hull here */
 		qh_vertex_t *vertices = new qh_vertex_t[varr.size()];
@@ -754,28 +765,29 @@ void DetourNavigation::convert_collision_shape(CollisionShape *collision_shape,
 
 		qh_mesh_t qh_mesh = qh_quickhull3d(vertices, varr.size());
 
-		PoolVector3Array faces;
-		faces.resize(qh_mesh.nindices);
-		PoolVector3Array::Write w = faces.write();
-		for (int j = 0; j < qh_mesh.nindices; j += 3)
+		PoolVector3Array mesh_vertices;
+		PoolIntArray mesh_indices;
+		mesh_vertices.resize(qh_mesh.nvertices);
+		mesh_indices.resize(qh_mesh.nindices);
+		PoolVector3Array::Write w = mesh_vertices.write();
+		PoolIntArray::Write wi = mesh_indices.write();
+		for (int j = 0; j < qh_mesh.nvertices; j += 1)
 		{
-			w[j].x = qh_mesh.vertices[qh_mesh.indices[j]].x;
-			w[j].y = qh_mesh.vertices[qh_mesh.indices[j]].y;
-			w[j].z = qh_mesh.vertices[qh_mesh.indices[j]].z;
-			w[j + 1].x = qh_mesh.vertices[qh_mesh.indices[j + 2]].x;
-			w[j + 1].y = qh_mesh.vertices[qh_mesh.indices[j + 2]].y;
-			w[j + 1].z = qh_mesh.vertices[qh_mesh.indices[j + 2]].z;
-			w[j + 2].x = qh_mesh.vertices[qh_mesh.indices[j + 1]].x;
-			w[j + 2].y = qh_mesh.vertices[qh_mesh.indices[j + 1]].y;
-			w[j + 2].z = qh_mesh.vertices[qh_mesh.indices[j + 1]].z;
+			w[j].x = qh_mesh.vertices[j].x;
+			w[j].y = qh_mesh.vertices[j].y;
+			w[j].z = qh_mesh.vertices[j].z;
 		}
-
+		for (int j = 0; j < qh_mesh.nindices; j += 1)
+		{
+			wi[j] = qh_mesh.indices[j];
+		}
 		qh_free_mesh(qh_mesh);
 		Ref<ArrayMesh> array_mesh;
 		array_mesh.instance();
 		Array arrays;
 		arrays.resize(ArrayMesh::ARRAY_MAX);
-		arrays[ArrayMesh::ARRAY_VERTEX] = faces;
+		arrays[ArrayMesh::ARRAY_VERTEX] = mesh_vertices;
+		arrays[ArrayMesh::ARRAY_INDEX] = mesh_indices;
 
 		array_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, arrays);
 		mesh = array_mesh;
@@ -862,13 +874,13 @@ void DetourNavigation::recognize_stored_collision_shapes()
 	Dictionary mappings;
 	collect_mappings(mappings, get_children());
 
-	for (int i = 0; i < navmeshes->size(); ++i)
+	for (int i = 0; i < navmeshes.size(); ++i)
 	{
-		map_collision_shapes(navmeshes->at(i), mappings);
+		map_collision_shapes(navmeshes[i], mappings);
 	}
-	for (int i = 0; i < cached_navmeshes->size(); ++i)
+	for (int i = 0; i < cached_navmeshes.size(); ++i)
 	{
-		map_collision_shapes(cached_navmeshes->at(i), mappings);
+		map_collision_shapes(cached_navmeshes[i], mappings);
 	}
 }
 
