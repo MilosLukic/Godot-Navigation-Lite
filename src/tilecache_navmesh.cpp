@@ -60,6 +60,7 @@ void DetourNavigationMeshCached::_register_methods()
 	register_method("add_box_obstacle", &DetourNavigationMeshCached::add_box_obstacle);
 	register_method("add_cylinder_obstacle", &DetourNavigationMeshCached::add_cylinder_obstacle);
 	register_method("remove_obstacle", &DetourNavigationMeshCached::remove_obstacle);
+	register_method("save_navmesh", &DetourNavigationMeshCached::save_mesh);
 	register_method("update_obstacle", &DetourNavigationMeshCached::refresh_obstacle);
 
 	register_property<DetourNavigationMeshCached, int>("collision_mask", &DetourNavigationMeshCached::set_collision_mask, &DetourNavigationMeshCached::get_collision_mask, 1,
@@ -124,7 +125,6 @@ void DetourNavigationMeshCached::build_navmesh()
 	clear_navmesh();
 	dtmi->build_navmesh_cached(this);
 	save_mesh();
-	store_inputs();
 }
 
 void DetourNavigationMeshCached::clear_navmesh()
@@ -222,6 +222,7 @@ bool DetourNavigationMeshCached::load_mesh()
 void DetourNavigationMeshCached::save_mesh()
 {
 	serialized_navmesh_data = Serializer::serializeNavigationMeshCached(tile_cache, get_detour_navmesh());
+	store_inputs();
 }
 
 unsigned int DetourNavigationMeshCached::add_box_obstacle(

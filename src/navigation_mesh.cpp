@@ -10,6 +10,7 @@ void DetourNavigationMesh::_register_methods()
 	register_method("_notification", &DetourNavigationMesh::_notification);
 	register_method("_exit_tree", &DetourNavigationMesh::_exit_tree);
 	register_method("bake_navmesh", &DetourNavigationMesh::build_navmesh);
+	register_method("save_navmesh", &DetourNavigationMesh::save_mesh);
 	register_method("clear_navmesh", &DetourNavigationMesh::clear_navmesh);
 	register_method("find_path", &DetourNavigationMesh::find_path);
 
@@ -142,7 +143,6 @@ void DetourNavigationMesh::build_navmesh()
 	clear_navmesh();
 	dtmi->build_navmesh(this);
 	save_mesh();
-	store_inputs();
 }
 
 void DetourNavigationMesh::clear_navmesh()
@@ -270,6 +270,7 @@ bool DetourNavigationMesh::load_mesh()
  */
 void DetourNavigationMesh::save_mesh()
 {
+	store_inputs();
 	serialized_navmesh_data = Serializer::serializeNavigationMesh(get_detour_navmesh());
 }
 
