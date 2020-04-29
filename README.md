@@ -1,5 +1,9 @@
 # Godot-Navigation-Lite
-Current version: 0.9 Beta
+Current version: 0.9 Beta for Godot 3.2.x
+
+Supported platforms: Windows, Linux  
+Others will be supported based on demand.
+
 
 
 ![Image not found][main]
@@ -27,6 +31,10 @@ Currently supports Linux and Windows platforms (If anyone is willing to build fo
 - Download the addon, and copy the folder ```godot_project/addons/godot-navigation-lite``` from the zip to your ```addons``` folder, so you have ```addons/godot-navigation-lite``` in your project.
 -  Go to project settings, click on Plugins tab and change the status of GodotNavigationLite to active.
 
+
+## Video Tutorial
+https://www.youtube.com/watch?v=rWFgo6M--Dc
+
 ## Setup
 
 Usage is very similar to the one in vanilla Godot. After setting up the addon, add a new node named `DetourNavigation`. This is the root navigation node, and it should be the parent of all the nodes (like with regular Godot node), that you want to include in your navigation. Then click on that node, and on the top menu, you will see Navigation manager button.
@@ -47,6 +55,10 @@ When it's baked, you can start your scene and call find_path function on the nav
 ![Image not found][ss6]
 
 If you want to see the navigation mesh in game, just enable the Godot's "debug navigation" option in the debug menu (note - navigation will run slower as it has to create debug mesh every time).
+
+## Demo project
+
+A demo project is located in godot_project folder of the repository.
 
 ## Important notes
 * Make sure no two physics bodies (that are used to generate navmesh) share the same location.
@@ -83,7 +95,10 @@ Returns a dictionary with two arrays, first is a vector of Vector3 values that a
 Creates navigation mesh and saves it with all helper meshes to a scene, so the next time it's loaded fast from the scene file.
 
 - `clear_navmesh()`   
+Removes all the cached properties from the navigation mesh - cached collision shapes and navmesh itself.
 
+- `save_navmesh()`   
+It happens automatically when you bake the navmesh, but if you want to save a game (scene) and if there were changes to the navmesh, you have to manually call it.
 
 ### Class `DetourNavigationMeshCached`
 This class includes all methods and properties form `DetourNavigationMesh`
