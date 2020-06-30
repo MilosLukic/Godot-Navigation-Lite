@@ -1,11 +1,52 @@
-*.pdb
-*.idb
-*.dblite
-*.obj
-*.import
-.vs/*
-.navcache
+# Godot-specific ignores
+.import/
+
+# Imported translations (automatically generated from CSV files)
+*.translation
+
+# Mono-specific ignores
+.mono/
+data_*/
+mono_crash.*.json
+
+# System/tool-specific ignores
+.directory
+*~
+
+# Compiled source #
+###################
+*.com
+*.class
+*.exe
+*.o
 *.os
-!.gitignore
-api.json
-.vscode/*
+*.obj
+*.exp
+*.pdb
+*.lib
+*.idb
+
+# OS generated files #
+######################
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Etc
+.sconsign.dblite
+godot_project/.import/
+.navcache
+
+# VS
+vsproj/.vs/
+vsproj/Debug/
+vsproj/Release/
+vsproj/x64/
+vsproj/x86/
+vsproj/gdsqlite.vcxproj.*
+
+.vscode

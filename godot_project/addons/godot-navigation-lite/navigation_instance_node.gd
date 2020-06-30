@@ -29,7 +29,7 @@ func _enter_tree():
 		"DetourNavigation", 
 		"Spatial", 
 		preload("res://addons/godot-navigation-lite/detour_navigation_bootstrap.gd"), 
-		preload("res://addons/godot-navigation-lite/icons/navigation_icon.svg")
+		get_editor_interface().get_base_control().get_icon("Navigation", "EditorIcons")
 	)
 	navmesh = preload("res://addons/godot-navigation-lite/bin/detour_navigation_mesh_cached.gdns")
 
