@@ -222,7 +222,7 @@ void DetourNavigation::save_collision_shapes(
 		return;
 	}
 
-	int recalculating_start = generator->input_aabbs->size();
+	int recalculating_start = static_cast<int>(generator->input_aabbs->size());
 	for (StaticBody *static_body : static_bodies_to_add)
 	{
 		for (int j = 0; j < static_body->get_child_count(); ++j)
@@ -324,8 +324,8 @@ void DetourNavigation::manage_changes()
 					add_box_obstacle_to_all(collision_shape->get_instance_id(),
 											transform.get_origin(),
 											box->get_extents() * transform.get_basis().get_scale(),
-											transform.basis.orthonormalized().get_euler().y,
-											physics_body->get_collision_layer());
+											static_cast<float>(transform.basis.orthonormalized().get_euler().y),
+											static_cast<int>(physics_body->get_collision_layer()));
 					box.unref();
 				}
 				else if (s->get_class() == "CylinderShape")
@@ -339,7 +339,7 @@ void DetourNavigation::manage_changes()
 													 transform.get_basis().get_scale().x,
 													 transform.get_basis().get_scale().z),
 						cylinder->get_height() * transform.get_basis().get_scale().y,
-						physics_body->get_collision_layer());
+						static_cast<int>(physics_body->get_collision_layer()));
 					cylinder.unref();
 				}
 				cached_navmeshes[i]->debug_navmesh_dirty = true;
@@ -541,7 +541,8 @@ int DetourNavigation::process_large_mesh(MeshInstance *mesh_instance,
 			navmeshes[0]->navmesh_parameters->get_tile_edge_length();
 	}
 
-	int current_vertex_count, face_count = 0;
+	//int current_vertex_count = 0;
+	int face_count = 0;
 
 	AABB transformed_aabb = mesh_instance->get_transform().xform(
 		mesh_instance->get_aabb());
@@ -563,14 +564,14 @@ int DetourNavigation::process_large_mesh(MeshInstance *mesh_instance,
 
 		if (index_format)
 		{
-			index_count = array_mesh->surface_get_array_index_len(i);
+			index_count = static_cast<int>(array_mesh->surface_get_array_index_len(i));
 			return 0; // Temporary continue
 		}
 		else
 		{
 			mesh_vertices =
 				array_mesh->surface_get_arrays(i)[Mesh::ARRAY_VERTEX];
-			index_count = array_mesh->surface_get_array_len(i);
+			index_count = static_cast<int>(array_mesh->surface_get_array_len(i));
 			face_count = mesh_vertices.size() / 3;
 		}
 
@@ -635,7 +636,7 @@ int DetourNavigation::process_large_mesh(MeshInstance *mesh_instance,
 			for (int j = 0; j < mesh_instance_array[i].size(); j++)
 			{
 				PoolVector3Array faces;
-				faces.resize(mesh_instance_array[i][j].size());
+				faces.resize(static_cast<int>(mesh_instance_array[i][j].size()));
 				PoolVector3Array::Write w = faces.write();
 				int k = 0;
 				for (Vector3 a : mesh_instance_array[i][j])
@@ -697,7 +698,7 @@ void DetourNavigation::convert_collision_shape(CollisionShape *collision_shape,
 		Ref<CapsuleMesh> capsule_mesh;
 		capsule_mesh.instance();
 		capsule_mesh->set_radius(capsule->get_radius());
-		capsule_mesh->set_mid_height(capsule->get_height() / 2.0);
+		capsule_mesh->set_mid_height(capsule->get_height() / static_cast<real_t>(2.0));
 		Ref<ArrayMesh> array_mesh;
 		array_mesh.instance();
 		array_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, capsule_mesh->get_mesh_arrays());
@@ -726,7 +727,7 @@ void DetourNavigation::convert_collision_shape(CollisionShape *collision_shape,
 		Ref<SphereMesh> sphere_mesh;
 		sphere_mesh.instance();
 		sphere_mesh->set_radius(sphere->get_radius());
-		sphere_mesh->set_height(sphere->get_radius() * 2.0);
+		sphere_mesh->set_height(sphere->get_radius() * static_cast<real_t>(2.0));
 		Ref<ArrayMesh> array_mesh;
 		array_mesh.instance();
 		array_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, sphere_mesh->get_mesh_arrays());
@@ -771,13 +772,13 @@ void DetourNavigation::convert_collision_shape(CollisionShape *collision_shape,
 		mesh_indices.resize(qh_mesh.nindices);
 		PoolVector3Array::Write w = mesh_vertices.write();
 		PoolIntArray::Write wi = mesh_indices.write();
-		for (int j = 0; j < qh_mesh.nvertices; j += 1)
+		for (unsigned int j = 0; j < qh_mesh.nvertices; j += 1)
 		{
 			w[j].x = qh_mesh.vertices[j].x;
 			w[j].y = qh_mesh.vertices[j].y;
 			w[j].z = qh_mesh.vertices[j].z;
 		}
-		for (int j = 0; j < qh_mesh.nindices; j += 1)
+		for (unsigned int j = 0; j < qh_mesh.nindices; j += 1)
 		{
 			wi[j] = qh_mesh.indices[j];
 		}

@@ -329,9 +329,10 @@ void DetourNavigationMeshCached::recalculate_tiles()
 			if (generator->dirty_tiles[i][j] == 1)
 			{
 				t.origin = Vector3(
-					(i + 0.5) * tile_edge_length + bounding_box.position.x,
-					0.5 * (bounding_box.position.y + bounding_box.size.y),
-					(j + 0.5) * tile_edge_length + bounding_box.position.z);
+					(i + static_cast<real_t>(0.5)) * tile_edge_length + bounding_box.position.x,
+					static_cast<real_t>(0.5) * (bounding_box.position.y + bounding_box.size.y),
+					(j + static_cast<real_t>(0.5)) * tile_edge_length + bounding_box.position.z
+				);
 
 				query->set_transform(t);
 
