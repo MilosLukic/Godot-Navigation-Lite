@@ -214,7 +214,7 @@ Ref<ArrayMesh> DetourNavigationMesh::get_debug_mesh()
 
 	debug_mesh = Ref<ArrayMesh>(ArrayMesh::_new());
 	PoolVector3Array varr;
-	varr.resize(lines.size());
+	varr.resize(static_cast<int>(lines.size()));
 	PoolVector3Array::Write w = varr.write();
 	int idx = 0;
 	for (Vector3 vec : lines)
@@ -365,10 +365,10 @@ void DetourNavigationMesh::store_inputs()
 		}
 	}
 
-	input_meshes_storage.resize(generator->input_meshes->size());
-	input_transforms_storage.resize(generator->input_meshes->size());
-	input_aabbs_storage.resize(generator->input_meshes->size());
-	collision_ids_storage.resize(generator->input_meshes->size());
+	input_meshes_storage.resize(static_cast<int>(generator->input_meshes->size()));
+	input_transforms_storage.resize(static_cast<int>(generator->input_meshes->size()));
+	input_aabbs_storage.resize(static_cast<int>(generator->input_meshes->size()));
+	collision_ids_storage.resize(static_cast<int>(generator->input_meshes->size()));
 
 	for (int i = 0; i < generator->input_meshes->size(); i++)
 	{

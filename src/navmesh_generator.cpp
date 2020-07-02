@@ -178,8 +178,8 @@ bool DetourNavigationMeshGenerator::init_tile_data(
 	AABB expbox(bmin, bmax - bmin);
 	expbox.position.x -= config.borderSize * config.cs;
 	expbox.position.z -= config.borderSize * config.cs;
-	expbox.size.x += 2.0 * config.borderSize * config.cs;
-	expbox.size.z += 2.0 * config.borderSize * config.cs;
+	expbox.size.x += static_cast<real_t>(2.0) * config.borderSize * config.cs;
+	expbox.size.z += static_cast<real_t>(2.0) * config.borderSize * config.cs;
 
 	Transform base = global_transform.inverse();
 	for (int i = 0; i < input_meshes->size(); i++)
@@ -231,17 +231,17 @@ bool DetourNavigationMeshGenerator::init_heightfield_context(
 		return false;
 	}
 
-	int ntris = indices.size() / 3;
+	int ntris = static_cast<int>(indices.size() / 3);
 	std::vector<unsigned char> tri_areas;
 	tri_areas.resize(ntris);
 	memset(&tri_areas[0], 0, ntris);
 
 	rcMarkWalkableTriangles(
 		ctx, config.walkableSlopeAngle, &points[0],
-		points.size() / 3, &indices[0], ntris, &tri_areas[0]);
+		static_cast<int>(points.size() / 3), &indices[0], ntris, &tri_areas[0]);
 
 	rcRasterizeTriangles(
-		ctx, &points[0], points.size() / 3, &indices[0],
+		ctx, &points[0], static_cast<int>(points.size() / 3), &indices[0],
 		&tri_areas[0], ntris, *heightfield, config.walkableClimb);
 	rcFilterLowHangingWalkableObstacles(
 		ctx, config.walkableClimb, *heightfield);
@@ -505,7 +505,7 @@ void DetourNavigationMeshGenerator::mark_dirty(int start_index, int end_index)
 
 	if (end_index == -1)
 	{
-		end_index = input_aabbs->size();
+		end_index = static_cast<int>(input_aabbs->size());
 	}
 
 	for (int aabb_index = start_index; aabb_index < end_index; aabb_index++)
@@ -568,7 +568,7 @@ void DetourNavigationMeshGenerator::add_meshdata(
 	prim_mesh = input_meshes->at(mesh_index);
 	int surface_num = 0;
 
-	surface_num = prim_mesh->get_surface_count();
+	surface_num = static_cast<int>(prim_mesh->get_surface_count());
 	if (input_meshes->at(mesh_index)->get_class() == "ArrayMesh")
 	{
 		p_mesh = input_meshes->at(mesh_index);
@@ -578,7 +578,7 @@ void DetourNavigationMeshGenerator::add_meshdata(
 
 	for (int i = 0; i < surface_num; i++)
 	{
-		current_vertex_count = p_verticies.size() / 3;
+		current_vertex_count = static_cast<int>(p_verticies.size() / 3);
 
 		int face_count = 0;
 		if (p_mesh.is_valid())
@@ -589,11 +589,11 @@ void DetourNavigationMeshGenerator::add_meshdata(
 
 			if (p_mesh->surface_get_format(i) & Mesh::ARRAY_FORMAT_INDEX)
 			{
-				index_count = p_mesh->surface_get_array_index_len(i);
+				index_count = static_cast<int>(p_mesh->surface_get_array_index_len(i));
 			}
 			else
 			{
-				index_count = p_mesh->surface_get_array_len(i);
+				index_count = static_cast<int>(p_mesh->surface_get_array_len(i));
 			}
 			face_count = index_count / 3;
 			ERR_CONTINUE((index_count == 0 || (index_count % 3) != 0));
