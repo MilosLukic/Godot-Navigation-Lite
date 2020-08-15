@@ -474,8 +474,11 @@ void DetourNavigation::build_navmesh(DetourNavigationMesh *navmesh)
 	dtnavmesh_gen->build();
 
 	navmesh->detour_navmesh = dtnavmesh_gen->detour_navmesh;
-	navmesh->build_debug_mesh(true);
-	navmesh->debug_mesh_instance->set_owner(navmesh);
+	if (get_tree()->is_debugging_navigation_hint() || Engine::get_singleton()->is_editor_hint())
+	{
+		navmesh->build_debug_mesh(true);
+		navmesh->debug_mesh_instance->set_owner(navmesh);
+	}
 }
 
 void DetourNavigation::build_navmesh_cached(
@@ -496,9 +499,11 @@ void DetourNavigation::build_navmesh_cached(
 	navmesh->tile_cache = dtnavmesh_gen->get_tile_cache();
 	navmesh->tile_cache_compressor = dtnavmesh_gen->get_tile_cache_compressor();
 	navmesh->mesh_process = dtnavmesh_gen->get_mesh_process();
-
-	navmesh->build_debug_mesh(true);
-	navmesh->debug_mesh_instance->set_owner(navmesh);
+	if (get_tree()->is_debugging_navigation_hint() || Engine::get_singleton()->is_editor_hint())
+	{
+		navmesh->build_debug_mesh(true);
+		navmesh->debug_mesh_instance->set_owner(navmesh);
+	}
 }
 
 void DetourNavigation::_notification(int p_what)
