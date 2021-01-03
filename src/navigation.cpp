@@ -71,7 +71,7 @@ void DetourNavigation::_init()
 	}
 
 	set_parsed_geometry_type(PARSED_GEOMETRY_STATIC_COLLIDERS);
-	set_auto_object_management(true);
+	auto_object_management = true;
 }
 
 /**
@@ -107,6 +107,38 @@ void DetourNavigation::_ready()
 		get_tree()->connect("node_removed", this, "remove_collision_shape");
 	}
 }
+
+void DetourNavigation::set_auto_object_management (bool v)
+{
+	if (auto_object_management != v)
+	{
+		auto_object_management = v;
+		if (auto_object_management)
+		{
+			get_tree()->connect("node_added", this, "add_cached_collision_shape");
+			get_tree()->connect("node_removed", this,
+								"remove_cached_collision_shape");
+
+			get_tree()->connect("node_added", this, "add_collision_shape");
+			get_tree()->connect("node_removed", this, "remove_collision_shape");
+		}
+		else
+		{
+			get_tree()->disconnect("node_added", this, "add_cached_collision_shape");
+			get_tree()->disconnect("node_removed", this,
+								"remove_cached_collision_shape");
+
+			get_tree()->disconnect("node_added", this, "add_collision_shape");
+			get_tree()->disconnect("node_removed", this, "remove_collision_shape");
+		}
+		
+	}
+}
+bool DetourNavigation::get_auto_object_management()
+{
+	return auto_object_management;
+}
+
 
 void DetourNavigation::fill_pointer_arrays()
 {

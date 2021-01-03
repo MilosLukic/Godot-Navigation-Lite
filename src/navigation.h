@@ -58,7 +58,10 @@ private:
 	SETGET(dynamic_objects, bool);
 	SETGET(dynamic_collision_mask, int);
 	SETGET(collision_mask, int);
-	SETGET(auto_object_management, bool)
+
+	bool auto_object_management;
+	void set_auto_object_management (bool v);
+	bool get_auto_object_management();
 
 	void collect_geometry(Array geometries,
 						  std::vector<Ref<Mesh>> *meshes, std::vector<Transform> *transforms,
