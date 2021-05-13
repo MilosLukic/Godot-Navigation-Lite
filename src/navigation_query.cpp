@@ -105,7 +105,7 @@ Dictionary DetourNavigationQuery::_find_path(
 	if (nPathCount == 0)
 		return ret; // couldn't find a path
 
-	status = navmesh_query->findStraightPath(StartNearest, EndNearest, PolyPath, nPathCount, StraightPath, NULL, NULL, &nVertCount, MAX_POLYS * 2 * 3);
+	status = navmesh_query->findStraightPath(StartNearest, EndNearest, PolyPath, nPathCount, StraightPath, NULL, NULL, &nVertCount, MAX_POLYS * 2 * 3, DT_STRAIGHTPATH_ALL_CROSSINGS);
 	if ((status & DT_FAILURE) || (status & DT_STATUS_DETAIL_MASK))
 		return ret; // couldn't create a path
 	if (nVertCount == 0)
